@@ -21,11 +21,11 @@ categories:
 
 ### 说一下你重构代码都做了什么?
 
-> 首先是两层改成三层, 把controller 的代码尽量迁移到 service 层. 然后将请求风格和响应数据结构统一. 还有就是处理全局异常, 最后对某些重复代码封装成工具类. 另外还会根据实际业务场景使用一些设计模式, 提高代码可扩展性, 降低代码之间的耦合行.
+> 首先是两层改成三层, 把controller 的代码尽量迁移到 service 层. 然后将请求风格和响应数据结构统一. 还有就是处理全局异常, 最后对某些重复代码封装成工具类. 另外还会根据实际业务场景使用一些设计模式, 提高代码可扩展性, 降低代码之间的耦合性.
 
 ### 什么是 JVM?
 
-> JVM 就是由编译器, 类加载器, 执行引擎, 运行时数据区组成. 其中数据区包含 堆,栈,本地方法栈, 方法区和程序计数器(PC 寄存器), 其中栈是由局部变量表, 操作数栈, 动态链接, 返回地址组成的.
+>  JVM 就是由编译器, 类加载器, 执行引擎, 运行时数据区组成. 其中数据区包含 堆,栈,本地方法栈, 方法区和程序计数器(PC 寄存器), 其中栈是由局部变量表, 操作数栈, 动态链接, 返回地址组成的.
 
 ### 你是怎么对 jvm 垃圾回收进行优化的?
 
@@ -157,12 +157,13 @@ happens-before:
 6.TIMED_WAITING (超时等待)
 7.Dead (死亡)
 
+[t:thread对象, obj: 同步块中的对象]
 New: new Thread()
 Runnable: t.start(), t.yield()
 Running: after t.start() and cpu run it
 Blocked: when enter synchronized block
 WAITING: obj.wait(), t.join(), LockSupport.park()
-TIMED_WAITING: Thread.sleep(x), obj.wait(x), obj.join(x)
+TIMED_WAITING: Thread.sleep(x), obj.wait(x), t.join(x)
 Dead: when t.run() is over
 ```
 
@@ -172,7 +173,7 @@ Dead: when t.run() is over
 
 ```
 对象头:
-	Mark Word(ash, 锁状态, 分代年龄)
+	Mark Word(hash, 锁状态, 分代年龄)
 	类型指针
 	[数组长度]
 实例数据
@@ -193,7 +194,7 @@ Dead: when t.run() is over
 	3.标记-复制算法
 	4.分代算法( Eden 区(复制算法)--> Survivor 区(缓存, 复制算法) --> Old 区(标记-整理)
 
-回收器: (前 3 个 Young GC 使用, 后面的 Old GC 使用)
+回收器: (前 3 个 Young GC 使用, 后面的 Full GC 使用)
 	1.Serial (串行, 复制算法)
 	2.ParNew (多线程, 复制算法)
 	3.Parallel Scavenge (多线程, 改进版, 可控制吞吐量)
@@ -239,7 +240,7 @@ D: 持续性, 一个事务一但提交, 则对数据库的改变是永久的.
 
 ```
 1.读未提交: 可读取其他未提交事务的执行结果(如更新了某个字段), 可能会造成读取错误的数据(未提交的事务回滚了), 造成脏读.
-2.读已提交: 可读取其他已提交事务的执行结果, 2 次读取数据还是可能不一致(其他事务又提交了), 造成不可重复读.
+2.读已提交: 可读取其他已提交事务的执行结果, 2次读取数据还是可能不一致(其他事务又提交了), 造成不可重复读.
 3.可重复读: 确保同一事务内多次读取数据时, 会看到相同的数据. 但可能造成幻读, 如批量修改登录密码后, 另一个事务新增了一条记录, 导致新纪录未修改.
 4.串行化: 事务串行化执行, 效率低.
 ```
@@ -262,7 +263,7 @@ D: 持续性, 一个事务一但提交, 则对数据库的改变是永久的.
 #### 锁触发方式
 
 ```
-行锁: 隐式(条件带有索引锁对应列, 不带锁全部, RR 总会带有 GAP 锁, RC 不会), 显式(使用 for update, lock in share mode)
+行锁: 隐式(条件带有索引则锁对应列, 不带索引则锁全部行, RR 总会带有 GAP 锁, RC 不会), 显式(使用 for update, lock in share mode)
 表锁: 隐式(对整个表不带条件进行增删改, 或任何 DDL 操作) 显示(使用 for update, lock in share mode)
 ```
 
@@ -277,21 +278,23 @@ D: 持续性, 一个事务一但提交, 则对数据库的改变是永久的.
 ```java
 1) acquire(): 尝试获取一个许可证, 获取成功则直接返回(lock结束), 获取失败则需要排队
 2) tryAcquire(): 判断当前许可证数量(state), 若为0则尝试获取
-    分公平和非公平, 公平锁会判断 hasQueuedPredecessors, 非公平则直接抢 compareAndSetState
-    若不为0, 则判断持有锁的人是否为我本身, 是则增加当前许可证数量, 返回true获取成功
-    不是则 返回 false, 获取失败(将排队).
-3) addWaiter(): AQS 队列尾部添加一个 Node(waiter=X[独占锁]), 若 tail 不存在, 则先初始化一个head
+     分公平和非公平, 公平锁会判断 hasQueuedPredecessors, 非公平则直接抢 compareAndSetState
+     若不为0, 则判断持有锁的人是否为我本身, 是则增加当前许可证数量, 返回true获取成功
+     不是则 返回 false, 获取失败(将排队).
+3) addWaiter(): AQS 队列尾部添加一个 Node(waiter=X[独占锁]), 若 tail 不存在, 则先初始化一个 空head[空指不代表任何线程] 后再加入队列
 4) acquireQueued: 进入队列的节点, 尝试获取许可证, 失败则 park()
-    先判断node的上一个节点是否为字节点, 若是, 则代表快到你了, 要尝试获取一次许可证(说不定就成功了呢)
-    如果不是, 设置了上一个节点的 waitStatus 为 SINGLE 后, 自己睡眠 park(), 等待唤醒
-5) 唤醒后, 判断上一个节点是不是 head, 一般来说是(因为unkock唤醒的一般就是head.next)
-    如果不是则进入 shouldParkAfterFailedAcquire 将队列中一些已取消的节点从队列中删除, 重新设置节点的prev
-    因为是for循环, 所以又会再回来判断, 这时应该是head了, 尝试获取许可证, 2种可能, 非公平时被刚lock的人抢了(概率较小吧), 另一种就是获取成功
-    获取成功后, 把原head节点删掉, 自己设为head节点(head象征一个拿到许可证的节点), 然后返回到acquire(), 中途没有线程被打断就正常出方法, lock结束
+     先判断node的上一个节点是否为 head 节点, 若是, 则要尝试获取一次许可证(因为这说明上一个线程已经在执行过程中了, 也许已经走完了unlock() 方法(即已经运行过唤醒队列下一位的代码了,而因为你那时还不在队列中或没进入睡眠中, 唤醒代码是无意义的), 而你则刚加入队列, 如果你此时直接park()去等待唤醒, 则根本无人唤醒你, 同理你的下一个节点也就等不到你去唤醒它.)
+     如果不是, 设置了上一个节点的 waitStatus 为 SINGLE 后, 自己睡眠 park(), 等待唤醒
+
+唤醒后:  
+5) 判断上一个节点是不是 head, 一般来说是(因为unkock唤醒的一般就是head.next)
+     如果不是则进入 shouldParkAfterFailedAcquire: 将队列中一些已取消的节点从队列中删除, 重新设置节点的prev
+     因为是for循环, 所以又会再回来判断, 这时应该是head了, 尝试获取许可证, 2种可能, 非公平时被刚lock的人抢了(概率较小吧), 另一种就是获取成功
+     获取成功后, 把原head节点删掉, 自己设为head节点(head象征一个拿到许可证的节点,除队列第一次初始化), 然后返回到acquire(), 中途没有线程被打断就正常出方法, lock结束
 
 总结:
 得到方式1: acquire 时 state = 0, 且抢到了.
-得到方式2: 没抢到或没得抢, 进入队列等上一个来唤醒我, 上一个等上上个来唤醒他, 上上个等上上上个唤醒....
+得到方式2: 没抢到或不让抢(公平锁), 进入队列等上一个来唤醒我, 上一个等上上个来唤醒他, 上上个等上上上个唤醒....
     unlock 唤醒队列第二个非取消的线程并删除队列第一个元素 [其他元素移位]
     这样第二个线程就可以唤醒非取消的第三个线程[相对而言的第三个,实际上唤醒时还是第二个, 只是唤醒后会删除第一个, 所以第三变第二]
 ```
@@ -302,7 +305,7 @@ D: 持续性, 一个事务一但提交, 则对数据库的改变是永久的.
 1) release(): 释放一个许可证, 并根据当前许可证数量是否为0 判断是否可以唤醒下一个节点
 2) tryRelease(): 释放一个许可证, 判断线程是否正确(是不是当前独占锁), 许可证减一
 	当前许可证数量是否为 0 返回是否可以唤醒队列的 bool 标识.
-3) unparkSuccessor(): 唤醒队列中除head外第一个处于阻塞(非取消)的节点.
+3) unparkSuccessor(): 唤醒队列中除head外第一个处于阻塞(非取消)的节点(查找方式, 先看next, next状态不对则从后往前找最前的非取消的节点, 因为next如果为null, 无法找null的next).
 4) 唤醒后, 会将head设置为唤醒的节点, 以此达到下次唤醒下一个的目的.
 
 总结:
@@ -314,7 +317,7 @@ D: 持续性, 一个事务一但提交, 则对数据库的改变是永久的.
 ```java
 读锁
 	获取锁 tryAcquireShared(), 若当前没有写锁存在, 则 state + 1个读单位, 然后返回获取成功. 防止返回获取失败, 进入队列休眠.
-	释放锁 tryReleaseShared(), state - 1个读单位, 然后根据 state = 0 返回是否可以唤醒队列.
+	释放锁 tryReleaseShared(), state - 1个读单位, 然后根据 state = 0 判断返回是否可以唤醒队列.
 	
 写锁
 	获取锁 tryAcquire(), 若存在读锁, 则失败, 若存在写锁, 判断是否重入获取, 是则返回获取成功. 否则失败; 失败就意味着加队列,休眠.
@@ -462,12 +465,12 @@ BeanPostProcessor
 3) 调用子类初始化 BeanFactory
 4) 设置BeanFactory 一些属性,添加一些内置的PostProcessor 注册一些 environment 相关的bean
 5) 子类设置一些内置的PostProcessor
-6) 添加并执行容器内的 BeanFactoryPostProcessor
-7) 扫描容器内的BeanPostProcessor 并注册
+6) 扫描添加并执行容器内的 BeanFactoryPostProcessor
+7) 扫描容器内的 BeanPostProcessor 并注册
 8) 初始化国际化消息处理器
 9) 初始化事件广播处理器
 10) 执行子类的 refresh 逻辑
-11) 扫描容器内的 ApplicationEvent 并注册到事件广播处理器
+11) 扫描容器内的 ApplicationEvent (指实现类) 并注册到事件广播处理器
 12) 完成BeanFactory的初始化, 并加载一些单例对象(设置了急于加载的bean)
 13) 初始化LifcycleProcessor, 调用onRefresh方法, 发布 ContextRefreshedEvent 事件.
 14) 清除一些缓存(如反射缓存, 注解等)
@@ -486,8 +489,8 @@ BeanPostProcessor
 ##### 实现 `ApplicationListener` 为何会在事件触发时自动执行我们实现的方法?
 
 ```java
-1) 在 AbstractApplicationContext#registerListeners() 中扫描容器内所有实现类加入到事件监听者集合中
-2) 然后在publishEvent时，遍历事件监听者调用bean的方法即可。观察者模式！
+1) 在 AbstractApplicationContext#registerListeners() 中扫描容器内所有相关实现类加入到事件监听者集合中
+2) 然后在publishEvent时，遍历事件监听者集合调用bean的方法即可。观察者模式！
 3) 另外也用了BeanPostProcessor去实现, 叫 ApplicationListenerDetector, 加入时机同1, 执行时机同1.
 4) 至于为何使用2种机制，与多例有关吧！(scope="prototype")
 ```
@@ -503,13 +506,15 @@ BeanPostProcessor
 
 ```bash
 1) 首先， 设定对象A，B， A 持有 B, B 持有A， 构成循环
-2) 假设先获取A，则在doCreateBean 中 创建后将bean缓存到 singletonFactories 中
+2) 此时程序调用getBean获取A，则在 doCreateBean 中 创建后将bean缓存到 singletonFactories 中
 3) 然后设置属性B, 解析属性, 需要获取B对象
 4) 获取B, 则执行doCreateBean 后执行解析属性, 需要获取 A对象 (又一次)
 5) 获取A, 进入 doGetBean 中的 getSingleton, 此时判断singletonFactories中有A, 则可以直接取出A
-6) 获得A后, 设置进属性中, 完成B的创建
-7) B创建完后, A拿到了B, A设置属性B, 设置完后, 完成创建A
+6) 获得A后, 即可完成B的属性赋值, 然后会完成B的创建.
+7) B创建完后, A就能获得B, 则A也完成了属性赋值, 最后完成创建A.
 8) 到此, 返回即可.
+
+> 总结: 首次获取A, 创建A对象后缓存一个存储A对象的 ObjectFactory 实例, 再解析属性时触发 getBean(B), 同理也会做缓存, 然后也解析属性, 触发getBean(A), 第二次获取A, 进入另一个逻辑, 返回 ObjectFactory 实例中存储的对象A, 即可完成getBean(A), 然后完成getBean(B), 再完成外层的getBean(A).  
 ```
 
 TIPS
@@ -734,13 +739,13 @@ SpringBootCondition 提供了通用的根据 ConditionOutcome 判断是否匹配
 9) 这样，容器中就加入了一个或多个配置好的bean了, 可以直接使用. 如 stringRedisTemplate, jdbcTemplate
 ```
 
-#####  Spring Boot 是如何自动扫描main方法所在类所在包的? 
+#####  Spring Boot 是如何自动扫描main方法所在类所在包的?
 
 ```
 1) 首先是 @SpringBootApplication 启用了 @EnableAutoConfiguration
 2) @EnableAutoConfiguration 又使用 @AutoConfigurationPackage
 3) @AutoConfigurationPackage 中的 @Import 会被解析, Registrar.class 的registerBeanDefinitions会被执行
-4) 最终根据带有 @SpringBootApplication 的类去推到包名, 然后自动扫描到容器中, 效果同 @ComponentScan
+4) 最终根据带有 @SpringBootApplication 的类对应的包名, 然后自动扫描到容器中, 效果同 @ComponentScan
 ```
 
 ##### `application.properties` 是如何被加载到Environment中的?
@@ -786,24 +791,6 @@ TIPS:
 spring 使用工厂模式获取webServer, 然后工厂又通过AutoConfiguration自动注入(还会判断Condition).
     这样如果新增一种 webServer, 只需要在写一个 AutoConfiguration 注入一个 工厂即可. 非常灵活.
 ```
-
-
-
-#### Spring Boot 监听
-
-> Spring Boot run方法中初始化了一个事件管理器, 用于在boot的每个生命周期触发不同的事件, 这些事件可以有很多监听者, 这些监听者都从 `spring.factories` 中取得.
-> 但是, spring 默认只加了一个监听者, 即 `EventPublishingRunListener`
-> 虽然只有一个, 但他的作用可不小, 他承上启下, 将boot的事件转发给所有的 `ApplicationListener` 的监听者.
-> 也就是说, 之前spring就存在的体系可以直接复用, 但又没有直接生搬硬套, 而是通过 `EventPublishingRunListener` 做一个中转, 将 boot 的事件转发出去. 使得配置的监听者 `ApplicationListener `也能接受 boot 事件并处理. 如 `ConfigFileApplicationListener`.
->
-> spring boot 这么做, 使得 添加到 `spring.factories` 中的类, 可以同时监听boot的run产生的事件和context的生命周期.
->    
-> 严格说, `EventPublishingRunListener` 这样的监听者, 监听的并不是通用的事件, 而是 boot run 产生的特定事件
-> 所以 `EventPublishingRunListener` 将特定事件封装成统一的 `ApplicationEvent`, 然后广播出去.
->
-> 另外，spring boot 是在 `EventPublishingRunListener#contextLoaded` 中将 `spring.factories` 中的 listens 注入到 `ApplicationContext` 中的。
->    
-> 总结: 我监听你监听的监听!
 
 
 
