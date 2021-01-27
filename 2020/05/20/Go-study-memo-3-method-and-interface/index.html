@@ -25,7 +25,7 @@
   <meta name="description" content="为了面向对象(首先你得有个对象)method定义一个method12345678910111213141516171819202122232425type Person struct &amp;#123;	name string	age int&amp;#125;func (p *Person) growup() &amp;#123;  &#x2F;&#x2F;想想去掉 * 会怎样?	p.age +&#x3D; 1&amp;#125;func (p Pers">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Go学习笔记 (三) : method 和 interface">
-<meta property="og:url" content="https://gudqs7.github.io/2020/05/20/Go%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%EF%BC%88%E4%B8%89%EF%BC%89method-%E5%92%8C-interface/index.html">
+<meta property="og:url" content="https://gudqs7.github.io/2020/05/20/Go-study-memo-3-method-and-interface/index.html">
 <meta property="og:site_name" content="gudqs7&#39;s note">
 <meta property="og:description" content="为了面向对象(首先你得有个对象)method定义一个method12345678910111213141516171819202122232425type Person struct &amp;#123;	name string	age int&amp;#125;func (p *Person) growup() &amp;#123;  &#x2F;&#x2F;想想去掉 * 会怎样?	p.age +&#x3D; 1&amp;#125;func (p Pers">
 <meta property="og:locale" content="zh_CN">
@@ -35,7 +35,7 @@
 <meta property="article:tag" content="learn-go">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="https://gudqs7.github.io/2020/05/20/Go%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%EF%BC%88%E4%B8%89%EF%BC%89method-%E5%92%8C-interface/">
+<link rel="canonical" href="https://gudqs7.github.io/2020/05/20/Go-study-memo-3-method-and-interface/">
 
 
 <script id="page-configurations">
@@ -170,7 +170,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://gudqs7.github.io/2020/05/20/Go%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%EF%BC%88%E4%B8%89%EF%BC%89method-%E5%92%8C-interface/">
+    <link itemprop="mainEntityOfPage" href="https://gudqs7.github.io/2020/05/20/Go-study-memo-3-method-and-interface/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -222,8 +222,8 @@
       </span>
       <span class="post-meta-item-text">Disqus：</span>
     
-    <a title="disqus" href="/2020/05/20/Go%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%EF%BC%88%E4%B8%89%EF%BC%89method-%E5%92%8C-interface/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2020/05/20/Go学习笔记（三）method-和-interface/" itemprop="commentCount"></span>
+    <a title="disqus" href="/2020/05/20/Go-study-memo-3-method-and-interface/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2020/05/20/Go-study-memo-3-method-and-interface/" itemprop="commentCount"></span>
     </a>
   </span>
   
@@ -321,7 +321,7 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2020/05/20/Go%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%EF%BC%88%E4%BA%8C%EF%BC%89%E6%B5%81%E7%A8%8B%E6%8E%A7%E5%88%B6-if-for-switch-%E4%B8%8E-%E5%87%BD%E6%95%B0-%E4%B8%8E-struct-%E5%8C%BF%E5%90%8D%E5%AD%97%E6%AE%B5/" rel="prev" title="Go学习笔记 (二) : 流程控制(if,for,switch) 与 函数 与 struct (匿名字段)">
+    <a href="/2020/05/20/Go-study-memo-2-if-for-switch-and-func-struct/" rel="prev" title="Go学习笔记 (二) : 流程控制(if,for,switch) 与 函数 与 struct (匿名字段)">
       <i class="fa fa-chevron-left"></i> Go学习笔记 (二) : 流程控制(if,for,switch) 与 函数 与 struct (匿名字段)
     </a></div>
       <div class="post-nav-item">
@@ -409,14 +409,14 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">14</span>
+          <span class="site-state-item-count">15</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-count">17</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
@@ -529,8 +529,8 @@
 </script>
 <script>
   var disqus_config = function() {
-    this.page.url = "https://gudqs7.github.io/2020/05/20/Go%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%EF%BC%88%E4%B8%89%EF%BC%89method-%E5%92%8C-interface/";
-    this.page.identifier = "2020/05/20/Go学习笔记（三）method-和-interface/";
+    this.page.url = "https://gudqs7.github.io/2020/05/20/Go-study-memo-3-method-and-interface/";
+    this.page.identifier = "2020/05/20/Go-study-memo-3-method-and-interface/";
     this.page.title = "Go学习笔记 (三) : method 和 interface";
     };
   NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {

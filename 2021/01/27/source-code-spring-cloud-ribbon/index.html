@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"gudqs7.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Spring Cloud Commons 之 loadbalancer 源码笔记 Spring Cloud Commons 是什么样的? 有什么作用? 如何与 Spring Cloud 和 Cloud Alibaba 整合?让我们带着这些问题去研究源码吧!   loadbalancer 原理分析12345# 先来认识一下 Spring Cloud Commons 吧是定义了诸多接口(如Servic">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring Cloud Commons 之 loadbalancer 源码笔记">
+<meta property="og:url" content="https://gudqs7.github.io/2021/01/27/source-code-spring-cloud-ribbon/index.html">
+<meta property="og:site_name" content="gudqs7&#39;s note">
+<meta property="og:description" content="Spring Cloud Commons 之 loadbalancer 源码笔记 Spring Cloud Commons 是什么样的? 有什么作用? 如何与 Spring Cloud 和 Cloud Alibaba 整合?让我们带着这些问题去研究源码吧!   loadbalancer 原理分析12345# 先来认识一下 Spring Cloud Commons 吧是定义了诸多接口(如Servic">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-01-27T05:10:01.000Z">
+<meta property="article:modified_time" content="2021-01-27T13:13:57.983Z">
+<meta property="article:author" content="gudqs7">
+<meta property="article:tag" content="interview">
+<meta property="article:tag" content="mybatis-source">
+<meta property="article:tag" content="spring-mvc-source">
+<meta property="article:tag" content="jvm">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://gudqs7.github.io/2021/01/27/source-code-spring-cloud-ribbon/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Spring Cloud Commons 之 loadbalancer 源码笔记 | gudqs7's note</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">gudqs7's note</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">心累没钱躺尸中</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://gudqs7.github.io/2021/01/27/source-code-spring-cloud-ribbon/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="gudqs7">
+      <meta itemprop="description" content="心累没钱躺尸中">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="gudqs7's note">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Spring Cloud Commons 之 loadbalancer 源码笔记
+        </h1>
+
+        <div class="post-meta">
+			
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-01-27 13:10:01 / 修改时间：21:13:57" itemprop="dateCreated datePublished" datetime="2021-01-27T13:10:01+08:00">2021-01-27</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Spring/" itemprop="url" rel="index"><span itemprop="name">Spring</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/SourceCode/" itemprop="url" rel="index"><span itemprop="name">SourceCode</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Spring-Cloud/" itemprop="url" rel="index"><span itemprop="name">Spring-Cloud</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2021/01/27/source-code-spring-cloud-ribbon/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2021/01/27/source-code-spring-cloud-ribbon/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="Spring-Cloud-Commons-之-loadbalancer-源码笔记"><a href="#Spring-Cloud-Commons-之-loadbalancer-源码笔记" class="headerlink" title="Spring Cloud Commons 之 loadbalancer 源码笔记"></a>Spring Cloud Commons 之 loadbalancer 源码笔记</h1><blockquote>
+<p>Spring Cloud Commons 是什么样的? 有什么作用? 如何与 Spring Cloud 和 Cloud Alibaba 整合?<br>让我们带着这些问题去研究源码吧! </p>
+</blockquote>
+<h2 id="loadbalancer-原理分析"><a href="#loadbalancer-原理分析" class="headerlink" title="loadbalancer 原理分析"></a>loadbalancer 原理分析</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 先来认识一下 Spring Cloud Commons 吧</span></span><br><span class="line">是定义了诸多接口(如ServiceRegistry/DiscoveryClient/LoadBalancerClient)和注解(如!EnableDiscoveryClient/@LoadBalanced)为主, 少量代码实现(如 RandomLoadBalancer). </span><br><span class="line">以及对 Spring 容器(Context) 的扩展(如 NamedContextFactory, bootstrap 配置文件的加载, 容器重启, 容器跟随配置文件刷新等等)</span><br><span class="line">当然还有一些打包好的 starter.</span><br><span class="line">我们要研究的 loadbalancer 就是其中一个子项目.</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="loadbalancer-关键类解析"><a href="#loadbalancer-关键类解析" class="headerlink" title="loadbalancer 关键类解析"></a>loadbalancer 关键类解析</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 0.惊! 一堆类仅为添加一个拦截器</span></span><br><span class="line">LoadBalancerRequestFactory: 一个工厂, 包装一个为请求对象 HttpRequest 加料的回调 LoadBalancerRequest</span><br><span class="line"></span><br><span class="line">LoadBalancerClient: 用于根据 serviceId 选取一个 ServiceInstance, 执行从 LoadBalancerRequestFactory 获得的那个回调</span><br><span class="line"></span><br><span class="line">LoadBalancerInterceptor: restTemplate 的拦截器, 拦截后调用 LoadBalancerClient 修改 HttpRequest 对象(主要是 url), 且传入调用 LoadBalancerRequestFactory 生成的回调给 LoadBalancerClient</span><br><span class="line"></span><br><span class="line">RestTemplateCustomizer: 为 restTemplate 加上一个拦截器(也可以干点别的, 默认就这一个用处)</span><br><span class="line"></span><br><span class="line">SmartInitializingSingleton: 调用 RestTemplateCustomizer 为容器中所有加了 @LoadBalanced 的 RestTemplate 加上一个拦截器</span><br><span class="line"></span><br><span class="line"><span class="comment"># 1.获取对象的工厂, 以 Spring 容器作为载体管理对象.</span></span><br><span class="line">NamedContextFactory</span><br><span class="line">	继承 DisposableBean, 用于类销毁是执行点东西(指创建的好多个子容器)</span><br><span class="line">	继承 ApplicationContextAware, 用于将子容器和当前容器关联起来(所以 Spring 树形扩展这个设计真不错)</span><br><span class="line">	泛型 C extends NamedContextFactory.Specification, 无它, 就是个 POJO, 存个 name 和对应的配置 class, 用于初始化容器的(会被注册进去, 然后解析里面的注解啥的...)</span><br><span class="line">	此类作用就是管理一大堆(取决于你微服务拆分的程度)子容器, 获取其他代码需要的类型对象</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">ReactiveLoadBalancer.Factory</span><br><span class="line">  定义了获取 ReactiveLoadBalancer 的接口以及与其相关的扩展</span><br><span class="line">  </span><br><span class="line"></span><br><span class="line">LoadBalancerClientFactory</span><br><span class="line">  继承 NamedContextFactory, 构造参数指定了几个属性值</span><br><span class="line">  实现了 ReactiveLoadBalancer.Factory 的接口, 即提供获取 ReactiveLoadBalancer 的方法.</span><br><span class="line">  泛型具体为 LoadBalancerClientSpecification, 还是个POJO</span><br><span class="line">  </span><br><span class="line"></span><br><span class="line"><span class="comment"># 2.包含算法逻辑的负载均衡策略的类</span></span><br><span class="line">Response</span><br><span class="line">	server 的封装类, 一般持有一个 ServiceInstance 对象, 如 DefaultResponse</span><br><span class="line">	</span><br><span class="line">Publisher</span><br><span class="line">	响应式编程的东西, 可获取 Response&lt;T&gt; 对象, 一般为 Response&lt;ServiceInstance&gt;</span><br><span class="line">	</span><br><span class="line">ReactiveLoadBalancer.Factory</span><br><span class="line">	定义了获取 ReactiveLoadBalancer 的接口以及与其相关的扩展</span><br><span class="line"></span><br><span class="line">ReactiveLoadBalancer</span><br><span class="line">	定义了 choose 方法, 即如何选取一个 ServiceInstance, 如轮播, 随机...</span><br><span class="line"></span><br><span class="line">ReactorLoadBalancer</span><br><span class="line">  定义了 choose 方法的另一形式, 仅返回值不同, 为 Mono&lt;Response&lt;T&gt;&gt; 是 Publisher&lt;Response&lt;T&gt;&gt; 的子类, 返回值为抽象类.</span><br><span class="line"></span><br><span class="line">ReactorServiceInstanceLoadBalancer</span><br><span class="line">  继承 ReactorLoadBalancer</span><br><span class="line">	仅仅作为一个标记类, 无新接口</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="类大致调用图"><a href="#类大致调用图" class="headerlink" title="类大致调用图"></a>类大致调用图</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">graph TB</span><br><span class="line"></span><br><span class="line">A(SmartInitializingSingleton)</span><br><span class="line">A1(RestTemplateCustomizer)</span><br><span class="line">A2(LoadBalancerInterceptor)</span><br><span class="line">A3(restTemplate)</span><br><span class="line">A4(LoadBalancerClient)</span><br><span class="line">A5(LoadBalancerRequestFactory)</span><br><span class="line">A6(ReactorServiceInstanceLoadBalancer)</span><br><span class="line">A8(LoadBalancerClientFactory)</span><br><span class="line"></span><br><span class="line">A--调用--&gt;A1</span><br><span class="line">A1--添加一个--&gt;A2</span><br><span class="line">A2--到--&gt;A3</span><br><span class="line">A2--调用--&gt;A4</span><br><span class="line">A2--调用--&gt;A5</span><br><span class="line">A5--生成一个回调给--&gt;A4 </span><br><span class="line">A4--调用--&gt;A8</span><br><span class="line">A8--获取--&gt;A6</span><br><span class="line">A6--获取--&gt;A7(ServiceInstance)</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<blockquote>
+<p>瞅瞅有哪些负载均衡策略吧(看完发现这才是最简单的… 外面那些结构反而不容易理清)</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 1.RandomLoadBalancer: 就是随机数呗, 0-size, 简单!!</span></span><br><span class="line"><span class="comment">// 在 RandomLoadBalancer#getInstanceResponse() 中</span></span><br><span class="line"><span class="comment">// 觉得这个方法可以做出 protected, 这样有些实现只需要重写这个方法就行了 </span></span><br><span class="line"><span class="function"><span class="keyword">private</span> Response&lt;ServiceInstance&gt; <span class="title">getInstanceResponse</span><span class="params">(List&lt;ServiceInstance&gt; instances)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (instances.isEmpty()) &#123;</span><br><span class="line">    <span class="keyword">if</span> (log.isWarnEnabled()) &#123;</span><br><span class="line">      log.warn(<span class="string">"No servers available for service: "</span> + serviceId);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> EmptyResponse();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">int</span> index = ThreadLocalRandom.current().nextInt(instances.size());</span><br><span class="line"></span><br><span class="line">  ServiceInstance instance = instances.get(index);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> DefaultResponse(instance);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 2.RoundRobinLoadBalancer</span></span><br><span class="line"><span class="comment">// 在 RoundRobinLoadBalancer#getInstanceResponse() 中</span></span><br><span class="line"><span class="comment">// 用一个 position 保存位置, 这个主意高啊, 即保证了数据的正确性, 还.... 编不下去了!!</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> Response&lt;ServiceInstance&gt; <span class="title">getInstanceResponse</span><span class="params">(List&lt;ServiceInstance&gt; instances)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (instances.isEmpty()) &#123;</span><br><span class="line">    <span class="keyword">if</span> (log.isWarnEnabled()) &#123;</span><br><span class="line">      log.warn(<span class="string">"No servers available for service: "</span> + serviceId);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> EmptyResponse();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// <span class="doctag">TODO:</span> enforce order?</span></span><br><span class="line">  <span class="keyword">int</span> pos = Math.abs(<span class="keyword">this</span>.position.incrementAndGet());</span><br><span class="line"></span><br><span class="line">  ServiceInstance instance = instances.get(pos % instances.size());</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> DefaultResponse(instance);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>这代码简单的, 特别不想分析…. 但其实最开始就是冲着这个来的… 总得看看吧, 咳咳!!</p>
+</blockquote>
+<h3 id="loadbalancer-原理分析-1"><a href="#loadbalancer-原理分析-1" class="headerlink" title="loadbalancer 原理分析"></a>loadbalancer 原理分析</h3><ol>
+<li>先拦截 RestTemplate 对象的请求, 使其调用 LoadBalancerClient 的接口获取真实IP</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># org.springframework.cloud.client.loadbalancer.LoadBalancerAutoConfiguration 中</span></span><br><span class="line">1.@Bean 加入一个 LoadBalancerRequestFactory, 并且带有用户自定义的 transformers(作用: 对选取真实 url 后的请求对象进行干预)</span><br><span class="line">2.@Bean 加入一个 LoadBalancerClient, 其作用是, 根据 serviceId 获取/选取真实 url, 以及执行请求</span><br><span class="line">3.@Bean 加入一个 LoadBalancerInterceptor, 即核心拦截器. 逻辑是: 获取 host, 调用 LoadBalancerRequestFactory 生成请求, 用 LoadBalancerClient 执行.</span><br><span class="line">4.@Bean 加入一个 RestTemplateCustomizer, 其作用是: 为给定的 RestTemplate 添加一个 LoadBalancerInterceptor.</span><br><span class="line">5.@Bean 加入一个 SmartInitializingSingleton, 作用是单例都加载后触发回调, 回调代码为:</span><br><span class="line">     遍历所有的 RestTemplateCustomizer 和 restTemplates, 用 RestTemplateCustomizer 对 RestTemplate 做设置. 包括(4)刚刚加入的那个.</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>总结: 为用户自定义(如配置类中写了个@Bean + return new RestTemplate() 这种形式)的 RestTemplate 添加一个拦截器, 在请求执行前进行拦截, 然后将请求数据的 host 作为 serviceId, 接着使用某个具体的 LoadBalancerClient 实现类调用其方法获取真实的 url. 若对应存在多个 url, 由其算法策略决定如何选择.</p>
+</blockquote>
+<ol start="2">
+<li>再看 LoadBalancerClient 的默认实现类(在 BlockingLoadBalancerClientAutoConfiguration 中配置的), 其逻辑是, 通过工厂获取 ReactorServiceInstanceLoadBalancer 对象并调用其接口执行负载均衡算法.</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// org.springframework.cloud.loadbalancer.blocking.client.BlockingLoadBalancerClient</span></span><br><span class="line"><span class="comment">// 先进入这个方法, 然后会调用第二个方法.</span></span><br><span class="line"><span class="comment">// 这两个方法其实就是从工厂获取对象执行 choose 后再让其完成请求的执行, 大部分代码都是 LoadBalancerLifecycle 的触发.</span></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> &lt;T&gt; <span class="function">T <span class="title">execute</span><span class="params">(String serviceId, LoadBalancerRequest&lt;T&gt; request)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">  <span class="comment">// 遍历 LoadBalancerLifecycle 触发 onStart 钩子</span></span><br><span class="line">  <span class="comment">// 调用 choose 方法选取一个 IP:PORT 得到包装类 ServiceInstance</span></span><br><span class="line">  <span class="comment">// 遍历 LoadBalancerLifecycle 触发 onComplete 钩子</span></span><br><span class="line">  <span class="comment">// 执行请求</span></span><br><span class="line">  String hint = getHint(serviceId);</span><br><span class="line">  LoadBalancerRequestAdapter&lt;T, DefaultRequestContext&gt; lbRequest = <span class="keyword">new</span> LoadBalancerRequestAdapter&lt;&gt;(request,</span><br><span class="line">                                                                                                    <span class="keyword">new</span> DefaultRequestContext(request, hint));</span><br><span class="line">  Set&lt;LoadBalancerLifecycle&gt; supportedLifecycleProcessors = LoadBalancerLifecycleValidator</span><br><span class="line">    .getSupportedLifecycleProcessors(</span><br><span class="line">    loadBalancerClientFactory.getInstances(serviceId, LoadBalancerLifecycle<span class="class">.<span class="keyword">class</span>),</span></span><br><span class="line"><span class="class">    <span class="title">DefaultRequestContext</span>.<span class="title">class</span>, <span class="title">Object</span>.<span class="title">class</span>, <span class="title">ServiceInstance</span>.<span class="title">class</span>)</span>;</span><br><span class="line">  supportedLifecycleProcessors.forEach(lifecycle -&gt; lifecycle.onStart(lbRequest));</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 从 serviceId 对应的容器中获取一个负载均衡算法实现类对象, 即 ReactorServiceInstanceLoadBalancer.</span></span><br><span class="line">  <span class="comment">// 调用其 choose 方法. 从响应中获取 ServiceInstance 并返回.</span></span><br><span class="line">  ServiceInstance serviceInstance = choose(serviceId, lbRequest);</span><br><span class="line">  <span class="keyword">if</span> (serviceInstance == <span class="keyword">null</span>) &#123;</span><br><span class="line">    supportedLifecycleProcessors.forEach(lifecycle -&gt; lifecycle.onComplete(</span><br><span class="line">      <span class="keyword">new</span> CompletionContext&lt;&gt;(CompletionContext.Status.DISCARD, lbRequest, <span class="keyword">new</span> EmptyResponse())));</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">"No instances available for "</span> + serviceId);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 可以执行了</span></span><br><span class="line">  <span class="keyword">return</span> execute(serviceId, serviceInstance, lbRequest);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> &lt;T&gt; <span class="function">T <span class="title">execute</span><span class="params">(String serviceId, ServiceInstance serviceInstance, LoadBalancerRequest&lt;T&gt; request)</span></span></span><br><span class="line"><span class="function">  <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">  <span class="comment">// 遍历 LoadBalancerLifecycle 触发 onStartRequest 钩子</span></span><br><span class="line">  <span class="comment">// 调用 request.apply 方法执行请求(即进入之前 LoadBalancerRequestFactory 中的代码)</span></span><br><span class="line">  <span class="comment">// 遍历 LoadBalancerLifecycle 触发 onComplete 钩子</span></span><br><span class="line"></span><br><span class="line">  DefaultResponse defaultResponse = <span class="keyword">new</span> DefaultResponse(serviceInstance);</span><br><span class="line">  Set&lt;LoadBalancerLifecycle&gt; supportedLifecycleProcessors = LoadBalancerLifecycleValidator</span><br><span class="line">    .getSupportedLifecycleProcessors(</span><br><span class="line">    loadBalancerClientFactory.getInstances(serviceId, LoadBalancerLifecycle<span class="class">.<span class="keyword">class</span>),</span></span><br><span class="line"><span class="class">    <span class="title">DefaultRequestContext</span>.<span class="title">class</span>, <span class="title">Object</span>.<span class="title">class</span>, <span class="title">ServiceInstance</span>.<span class="title">class</span>)</span>;</span><br><span class="line">  Request lbRequest = request <span class="keyword">instanceof</span> Request ? (Request) request : <span class="keyword">new</span> DefaultRequest&lt;&gt;();</span><br><span class="line">  supportedLifecycleProcessors</span><br><span class="line">    .forEach(lifecycle -&gt; lifecycle.onStartRequest(lbRequest, <span class="keyword">new</span> DefaultResponse(serviceInstance)));</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="comment">// 请求调用前先使用 transformers 对原始请求对象进行一些改变处理后再执行请求</span></span><br><span class="line">    T response = request.apply(serviceInstance);</span><br><span class="line">    Object clientResponse = getClientResponse(response);</span><br><span class="line">    supportedLifecycleProcessors</span><br><span class="line">      .forEach(lifecycle -&gt; lifecycle.onComplete(<span class="keyword">new</span> CompletionContext&lt;&gt;(CompletionContext.Status.SUCCESS,</span><br><span class="line">                                                                         lbRequest, defaultResponse, clientResponse)));</span><br><span class="line">    <span class="keyword">return</span> response;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">catch</span> (IOException iOException) &#123;</span><br><span class="line">    supportedLifecycleProcessors.forEach(lifecycle -&gt; lifecycle.onComplete(</span><br><span class="line">      <span class="keyword">new</span> CompletionContext&lt;&gt;(CompletionContext.Status.FAILED, iOException, lbRequest, defaultResponse)));</span><br><span class="line">    <span class="keyword">throw</span> iOException;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">catch</span> (Exception exception) &#123;</span><br><span class="line">    supportedLifecycleProcessors.forEach(lifecycle -&gt; lifecycle.onComplete(</span><br><span class="line">      <span class="keyword">new</span> CompletionContext&lt;&gt;(CompletionContext.Status.FAILED, exception, lbRequest, defaultResponse)));</span><br><span class="line">    ReflectionUtils.rethrowRuntimeException(exception);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>所以再看看工厂是怎么获取和存放对象的, 关键类: LoadBalancerClientFactory, 其继承自 NamedContextFactory</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 先看其如何获取对象的 LoadBalancerClientFactory#getInstance()</span></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> ReactiveLoadBalancer&lt;ServiceInstance&gt; <span class="title">getInstance</span><span class="params">(String serviceId)</span> </span>&#123;</span><br><span class="line">  <span class="comment">// 从 serviceId 对应的容器中获取一个负载均衡算法实现类对象, 即 ReactorServiceInstanceLoadBalancer.</span></span><br><span class="line">  <span class="keyword">return</span> getInstance(serviceId, ReactorServiceInstanceLoadBalancer<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// getInstance(serviceId, ReactorServiceInstanceLoadBalancer.class):</span></span><br><span class="line"><span class="keyword">public</span> &lt;T&gt; <span class="function">T <span class="title">getInstance</span><span class="params">(String name, Class&lt;T&gt; type)</span> </span>&#123;</span><br><span class="line">  AnnotationConfigApplicationContext context = getContext(name);</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> context.getBean(type);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">catch</span> (NoSuchBeanDefinitionException e) &#123;</span><br><span class="line">    <span class="comment">// ignore</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// getContext(name):</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> AnnotationConfigApplicationContext <span class="title">getContext</span><span class="params">(String name)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (!<span class="keyword">this</span>.contexts.containsKey(name)) &#123;</span><br><span class="line">    <span class="keyword">synchronized</span> (<span class="keyword">this</span>.contexts) &#123;</span><br><span class="line">      <span class="keyword">if</span> (!<span class="keyword">this</span>.contexts.containsKey(name)) &#123;</span><br><span class="line">        <span class="comment">// 结论: 容器里有点东西, 但不多...  主要是于父容器打通... 所以又啥都有了.</span></span><br><span class="line">        <span class="keyword">this</span>.contexts.put(name, createContext(name));</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">this</span>.contexts.get(name);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// createContext(name):</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> AnnotationConfigApplicationContext <span class="title">createContext</span><span class="params">(String name)</span> </span>&#123;</span><br><span class="line">  <span class="comment">// 0.结合实现类 LoadBalancerClientFactory 做出如下注释</span></span><br><span class="line">  <span class="comment">// 1.将 LoadBalancerAutoConfiguration 扫描到 configurations 注册到 name 对应的容器中.</span></span><br><span class="line">  <span class="comment">//     这里的 name 其实就是 serviceId, 也就是说, 若我们想给某个容器加入一些东西, 则实现 LoadBalancerClientSpecification 时, name 需要与 serviceId 对应起来(相同)</span></span><br><span class="line">  <span class="comment">// 2.当我上面那句没说啊... 原来 name 为 default. 开头是可以加入任意 serviceId 对应的容器的.........................(qiao)</span></span><br><span class="line">  <span class="comment">// 3.为容器加入一个占位符解析器, 和一个 defaultConfigType(=LoadBalancerClientConfiguration.class, 作用配置一些 bean)</span></span><br><span class="line">  <span class="comment">//     LoadBalancerClientConfiguration 会加入一个 RoundRobinLoadBalancer, 看来就是默认的负载均衡类了.</span></span><br><span class="line">  <span class="comment">// 4.默认为加了一个名为 loadbalancer 的 PropertySource, 里面有一个 loadbalancer.client.name=serviceId 的配置....</span></span><br><span class="line">  <span class="comment">// 5.设定父容器, 父容器通过 ApplicationContextAware 获得, 这样刚才那么辛苦的注册方式, 就仅适合于特性, 而非通用了.</span></span><br><span class="line">  <span class="comment">// 6.设置名称(啥意义呢?), 然后调用容器的 refresh() 完成容器加载</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">  AnnotationConfigApplicationContext context = <span class="keyword">new</span> AnnotationConfigApplicationContext();</span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">this</span>.configurations.containsKey(name)) &#123;</span><br><span class="line">    <span class="keyword">for</span> (Class&lt;?&gt; configuration : <span class="keyword">this</span>.configurations.get(name).getConfiguration()) &#123;</span><br><span class="line">      context.register(configuration);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">for</span> (Map.Entry&lt;String, C&gt; entry : <span class="keyword">this</span>.configurations.entrySet()) &#123;</span><br><span class="line">    <span class="keyword">if</span> (entry.getKey().startsWith(<span class="string">"default."</span>)) &#123;</span><br><span class="line">      <span class="keyword">for</span> (Class&lt;?&gt; configuration : entry.getValue().getConfiguration()) &#123;</span><br><span class="line">        context.register(configuration);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  context.register(PropertyPlaceholderAutoConfiguration<span class="class">.<span class="keyword">class</span>, <span class="title">this</span>.<span class="title">defaultConfigType</span>)</span>;</span><br><span class="line">  <span class="comment">// 默认为加了一个名为 loadbalancer 的 PropertySource, 里面有一个 loadbalancer.client.name=serviceId 的配置....</span></span><br><span class="line">  context.getEnvironment().getPropertySources().addFirst(<span class="keyword">new</span> MapPropertySource(<span class="keyword">this</span>.propertySourceName,</span><br><span class="line">                                                                               Collections.&lt;String, Object&gt;singletonMap(<span class="keyword">this</span>.propertyName, name)));</span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">this</span>.parent != <span class="keyword">null</span>) &#123;</span><br><span class="line">    <span class="comment">// Uses Environment from parent as well as beans</span></span><br><span class="line">    context.setParent(<span class="keyword">this</span>.parent);</span><br><span class="line">    <span class="comment">// jdk11 issue</span></span><br><span class="line">    <span class="comment">// https://github.com/spring-cloud/spring-cloud-netflix/issues/3101</span></span><br><span class="line">    context.setClassLoader(<span class="keyword">this</span>.parent.getClassLoader());</span><br><span class="line">  &#125;</span><br><span class="line">  context.setDisplayName(generateDisplayName(name));</span><br><span class="line">  context.refresh();</span><br><span class="line">  <span class="keyword">return</span> context;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 根据这句 context.register(PropertyPlaceholderAutoConfiguration.class, this.defaultConfigType);</span></span><br><span class="line"><span class="comment">// 而 defaultConfigType 在 LoadBalancerClientFactory 定义为 LoadBalancerClientConfiguration.class, 其配置了一个 bean, 代码如下</span></span><br><span class="line"><span class="meta">@Bean</span></span><br><span class="line"><span class="meta">@ConditionalOnMissingBean</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> ReactorLoadBalancer&lt;ServiceInstance&gt; <span class="title">reactorServiceInstanceLoadBalancer</span><span class="params">(Environment environment,</span></span></span><br><span class="line"><span class="function"><span class="params">                                                                               LoadBalancerClientFactory loadBalancerClientFactory)</span> </span>&#123;</span><br><span class="line">  String name = environment.getProperty(LoadBalancerClientFactory.PROPERTY_NAME);</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> RoundRobinLoadBalancer(</span><br><span class="line">    loadBalancerClientFactory.getLazyProvider(name, ServiceInstanceListSupplier<span class="class">.<span class="keyword">class</span>), <span class="title">name</span>)</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 这里会与服务发现结合起来, 即 loadBalancerClientFactory.getLazyProvider(name, ServiceInstanceListSupplier.class)</span></span><br><span class="line"><span class="comment">// 此方法从容器中获取能提供 ServiceInstanceListSupplier.class 类型的 BeanProvider, 其实就是能获取这种类型的 bean 呗, 然后用这个类来获取 url 列表...  具体实现要看 Nacos / Consul 了.</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 所以默认获取的负载均衡策略就是它了:  RoundRobinLoadBalancer</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>总结: 用了一个 LoadBalancerAutoConfiguration, 为 RestTemplate 加一个拦截器使得执行请求前先修改一下请求对象(主要修改url呗), 修改的步骤是 LoadBalancerClient.execute(), 里面则会使用 choose 获取微服务真实url, choose 是 ReactorLoadBalancer  的接口, 代表负载均衡策略. 啊对了, 既然是负载均衡算法, 那就是负责选取, 不负责获取才对… 于是我发现 loadBalancerClientFactory.getLazyProvider(name, ServiceInstanceListSupplier.class) 才是得到的对象, 才是获取 url 列表的代码(肯定和consul或nacos有关了)!!</p>
+<p>暗示下集出 Nacos!!</p>
+</blockquote>
+<h2 id="Cloud-Alibaba-和-Spring-Cloud-整合-Spring-Cloud-Commons-步骤-指服务注册与发现"><a href="#Cloud-Alibaba-和-Spring-Cloud-整合-Spring-Cloud-Commons-步骤-指服务注册与发现" class="headerlink" title="Cloud Alibaba 和 Spring Cloud 整合 Spring Cloud Commons 步骤(指服务注册与发现)"></a>Cloud Alibaba 和 Spring Cloud 整合 Spring Cloud Commons 步骤(指服务注册与发现)</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1.希望别太简单</span><br><span class="line">2.就不写这里了(因为还没写啊!)</span><br><span class="line">3.下集见</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="Spring-Cloud-整合-spring-cloud-loadbalancer"><a href="#Spring-Cloud-整合-spring-cloud-loadbalancer" class="headerlink" title="Spring Cloud 整合 spring-cloud-loadbalancer"></a>Spring Cloud 整合 spring-cloud-loadbalancer</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">1.pom 添加依赖即可</span><br><span class="line">2.pom 添加依赖即可</span><br><span class="line">3.pom 添加依赖即可</span><br><span class="line"></span><br><span class="line"><span class="comment"># 总结</span></span><br><span class="line">我也没想到, 没多写一个类, 直接就能用...  原理上面分析了 😭😭😭😭😭</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="Cloud-Alibaba-整合-spring-cloud-loadbalancer"><a href="#Cloud-Alibaba-整合-spring-cloud-loadbalancer" class="headerlink" title="Cloud Alibaba 整合 spring-cloud-loadbalancer"></a>Cloud Alibaba 整合 spring-cloud-loadbalancer</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">1.pom 添加依赖即可</span><br><span class="line">2.pom 添加依赖即可</span><br><span class="line">3.pom 添加依赖即可</span><br><span class="line"></span><br><span class="line"><span class="comment"># 总结</span></span><br><span class="line">我也没想到, 没多写一个类, 直接就能用...  原理上面分析了 😭😭😭😭😭</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>总结: 你没卡, 你电脑没问题, 我就是写(zhan)了(tie)两遍!!!</p>
+</blockquote>
+<h2 id="Spring-Cloud-Commons-的核心类及其作用"><a href="#Spring-Cloud-Commons-的核心类及其作用" class="headerlink" title="Spring Cloud Commons 的核心类及其作用"></a>Spring Cloud Commons 的核心类及其作用</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">1.LoadBalancerClient: 实现它就实现了负载均衡策略</span><br><span class="line">	但其实实现 ReactorServiceInstanceLoadBalancer 更简单</span><br><span class="line">2.DiscoveryClient: 实现它就实现了服务发现</span><br><span class="line">3.ServiceRegistry: 实现它就实现了服务注册</span><br><span class="line">4.ServiceInstance: 代表一个服务, 前面加个 Micro 就是微服务了 :D</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<blockquote>
+<p>PS: 就这!</p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>下次一定</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="gudqs7 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/bitcoin.png" alt="gudqs7 比特币">
+        <p>比特币</p>
+      </div>
+
+  </div>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/interview/" rel="tag"># interview</a>
+              <a href="/tags/mybatis-source/" rel="tag"># mybatis-source</a>
+              <a href="/tags/spring-mvc-source/" rel="tag"># spring-mvc-source</a>
+              <a href="/tags/jvm/" rel="tag"># jvm</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/01/25/source-code-jdk/" rel="prev" title="source-code-jdk">
+      <i class="fa fa-chevron-left"></i> source-code-jdk
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+    </div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Spring-Cloud-Commons-之-loadbalancer-源码笔记"><span class="nav-number">1.</span> <span class="nav-text">Spring Cloud Commons 之 loadbalancer 源码笔记</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#loadbalancer-原理分析"><span class="nav-number">1.1.</span> <span class="nav-text">loadbalancer 原理分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#loadbalancer-关键类解析"><span class="nav-number">1.1.1.</span> <span class="nav-text">loadbalancer 关键类解析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#类大致调用图"><span class="nav-number">1.1.2.</span> <span class="nav-text">类大致调用图</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#loadbalancer-原理分析-1"><span class="nav-number">1.1.3.</span> <span class="nav-text">loadbalancer 原理分析</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Cloud-Alibaba-和-Spring-Cloud-整合-Spring-Cloud-Commons-步骤-指服务注册与发现"><span class="nav-number">1.2.</span> <span class="nav-text">Cloud Alibaba 和 Spring Cloud 整合 Spring Cloud Commons 步骤(指服务注册与发现)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Spring-Cloud-整合-spring-cloud-loadbalancer"><span class="nav-number">1.3.</span> <span class="nav-text">Spring Cloud 整合 spring-cloud-loadbalancer</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Cloud-Alibaba-整合-spring-cloud-loadbalancer"><span class="nav-number">1.4.</span> <span class="nav-text">Cloud Alibaba 整合 spring-cloud-loadbalancer</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Spring-Cloud-Commons-的核心类及其作用"><span class="nav-number">1.5.</span> <span class="nav-text">Spring Cloud Commons 的核心类及其作用</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="gudqs7"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">gudqs7</p>
+  <div class="site-description" itemprop="description">心累没钱躺尸中</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">15</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/gudqs7" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;gudqs7" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:gudqs7@gmail.com" title="E-Mail → mailto:gudqs7@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">gudqs7</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+  function loadCount() {
+    var d = document, s = d.createElement('script');
+    s.src = 'https://gudqs7s-note.disqus.com/count.js';
+    s.id = 'dsq-count-scr';
+    (d.head || d.body).appendChild(s);
+  }
+  // defer loading until the whole page loading is completed
+  window.addEventListener('load', loadCount, false);
+</script>
+<script>
+  var disqus_config = function() {
+    this.page.url = "https://gudqs7.github.io/2021/01/27/source-code-spring-cloud-ribbon/";
+    this.page.identifier = "2021/01/27/source-code-spring-cloud-ribbon/";
+    this.page.title = "Spring Cloud Commons 之 loadbalancer 源码笔记";
+    };
+  NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {
+    if (window.DISQUS) {
+      DISQUS.reset({
+        reload: true,
+        config: disqus_config
+      });
+    } else {
+      var d = document, s = d.createElement('script');
+      s.src = 'https://gudqs7s-note.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', '' + +new Date());
+      (d.head || d.body).appendChild(s);
+    }
+  });
+</script>
+
+</body>
+</html>

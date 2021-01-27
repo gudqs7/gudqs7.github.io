@@ -25,7 +25,7 @@
   <meta name="description" content="Fomo3DFomo3D 合约源码分析准备工作环境准备 (用于调试合约) git, nodejs, Chrome ganache-cli, remix-ide  代码 及 IDE 安装好 Git 后, 下载源码 git clone https:&#x2F;&#x2F;github.com&#x2F;reedhong&#x2F;fomo3d_clone.git安装好 nodejs 后, 使用 npm 安装2个东西(建议使用国内镜像源:cn">
 <meta property="og:type" content="article">
 <meta property="og:title" content="远古Fomo3D智能合约源码分析(附送单机部署指南)">
-<meta property="og:url" content="https://gudqs7.github.io/2020/05/20/%E8%BF%9C%E5%8F%A4Fomo3D%E6%99%BA%E8%83%BD%E5%90%88%E7%BA%A6%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/index.html">
+<meta property="og:url" content="https://gudqs7.github.io/2020/05/20/soldity-source-code-memo-Fomo3D/index.html">
 <meta property="og:site_name" content="gudqs7&#39;s note">
 <meta property="og:description" content="Fomo3DFomo3D 合约源码分析准备工作环境准备 (用于调试合约) git, nodejs, Chrome ganache-cli, remix-ide  代码 及 IDE 安装好 Git 后, 下载源码 git clone https:&#x2F;&#x2F;github.com&#x2F;reedhong&#x2F;fomo3d_clone.git安装好 nodejs 后, 使用 npm 安装2个东西(建议使用国内镜像源:cn">
 <meta property="og:locale" content="zh_CN">
@@ -35,7 +35,7 @@
 <meta property="article:tag" content="Fomo3D">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="https://gudqs7.github.io/2020/05/20/%E8%BF%9C%E5%8F%A4Fomo3D%E6%99%BA%E8%83%BD%E5%90%88%E7%BA%A6%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">
+<link rel="canonical" href="https://gudqs7.github.io/2020/05/20/soldity-source-code-memo-Fomo3D/">
 
 
 <script id="page-configurations">
@@ -170,7 +170,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://gudqs7.github.io/2020/05/20/%E8%BF%9C%E5%8F%A4Fomo3D%E6%99%BA%E8%83%BD%E5%90%88%E7%BA%A6%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">
+    <link itemprop="mainEntityOfPage" href="https://gudqs7.github.io/2020/05/20/soldity-source-code-memo-Fomo3D/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -226,8 +226,8 @@
       </span>
       <span class="post-meta-item-text">Disqus：</span>
     
-    <a title="disqus" href="/2020/05/20/%E8%BF%9C%E5%8F%A4Fomo3D%E6%99%BA%E8%83%BD%E5%90%88%E7%BA%A6%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2020/05/20/远古Fomo3D智能合约源码分析/" itemprop="commentCount"></span>
+    <a title="disqus" href="/2020/05/20/soldity-source-code-memo-Fomo3D/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2020/05/20/soldity-source-code-memo-Fomo3D/" itemprop="commentCount"></span>
     </a>
   </span>
   
@@ -427,11 +427,11 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2020/05/20/%E4%BD%BF%E7%94%A8Electron%E6%89%93%E5%8C%85HTML%E6%88%90EXE/" rel="prev" title="使用Electron打包HTML成EXE">
+    <a href="/2020/05/20/how-electron-package-static-html-to-exe(dmg)/" rel="prev" title="使用Electron打包HTML成EXE">
       <i class="fa fa-chevron-left"></i> 使用Electron打包HTML成EXE
     </a></div>
       <div class="post-nav-item">
-    <a href="/2020/05/20/Go%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%EF%BC%88%E4%B8%80%EF%BC%893%E7%A7%8D%E6%96%B9%E5%BC%8F%E5%BE%97%E5%8F%98%E9%87%8F-%E5%B8%B8%E9%87%8F%E4%B8%8Eiota-%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B-int-bool-string-error-array-slice-map/" rel="next" title="Go 学习笔记(一) : 3种方式得变量 / 常量与iota / 数据类型(int,bool,string,error,array,slice,map)">
+    <a href="/2020/05/20/Go-study-memo-1-int-bool-string-error-array-slice-map/" rel="next" title="Go 学习笔记(一) : 3种方式得变量 / 常量与iota / 数据类型(int,bool,string,error,array,slice,map)">
       Go 学习笔记(一) : 3种方式得变量 / 常量与iota / 数据类型(int,bool,string,error,array,slice,map) <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
@@ -515,14 +515,14 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">14</span>
+          <span class="site-state-item-count">15</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-count">17</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
@@ -635,8 +635,8 @@
 </script>
 <script>
   var disqus_config = function() {
-    this.page.url = "https://gudqs7.github.io/2020/05/20/%E8%BF%9C%E5%8F%A4Fomo3D%E6%99%BA%E8%83%BD%E5%90%88%E7%BA%A6%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/";
-    this.page.identifier = "2020/05/20/远古Fomo3D智能合约源码分析/";
+    this.page.url = "https://gudqs7.github.io/2020/05/20/soldity-source-code-memo-Fomo3D/";
+    this.page.identifier = "2020/05/20/soldity-source-code-memo-Fomo3D/";
     this.page.title = "远古Fomo3D智能合约源码分析(附送单机部署指南)";
     };
   NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {

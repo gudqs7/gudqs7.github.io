@@ -25,7 +25,7 @@
   <meta name="description" content="Windows 下 (推荐)下载 nodejs 和 git 下载 nodejs 32 位 msi 安装包 (https:&#x2F;&#x2F;npm.taobao.org&#x2F;mirrors&#x2F;node&#x2F;v12.13.1&#x2F;node-v12.13.1-x86.msi) 下载 git 的安装包 (https:&#x2F;&#x2F;git-scm.com&#x2F;download&#x2F;win) (可能贼慢, 自行解决)  安装 nodejs 及 cnpm">
 <meta property="og:type" content="article">
 <meta property="og:title" content="使用Electron打包HTML成EXE">
-<meta property="og:url" content="https://gudqs7.github.io/2020/05/20/%E4%BD%BF%E7%94%A8Electron%E6%89%93%E5%8C%85HTML%E6%88%90EXE/index.html">
+<meta property="og:url" content="https://gudqs7.github.io/2020/05/20/how-electron-package-static-html-to-exe(dmg)/index.html">
 <meta property="og:site_name" content="gudqs7&#39;s note">
 <meta property="og:description" content="Windows 下 (推荐)下载 nodejs 和 git 下载 nodejs 32 位 msi 安装包 (https:&#x2F;&#x2F;npm.taobao.org&#x2F;mirrors&#x2F;node&#x2F;v12.13.1&#x2F;node-v12.13.1-x86.msi) 下载 git 的安装包 (https:&#x2F;&#x2F;git-scm.com&#x2F;download&#x2F;win) (可能贼慢, 自行解决)  安装 nodejs 及 cnpm">
 <meta property="og:locale" content="zh_CN">
@@ -35,7 +35,7 @@
 <meta property="article:tag" content="electron">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="https://gudqs7.github.io/2020/05/20/%E4%BD%BF%E7%94%A8Electron%E6%89%93%E5%8C%85HTML%E6%88%90EXE/">
+<link rel="canonical" href="https://gudqs7.github.io/2020/05/20/how-electron-package-static-html-to-exe(dmg)/">
 
 
 <script id="page-configurations">
@@ -170,7 +170,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://gudqs7.github.io/2020/05/20/%E4%BD%BF%E7%94%A8Electron%E6%89%93%E5%8C%85HTML%E6%88%90EXE/">
+    <link itemprop="mainEntityOfPage" href="https://gudqs7.github.io/2020/05/20/how-electron-package-static-html-to-exe(dmg)/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -222,8 +222,8 @@
       </span>
       <span class="post-meta-item-text">Disqus：</span>
     
-    <a title="disqus" href="/2020/05/20/%E4%BD%BF%E7%94%A8Electron%E6%89%93%E5%8C%85HTML%E6%88%90EXE/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2020/05/20/使用Electron打包HTML成EXE/" itemprop="commentCount"></span>
+    <a title="disqus" href="/2020/05/20/how-electron-package-static-html-to-exe(dmg)/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2020/05/20/how-electron-package-static-html-to-exe(dmg)/" itemprop="commentCount"></span>
     </a>
   </span>
   
@@ -350,7 +350,7 @@
       <i class="fa fa-chevron-left"></i> Design-Patterns
     </a></div>
       <div class="post-nav-item">
-    <a href="/2020/05/20/%E8%BF%9C%E5%8F%A4Fomo3D%E6%99%BA%E8%83%BD%E5%90%88%E7%BA%A6%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" rel="next" title="远古Fomo3D智能合约源码分析(附送单机部署指南)">
+    <a href="/2020/05/20/soldity-source-code-memo-Fomo3D/" rel="next" title="远古Fomo3D智能合约源码分析(附送单机部署指南)">
       远古Fomo3D智能合约源码分析(附送单机部署指南) <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
@@ -434,14 +434,14 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">14</span>
+          <span class="site-state-item-count">15</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-count">17</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
@@ -554,8 +554,8 @@
 </script>
 <script>
   var disqus_config = function() {
-    this.page.url = "https://gudqs7.github.io/2020/05/20/%E4%BD%BF%E7%94%A8Electron%E6%89%93%E5%8C%85HTML%E6%88%90EXE/";
-    this.page.identifier = "2020/05/20/使用Electron打包HTML成EXE/";
+    this.page.url = "https://gudqs7.github.io/2020/05/20/how-electron-package-static-html-to-exe(dmg)/";
+    this.page.identifier = "2020/05/20/how-electron-package-static-html-to-exe(dmg)/";
     this.page.title = "使用Electron打包HTML成EXE";
     };
   NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {

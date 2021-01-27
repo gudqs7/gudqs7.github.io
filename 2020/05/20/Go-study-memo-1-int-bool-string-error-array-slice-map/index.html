@@ -25,7 +25,7 @@
   <meta name="description" content="为了基础的基础package , import1234567package mainimport &quot;fmt&quot;func main()&amp;#123;	fmt.Println(&quot;Hello World !&quot;)&amp;#125;  包 , 与python类似, 与java不同. 用于模块化. 通过声明包, 和导入包可以实现程序的相互调用. 如 导入 fmt , 使用fmt的函数Println()main.main">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Go 学习笔记(一) : 3种方式得变量 &#x2F; 常量与iota &#x2F; 数据类型(int,bool,string,error,array,slice,map)">
-<meta property="og:url" content="https://gudqs7.github.io/2020/05/20/Go%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%EF%BC%88%E4%B8%80%EF%BC%893%E7%A7%8D%E6%96%B9%E5%BC%8F%E5%BE%97%E5%8F%98%E9%87%8F-%E5%B8%B8%E9%87%8F%E4%B8%8Eiota-%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B-int-bool-string-error-array-slice-map/index.html">
+<meta property="og:url" content="https://gudqs7.github.io/2020/05/20/Go-study-memo-1-int-bool-string-error-array-slice-map/index.html">
 <meta property="og:site_name" content="gudqs7&#39;s note">
 <meta property="og:description" content="为了基础的基础package , import1234567package mainimport &quot;fmt&quot;func main()&amp;#123;	fmt.Println(&quot;Hello World !&quot;)&amp;#125;  包 , 与python类似, 与java不同. 用于模块化. 通过声明包, 和导入包可以实现程序的相互调用. 如 导入 fmt , 使用fmt的函数Println()main.main">
 <meta property="og:locale" content="zh_CN">
@@ -35,7 +35,7 @@
 <meta property="article:tag" content="learn-go">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="https://gudqs7.github.io/2020/05/20/Go%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%EF%BC%88%E4%B8%80%EF%BC%893%E7%A7%8D%E6%96%B9%E5%BC%8F%E5%BE%97%E5%8F%98%E9%87%8F-%E5%B8%B8%E9%87%8F%E4%B8%8Eiota-%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B-int-bool-string-error-array-slice-map/">
+<link rel="canonical" href="https://gudqs7.github.io/2020/05/20/Go-study-memo-1-int-bool-string-error-array-slice-map/">
 
 
 <script id="page-configurations">
@@ -170,7 +170,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://gudqs7.github.io/2020/05/20/Go%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%EF%BC%88%E4%B8%80%EF%BC%893%E7%A7%8D%E6%96%B9%E5%BC%8F%E5%BE%97%E5%8F%98%E9%87%8F-%E5%B8%B8%E9%87%8F%E4%B8%8Eiota-%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B-int-bool-string-error-array-slice-map/">
+    <link itemprop="mainEntityOfPage" href="https://gudqs7.github.io/2020/05/20/Go-study-memo-1-int-bool-string-error-array-slice-map/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -222,8 +222,8 @@
       </span>
       <span class="post-meta-item-text">Disqus：</span>
     
-    <a title="disqus" href="/2020/05/20/Go%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%EF%BC%88%E4%B8%80%EF%BC%893%E7%A7%8D%E6%96%B9%E5%BC%8F%E5%BE%97%E5%8F%98%E9%87%8F-%E5%B8%B8%E9%87%8F%E4%B8%8Eiota-%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B-int-bool-string-error-array-slice-map/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2020/05/20/Go学习笔记（一）3种方式得变量-常量与iota-数据类型-int-bool-string-error-array-slice-map/" itemprop="commentCount"></span>
+    <a title="disqus" href="/2020/05/20/Go-study-memo-1-int-bool-string-error-array-slice-map/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2020/05/20/Go-study-memo-1-int-bool-string-error-array-slice-map/" itemprop="commentCount"></span>
     </a>
   </span>
   
@@ -322,11 +322,11 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2020/05/20/%E8%BF%9C%E5%8F%A4Fomo3D%E6%99%BA%E8%83%BD%E5%90%88%E7%BA%A6%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" rel="prev" title="远古Fomo3D智能合约源码分析(附送单机部署指南)">
+    <a href="/2020/05/20/soldity-source-code-memo-Fomo3D/" rel="prev" title="远古Fomo3D智能合约源码分析(附送单机部署指南)">
       <i class="fa fa-chevron-left"></i> 远古Fomo3D智能合约源码分析(附送单机部署指南)
     </a></div>
       <div class="post-nav-item">
-    <a href="/2020/05/20/Go%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%EF%BC%88%E4%BA%8C%EF%BC%89%E6%B5%81%E7%A8%8B%E6%8E%A7%E5%88%B6-if-for-switch-%E4%B8%8E-%E5%87%BD%E6%95%B0-%E4%B8%8E-struct-%E5%8C%BF%E5%90%8D%E5%AD%97%E6%AE%B5/" rel="next" title="Go学习笔记 (二) : 流程控制(if,for,switch) 与 函数 与 struct (匿名字段)">
+    <a href="/2020/05/20/Go-study-memo-2-if-for-switch-and-func-struct/" rel="next" title="Go学习笔记 (二) : 流程控制(if,for,switch) 与 函数 与 struct (匿名字段)">
       Go学习笔记 (二) : 流程控制(if,for,switch) 与 函数 与 struct (匿名字段) <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
@@ -410,14 +410,14 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">14</span>
+          <span class="site-state-item-count">15</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-count">17</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
@@ -530,8 +530,8 @@
 </script>
 <script>
   var disqus_config = function() {
-    this.page.url = "https://gudqs7.github.io/2020/05/20/Go%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%EF%BC%88%E4%B8%80%EF%BC%893%E7%A7%8D%E6%96%B9%E5%BC%8F%E5%BE%97%E5%8F%98%E9%87%8F-%E5%B8%B8%E9%87%8F%E4%B8%8Eiota-%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B-int-bool-string-error-array-slice-map/";
-    this.page.identifier = "2020/05/20/Go学习笔记（一）3种方式得变量-常量与iota-数据类型-int-bool-string-error-array-slice-map/";
+    this.page.url = "https://gudqs7.github.io/2020/05/20/Go-study-memo-1-int-bool-string-error-array-slice-map/";
+    this.page.identifier = "2020/05/20/Go-study-memo-1-int-bool-string-error-array-slice-map/";
     this.page.title = "Go 学习笔记(一) : 3种方式得变量 / 常量与iota / 数据类型(int,bool,string,error,array,slice,map)";
     };
   NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {
