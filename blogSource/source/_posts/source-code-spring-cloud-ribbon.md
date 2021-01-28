@@ -120,6 +120,8 @@ A6--获取-->A7(ServiceInstance)
 
 
 
+![a copy](https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210127212226.png)
+
 
 
 > 瞅瞅有哪些负载均衡策略吧(看完发现这才是最简单的... 外面那些结构反而不容易理清)
