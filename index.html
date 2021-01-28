@@ -803,6 +803,112 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://gudqs7.github.io/2021/01/28/source-code-spring-cloud-openfeign/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="gudqs7">
+      <meta itemprop="description" content="心累没钱躺尸中">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="gudqs7's note">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2021/01/28/source-code-spring-cloud-openfeign/" class="post-title-link" itemprop="url">Spring Cloud Openfeign 源码笔记</a>
+        </h2>
+
+        <div class="post-meta">
+			
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-01-28 13:59:51 / 修改时间：20:46:12" itemprop="dateCreated datePublished" datetime="2021-01-28T13:59:51+08:00">2021-01-28</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Spring/" itemprop="url" rel="index"><span itemprop="name">Spring</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/SourceCode/" itemprop="url" rel="index"><span itemprop="name">SourceCode</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Spring-Cloud-Openfeign/" itemprop="url" rel="index"><span itemprop="name">Spring Cloud Openfeign</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2021/01/28/source-code-spring-cloud-openfeign/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2021/01/28/source-code-spring-cloud-openfeign/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="Spring-Cloud-Openfeign-源码笔记"><a href="#Spring-Cloud-Openfeign-源码笔记" class="headerlink" title="Spring Cloud Openfeign 源码笔记"></a>Spring Cloud Openfeign 源码笔记</h1><h2 id="关键类分析"><a href="#关键类分析" class="headerlink" title="关键类分析"></a>关键类分析</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 1.FeignAutoConfiguration</span></span><br><span class="line">  配置了一个管理 feign 子容器的工厂(FeignContext). </span><br><span class="line">  配置一个 Targeter, 直接中专 fegin 的 target 方法(DefaultTargeter, 这里扩展可以实现降级哦)</span><br><span class="line">  配置了一个 feign client (ApacheHttpClient), 用于执行 HTTP 请求</span><br><span class="line">  还配备了 ok http client 方式的 feign client, 但默认不启用</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2.FeignClientsRegistrar</span></span><br><span class="line">  被 @EnableFeignClients 引入</span><br><span class="line">  扫描带 @FeignClient 注解的接口, 生成代理对象(FeignClientFactoryBean)注册到容器中</span><br><span class="line"></span><br><span class="line"><span class="comment"># 3.FeignClientFactoryBean</span></span><br><span class="line">  继承自 FactoryBean, Spring 的东西, getBean() 时调用跳转到 getObject()</span><br><span class="line">  getObject() 会调用通过 feign 对象生成代理对象</span><br><span class="line"></span><br><span class="line"><span class="comment"># 4.FeignInvocationHandler</span></span><br><span class="line">	JDK 动态代理生成对象的的方法拦截器</span><br><span class="line">	通过调用 SynchronousMethodHandler 的 invoke() 实现发送请求的功能</span><br><span class="line"></span><br><span class="line"><span class="comment"># 5.SynchronousMethodHandler</span></span><br><span class="line">	invoke() 会调用 FeignBlockingLoadBalancerClient 的 execute() 通过负载均衡获取 url 再调用 ApacheHttpClient 的 execute() 发送带实际 url 的 HTTP 请求.</span><br><span class="line"></span><br><span class="line"><span class="comment"># 6.ParseHandlersByName</span></span><br><span class="line">	具有核心方法 apply, 解析 @FeignClient 接口的所有方法的注解和参数信息, 转化为 RequestTemplate, 可用于构造 HTTP 请求对象. 转化后的信息存于 SynchronousMethodHandler 字段中.</span><br><span class="line"></span><br><span class="line"><span class="comment"># 7.FeignBlockingLoadBalancerClient</span></span><br><span class="line">	execute() 会调用 LoadBalancerClient 的 choose() 根据 serviceId(即 HTTP 的 host) 获取 url.</span><br><span class="line">	还负责调用 ApacheHttpClient 的 execute() 真正的发送 HTTP 请求.</span><br><span class="line"></span><br><span class="line"><span class="comment"># 8.LoadBalancerClient</span></span><br><span class="line">  commons 下 loadbalancer 项目的老伙计了... 干啥的来着? 忘了</span><br><span class="line"></span><br><span class="line"><span class="comment"># 9.ApacheHttpClient</span></span><br><span class="line">	负责发送 HTTP 请求.</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="openfeign-原理-EnableFeignClients-生效步骤"><a href="#openfeign-原理-EnableFeignClients-生效步骤" class="headerlink" title="openfeign 原理(@EnableFeignClients 生效步骤)"></a>openfeign 原理(@EnableFeignClients 生效步骤)</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">1.先解析 @EnableFeignClients 导入 FeignClientsRegistrar.class</span><br><span class="line">2.FeignClientsRegistrar 将扫描带 @FeignClient 注解的接口, 注册到容器中</span><br><span class="line">3.注册进容器的是一个 FeignClientFactoryBean</span><br><span class="line">4.FeignClientFactoryBean 其本质是一个 FactoryBean, 会在被 getBean() 时调用 getObject()</span><br><span class="line">5.getObject() 会从容器中取 Feign.Builder builder 对象再根据配置文件进行配置 </span><br><span class="line">6.接着会走 Targeter 对象(默认为 DefaultTargeter)的 target(), 其默认为 builder.target(target); 其中 builder 为 Feign.Builder 对象, target 为 <span class="built_in">type</span>(class), name(serviceId), url(http://name/path)</span><br><span class="line">7.target() 会先调用 build()生成一个 feign 对象, 再调用 feign.newInstance(target) 生成一个代理对象</span><br><span class="line">8.先看 build() 方法, 初始化了重要属性 targetToHandlersByName, 值为 new ParseHandlersByName(), 这个类的 apply() 会在过一会用到. apply() 逻辑是遍历挨个解析方法上的注解(如@RequestMapping, @RequestParam, @PathVariable等等)和参数, 转化后包装成 HTTP 请求相关的实体类, 存到 SynchronousMethodHandler 的字段中, 再返回 SynchronousMethodHandler 对象存到 map 里.</span><br><span class="line">9.再看 feign.newInstance(), 先调用刚说的重要属性 targetToHandlersByName.apply(), 获得一个 map, 里面键大致为类名+方法名+形参组成, 值是 SynchronousMethodHandler 对象(见 SynchronousMethodHandler.Factory.create()), 然后遍历代理类的所有方法, 将方法所对应的 SynchronousMethodHandler 从 map 中取出再存到另一个 map, 这个 map 的键则为 method; 接着使用 JDK 动态代理生成一个代理对象, 其用于拦截方法的类 InvocationHandler 具体为 FeignInvocationHandler, 这个类里面的 invoke 逻辑很简单, 先排除 Object 通用的方法的影响, 对于正常方法会调用 SynchronousMethodHandler 的 invoke()... 闹了半天就是个中转呗, 有类的 Handler 到了方法的 MethodHandler.</span><br><span class="line">10.SynchronousMethodHandler 的 invoke() 的核心代码是 this.client.execute(), 这里会走到 feign.Client 的具体实现类. 可能是 ApacheHttpClient(当 url 有地址时), 那就直接执行请求了, 也可能是 FeignBlockingLoadBalancerClient, 那么会调用 loadBalancerClient 的 choose 方法获取 url, 再执行 feignClient.execute(), 这次这个 feignClient 则肯定是 ApacheHttpClient 了, 于是最终就这样发送了请求.</span><br><span class="line"></span><br><span class="line"><span class="comment">#PS: </span></span><br><span class="line">有人问我(无中生友)发送的 HTTP 请求怎么构建? </span><br><span class="line">其实我上面说的很清楚了, 关键就在于 apply(), 好吧, 我说的具体一点... 关键在于 SpringMvcContract<span class="comment">#parseAndValidateMetadata()</span></span><br><span class="line">这个的入口在 apply() 的第一行, this.contract.parseAndValidateMetadata() 一直往里跳转, 就会进入 SpringMvcContract...  具体代码挺多的... 真的没必要细读... 因为其本身只相当于一个工具类, 而读源码应该放眼大局, 否则每段代码都认真读, 那太难了!!!</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>总结: 扫描 @FeignClient, 生成代理对象, 扔进容器. 拦截代理对象的方法, 调用方法对应的 SynchronousMethodHandler, 此类调用之前解析好的 RequestTemplate 生成请求对象, 再通过 Client 执行请求, 若配置了负载均衡, 则会调用 LoadBalancerClient 将 serviceId 先解析成具体的地址再转交给 ApacheHttpClient 执行请求.</p>
+</blockquote>
+<h2 id="代理对象的生成步骤"><a href="#代理对象的生成步骤" class="headerlink" title="代理对象的生成步骤"></a>代理对象的生成步骤</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">graph TB</span><br><span class="line"></span><br><span class="line">A1(FeignClientFactoryBean)</span><br><span class="line">A2(Feign.Builder)</span><br><span class="line">A3(Feign)</span><br><span class="line">A4(FeignInvocationHandler)</span><br><span class="line">A5(SynchronousMethodHandler)</span><br><span class="line">A6(FeignBlockingLoadBalancerClient)</span><br><span class="line">A7(ApacheHttpClient)</span><br><span class="line">A8(LoadBalancerClient)</span><br><span class="line">A9(ServiceInstance)</span><br><span class="line">A10(Response)</span><br><span class="line">A11(Decoder 链)</span><br><span class="line"></span><br><span class="line">A1--getObject 触发--&gt;A2</span><br><span class="line">A2--build 得到--&gt;A3</span><br><span class="line">A3--Proxy.newProxyInstance 用到--&gt;A4</span><br><span class="line">A4--invoke 里调用--&gt;A5</span><br><span class="line">A5--invoke 里调用--&gt;A6</span><br><span class="line">A6--execute 中先调用 --&gt;A8</span><br><span class="line">A6--execute 中后调用--&gt;A7</span><br><span class="line">A8--获取--&gt;A9</span><br><span class="line">A7--得到--&gt;A10</span><br><span class="line">A10--交给--&gt;A11</span><br><span class="line">A11--编码得到--&gt;A12(json)</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210128204558.png" alt="iShot2021-01-28 20.45.21"></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://gudqs7.github.io/2021/01/27/source-code-spring-cloud-ribbon/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1797,245 +1903,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://gudqs7.github.io/2020/05/20/soldity-source-code-memo-Fomo3D/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="gudqs7">
-      <meta itemprop="description" content="心累没钱躺尸中">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="gudqs7's note">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/05/20/soldity-source-code-memo-Fomo3D/" class="post-title-link" itemprop="url">远古Fomo3D智能合约源码分析(附送单机部署指南)</a>
-        </h2>
-
-        <div class="post-meta">
-			
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-05-20 09:05:21" itemprop="dateCreated datePublished" datetime="2020-05-20T09:05:21+08:00">2020-05-20</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-01-22 13:39:17" itemprop="dateModified" datetime="2021-01-22T13:39:17+08:00">2021-01-22</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/blockchain/" itemprop="url" rel="index"><span itemprop="name">blockchain</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/blockchain/solidity/" itemprop="url" rel="index"><span itemprop="name">solidity</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/2020/05/20/soldity-source-code-memo-Fomo3D/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2020/05/20/soldity-source-code-memo-Fomo3D/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="Fomo3D"><a href="#Fomo3D" class="headerlink" title="Fomo3D"></a>Fomo3D</h1><h2 id="Fomo3D-合约源码分析"><a href="#Fomo3D-合约源码分析" class="headerlink" title="Fomo3D 合约源码分析"></a>Fomo3D 合约源码分析</h2><h3 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h3><h4 id="环境准备-用于调试合约"><a href="#环境准备-用于调试合约" class="headerlink" title="环境准备 (用于调试合约)"></a>环境准备 (用于调试合约)</h4><ul>
-<li>git, nodejs, Chrome</li>
-<li>ganache-cli, remix-ide</li>
-</ul>
-<h4 id="代码-及-IDE"><a href="#代码-及-IDE" class="headerlink" title="代码 及 IDE"></a>代码 及 IDE</h4><blockquote>
-<p>安装好 Git 后, 下载源码 <code>git clone https://github.com/reedhong/fomo3d_clone.git</code><br>安装好 nodejs 后, 使用 npm 安装2个东西(建议使用国内镜像源:cnpm)<br><code>npm install ganache-cli -g &amp; npm install remix-ide -g</code>  </p>
-</blockquote>
-<blockquote>
-<p>至于IDE 上的选择, 只要 IDE 支持 sol 语法, 如 idea 就有 solidity 插件, 亦或者 vscode 也很棒, 而且中文支持比较好, 还对于大文件 js 及 json 打开速度比较快, 编辑也比较流畅( idea 可能是插件太多, 各种语法解析比较卡)</p>
-</blockquote>
-<h3 id="源码结构"><a href="#源码结构" class="headerlink" title="源码结构"></a>源码结构</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">+-- interface	 </span><br><span class="line">|	 +-- DiviesInterface.sol</span><br><span class="line">|	 +-- F3DexternalSettingsInterface.sol</span><br><span class="line">|	 +-- HourglassInterface.sol</span><br><span class="line">|	 +-- JIincForwarderInterface.sol</span><br><span class="line">|	 +-- JIincInterfaceForForwarder.sol</span><br><span class="line">|	 +-- PlayerBookInterface.sol</span><br><span class="line">|	 +-- PlayerBookReceiverInterface.sol</span><br><span class="line">|	 +-- TeamJustInterface.sol</span><br><span class="line">|	 +-- otherFoMo3D.sol</span><br><span class="line">+-- library	</span><br><span class="line">|	 +-- F3DKeysCalcLong.sol</span><br><span class="line">|	 +-- F3Ddatasets.sol</span><br><span class="line">|	 +-- MSFun.sol	</span><br><span class="line">|	 +-- NameFilter.sol</span><br><span class="line">|	 +-- SafeMath.sol	</span><br><span class="line">|	 +-- UintCompressor.sol</span><br><span class="line">+-- Divies.sol</span><br><span class="line">+-- F3Devents.sol	</span><br><span class="line">+-- F3DexternalSettings.sol	</span><br><span class="line">+-- FoMo3Dlong.sol	</span><br><span class="line">+-- Hourglass.sol	</span><br><span class="line">+-- JIincForwarder.sol</span><br><span class="line">+-- PlayerBook.sol	</span><br><span class="line">+-- TeamJust.sol	</span><br><span class="line">+-- modularLong.sol</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>以上就是 reed 大佬整理的源码结构, 看到这么多文件, 心里感觉好慌, 别怕, 其实大多数文件都是摆设, 没有太多逻辑代码, 我们主要需要看的, 也就是那么几个合约, 既然如此, 我们先排除一些用处不大, 非游戏关键核心的合约</p>
-</blockquote>
-<h3 id="各大收款合约"><a href="#各大收款合约" class="headerlink" title="各大收款合约"></a>各大收款合约</h3><ul>
-<li>JIincForwarder.sol (JIincForwarderInterface 类型变量的实际引用), 用于向项目基金会转账</li>
-<li>otherFoMo3D.sol (游戏 activate 前必须设置的 otherFomo 变量的实际引用), 向不知道哪个地址转账</li>
-<li>Divies.sol (DeviesInterface 类型变量的实际引用), 用于 p3d 分红</li>
-</ul>
-<h4 id="JIincForwarder-sol"><a href="#JIincForwarder-sol" class="headerlink" title="JIincForwarder.sol"></a>JIincForwarder.sol</h4><blockquote>
-<p>这个合约就是向 基金会地址 转发 ether, 单独写一个中转的好处就是灵活, 这个合约可以做到基金会地址安全转移, 也就是说中途可以改变基金会的转账地址, 而这个过程需要新旧2个合约共同完成(旧.startMigration(新地址)–&gt; 新.finishMigration(), 中途 旧方可以 旧.cancelMigration(), 而完成地址转移后, 新地址完全替代旧地址 )<br>其中比较转账逻辑就是调用下面的这个接口对应的实际合约 的 deposit 方法 </p>
-</blockquote>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">interface JIincInterfaceForForwarder &#123;</span><br><span class="line">    function deposit(address _addr) external payable returns (bool);</span><br><span class="line">    function migrationReceiver_setup() external returns (bool);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>至于现在这个基金会的地址到底是啥, 可以通过 status() 方法查看哦</p>
-</blockquote>
-<h4 id="otherFoMo3D-sol"><a href="#otherFoMo3D-sol" class="headerlink" title="otherFoMo3D.sol"></a>otherFoMo3D.sol</h4><blockquote>
-<p>这个合约很有意思, 或者说它的背后很有意思, 大家都想知道 其他的 fomo 到底是啥, 据说不是 soon 版<br>至于逻辑上, 这个 potSwap 的调用时机是在玩家买 key 的时候, 而它的作用, 我认为是游戏间的奖池交换<br>比如说, fomolong 共有100个 ether 买入, 那么就会有1%流向 otherFomo 的奖池, 同理, otherFomo 里应该也会有这个逻辑的存在, 这么做有啥用就交给大家自己思考了</p>
-</blockquote>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">interface otherFoMo3D &#123;</span><br><span class="line">    function potSwap() external payable;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">fomo3Dlong 代码: (fomo3Dlong本身也可以是一个 otherFomo, 甚至在 真正的otherFomo 里它的那个 otherFomo 就是 fomo3Dlong 也不一定)</span><br><span class="line"></span><br><span class="line">function potSwap()</span><br><span class="line">    external</span><br><span class="line">    payable</span><br><span class="line">&#123;</span><br><span class="line">    &#x2F;&#x2F; setup local rID</span><br><span class="line">    uint256 _rID &#x3D; rID_ + 1;</span><br><span class="line">    </span><br><span class="line">    round_[_rID].pot &#x3D; round_[_rID].pot.add(msg.value); &#x2F;&#x2F; 奖池金额增加</span><br><span class="line">    emit F3Devents.onPotSwapDeposit(_rID, msg.value);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h4 id="Divies-sol"><a href="#Divies-sol" class="headerlink" title="Divies.sol"></a>Divies.sol</h4><blockquote>
-<p>这部分是给 P3D 分红的, 代码很简单, 就一个转账的调用, 调用时机上, 首先是买 key 的钱被瓜分时, 有它的一份, 其次当一轮 (Round) 结束后, 又会根据赢的队伍来分配奖池, 抽出一部分给到 P3D</p>
-</blockquote>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">interface DiviesInterface &#123;</span><br><span class="line">    function deposit() external payable;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>当然这其中如何给 P3D 分红我还没搞太懂, 大致流程貌似是: 买 key分红 –&gt; 调用 Divies 的 deposit 方法, Divies 合约中此方法无具体实现(空方法, 啥也不干, 就收钱) –&gt; 预计什么时候会有 P3D 的玩家来调用这个合约的 distribute 方法, 而 这个方法的作用似乎是将 分红转来的钱拿去投入 P3D, 然后卖出, 根据传入的百分比决定是否继续投入或重复投入和售出多少次, 最后把钱提现回来(可能就没多少了), 而钱通过10% 的分红机制全给了 P3D 的用户??? 这一块一直不太懂, 而且这个方法的 调用时机不明, 调用时还增加了 时间限制和拥挤队列的限制. 总的将这里面就是存在给 P3D 分红的钱, 但这钱啥时候 给 P3D, 我还是没猜出来.</p>
-</blockquote>
-<h3 id="3大合约"><a href="#3大合约" class="headerlink" title="3大合约"></a>3大合约</h3><blockquote>
-<p>光是转账合约就感觉有些看不懂了, 真是头疼啊, 只好把不懂的放下, 留待日后琢磨. 还是先分析游戏核心代码吧</p>
-</blockquote>
-<ul>
-<li>TeamJust.sol</li>
-<li>PlayerBook.sol</li>
-<li>FoMo3Dlong.sol</li>
-</ul>
-<h4 id="TeamJust-sol"><a href="#TeamJust-sol" class="headerlink" title="TeamJust.sol"></a>TeamJust.sol</h4><blockquote>
-<p>首先看 TeamJust.sol , 这个是用来做权限控制的, 里面 除了与 muitiSig( 这个以后说 )相关的几个方法, 也就是管理 admin 和 dev 了, 如 <code>addAdmin</code> <code>removeAdmin</code>, 而 <code>isDev</code> <code>isAdmin</code> 则是拿来给其他合约调用(比如 playerBook 的 onlyDevs) </p>
-</blockquote>
- <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">function setup(address _addr)</span><br><span class="line">    onlyDevs()</span><br><span class="line">    public</span><br><span class="line">&#123;</span><br><span class="line">    require( address(Jekyll_Island_Inc) &#x3D;&#x3D; address(0) );</span><br><span class="line">    Jekyll_Island_Inc &#x3D; JIincForwarderInterface(_addr);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>经过我的观察发现, 这个 teamJust 合约应该是比较后加的, 比如 fomo3Dlong 合约的激活就没有使用, 而2个合约不同的对于 <code>Jekyll_Island_Inc</code> 的赋值也让我推测这可能是较新的写法. 我也觉得这种通过调用合约赋值的方式比较好, 所以在我整的 项目 <a href="https://github.com/gudqs7/fomo3d_truffle" target="_blank" rel="noopener">fomo3d_truffle</a> 中, 我把 activate 函数的用户限制 也改成了 用 teamJust 来做, 而 其中的 playerBook 和 teamJust 实际合约地址也是通过 类似上面 setup 的方式 赋值, 这么做还有个好处就是可以通过 truffle 一键把这些合约部署且赋值, 而不是弄一个改源码重新编译这种测试起来比较麻烦的方式</p>
-</blockquote>
-<h4 id="PlayerBook-sol"><a href="#PlayerBook-sol" class="headerlink" title="PlayerBook.sol"></a>PlayerBook.sol</h4><blockquote>
-<p>这个合约主要是管理 玩家信息, 而玩家信息则分为 name, id, addr, id 是根据地址是否存在自增生成的, 而 name 则是通过 花钱注册可用于推广获取提成的! 合约内大多方法都像个数据库一样均为 crud 操作, 夹带的逻辑无非就是一些验证, 其他的都比较少, 里面比较有意思的点就是 addGame </p>
-</blockquote>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">function addGame(address _gameAddress, string _gameNameStr)</span><br><span class="line">    onlyDevs()</span><br><span class="line">    public</span><br><span class="line">&#123;</span><br><span class="line">    require(gameIDs_[_gameAddress] &#x3D;&#x3D; 0, &quot;derp, that games already been registered&quot;);</span><br><span class="line">    </span><br><span class="line">    if (multiSigDev(&quot;addGame&quot;) &#x3D;&#x3D; true)</span><br><span class="line">    &#123;deleteProposal(&quot;addGame&quot;);</span><br><span class="line">        gID_++;</span><br><span class="line">        bytes32 _name &#x3D; _gameNameStr.nameFilter();</span><br><span class="line">        gameIDs_[_gameAddress] &#x3D; gID_;</span><br><span class="line">        gameNames_[_gameAddress] &#x3D; _name;</span><br><span class="line">        games_[gID_] &#x3D; PlayerBookReceiverInterface(_gameAddress);</span><br><span class="line">    </span><br><span class="line">        games_[gID_].receivePlayerInfo(1, plyr_[1].addr, plyr_[1].name, 0);</span><br><span class="line">        games_[gID_].receivePlayerInfo(2, plyr_[2].addr, plyr_[2].name, 0);</span><br><span class="line">        games_[gID_].receivePlayerInfo(3, plyr_[3].addr, plyr_[3].name, 0);</span><br><span class="line">        games_[gID_].receivePlayerInfo(4, plyr_[4].addr, plyr_[4].name, 0);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>这里是把 fomo3Dlong 的地址和名称传入, 然后就会通过接口向 fomo3Dlong 传入几个预设的玩家信息(来自 playerbook的构造方法), 而调用过这个方法后, <code>registerNameXxxxFromDapp</code> 这样的方法才能不被 <code>isRegisteredGame</code> 拦截. 所以部署时, 这一步是必做的.   </p>
-</blockquote>
-<blockquote>
-<p>其他的几个点: 可设置的注册费用, 且费用被转到基金会;  购买 key 邀请分红总是和访问的链接的推广码有关, 只有在无推广码时, 才从历史中获取 laff, 而 laff 每访问一个推广码(并买了 key)都在改变</p>
-</blockquote>
-<h4 id="FoMo3Dlong-sol"><a href="#FoMo3Dlong-sol" class="headerlink" title="FoMo3Dlong.sol"></a>FoMo3Dlong.sol</h4><blockquote>
-<p>主要合约啊, 先看下 所有的 state 变量</p>
-</blockquote>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">string constant public name &#x3D; &quot;FoMo3D Long Official&quot;;</span><br><span class="line">string constant public symbol &#x3D; &quot;F3D&quot;;</span><br><span class="line">uint256 private rndExtra_ &#x3D; extSettings.getLongExtra();     &#x2F;&#x2F; length of the very first ICO </span><br><span class="line">uint256 private rndGap_ &#x3D; extSettings.getLongGap();         &#x2F;&#x2F; length of ICO phase, set to 1 year for EOS.</span><br><span class="line">uint256 constant private rndInit_ &#x3D; 1 hours;                &#x2F;&#x2F; round timer starts at this</span><br><span class="line">uint256 constant private rndInc_ &#x3D; 30 seconds;              &#x2F;&#x2F; every full key purchased adds this much to the timer</span><br><span class="line">uint256 constant private rndMax_ &#x3D; 24 hours;                &#x2F;&#x2F; max length a round timer can be  </span><br><span class="line">uint256 public airDropPot_;             &#x2F;&#x2F; person who gets the airdrop wins part of this pot</span><br><span class="line">uint256 public airDropTracker_ &#x3D; 0;     &#x2F;&#x2F; incremented each time a &quot;qualified&quot; tx occurs.  used to determine winning air drop</span><br><span class="line">uint256 public rID_;  </span><br><span class="line"></span><br><span class="line">mapping (address &#x3D;&gt; uint256) public pIDxAddr_;          &#x2F;&#x2F; (addr &#x3D;&gt; pID) returns player id by address</span><br><span class="line">mapping (bytes32 &#x3D;&gt; uint256) public pIDxName_;          &#x2F;&#x2F; (name &#x3D;&gt; pID) returns player id by name</span><br><span class="line">mapping (uint256 &#x3D;&gt; F3Ddatasets.Player) public plyr_;   &#x2F;&#x2F; (pID &#x3D;&gt; data) player data</span><br><span class="line">mapping (uint256 &#x3D;&gt; mapping (uint256 &#x3D;&gt; F3Ddatasets.PlayerRounds)) public plyrRnds_;    &#x2F;&#x2F; (pID &#x3D;&gt; rID &#x3D;&gt; data) player round data by player id &amp; round id</span><br><span class="line">mapping (uint256 &#x3D;&gt; mapping (bytes32 &#x3D;&gt; bool)) public plyrNames_; &#x2F;&#x2F; (pID &#x3D;&gt; name &#x3D;&gt; bool) list of names a player owns.  (used so you can change your display name amongst any name you own)</span><br><span class="line"></span><br><span class="line">mapping (uint256 &#x3D;&gt; F3Ddatasets.Round) public round_;   &#x2F;&#x2F; (rID &#x3D;&gt; data) round data</span><br><span class="line">mapping (uint256 &#x3D;&gt; mapping(uint256 &#x3D;&gt; uint256)) public rndTmEth_;      &#x2F;&#x2F; (rID &#x3D;&gt; tID &#x3D;&gt; data) eth in per team, by round id and team id</span><br><span class="line"></span><br><span class="line">mapping (uint256 &#x3D;&gt; F3Ddatasets.TeamFee) public fees_;          &#x2F;&#x2F; (team &#x3D;&gt; fees) fee distribution by team</span><br><span class="line">mapping (uint256 &#x3D;&gt; F3Ddatasets.PotSplit) public potSplit_;     &#x2F;&#x2F; (team &#x3D;&gt; fees) pot split distribution by team</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>大部分都可以通过 变量名 猜出个大概, 实在不行可以搜索大致看一下哪里用了, 结合的先看一下, 其他都是各种数据, 没啥复杂的, 这里就主要看下 fees_ 和 potSplit_</p>
-</blockquote>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F; Team allocation percentages</span><br><span class="line">&#x2F;&#x2F; (F3D, P3D) + (Pot , Referrals, Community)</span><br><span class="line">    &#x2F;&#x2F; Referrals &#x2F; Community rewards are mathematically designed to come from the winner&#39;s share of the pot.</span><br><span class="line">fees_[0] &#x3D; F3Ddatasets.TeamFee(30,6);   &#x2F;&#x2F;50% to pot, 10% to aff, 2% to com, 1% to pot swap, 1% to air drop pot</span><br><span class="line">fees_[1] &#x3D; F3Ddatasets.TeamFee(43,0);   &#x2F;&#x2F;43% to pot, 10% to aff, 2% to com, 1% to pot swap, 1% to air drop pot</span><br><span class="line">fees_[2] &#x3D; F3Ddatasets.TeamFee(56,10);  &#x2F;&#x2F;20% to pot, 10% to aff, 2% to com, 1% to pot swap, 1% to air drop pot</span><br><span class="line">fees_[3] &#x3D; F3Ddatasets.TeamFee(43,8);   &#x2F;&#x2F;35% to pot, 10% to aff, 2% to com, 1% to pot swap, 1% to air drop pot</span><br><span class="line">    </span><br><span class="line">&#x2F;&#x2F; how to split up the final pot based on which team was picked</span><br><span class="line">&#x2F;&#x2F; (F3D, P3D)</span><br><span class="line">potSplit_[0] &#x3D; F3Ddatasets.PotSplit(15,10);  &#x2F;&#x2F;48% to winner, 25% to next round, 2% to com</span><br><span class="line">potSplit_[1] &#x3D; F3Ddatasets.PotSplit(25,0);   &#x2F;&#x2F;48% to winner, 25% to next round, 2% to com</span><br><span class="line">potSplit_[2] &#x3D; F3Ddatasets.PotSplit(20,20);  &#x2F;&#x2F;48% to winner, 10% to next round, 2% to com</span><br><span class="line">potSplit_[3] &#x3D; F3Ddatasets.PotSplit(30,10);  &#x2F;&#x2F;48% to winner, 10% to next round, 2% to com</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>fees_ 就是用来决定 玩家 买 key 后, 买 key 的 ether 怎么分配, 其中 2% 基金会(com) + 1% (otherFomo) + 1% 空投池 + fees_[].p3d % P3D + fees_[].gen % 收益, 10% 给 推荐人(无则给P3D)<br>总结就是 14% 固定 + 86% 可设定, 86% 分3块( gen+p3d+pot ),所以2队是56% gen + 10% p3d + 20% pot, 其他队伍类似<br>potSplit_ 类似, 固定的 48%(win)+2%(com) + 50% 可设定, 分3块(gen+p3d+nextround), 如2队的 20 gen + 20 p3d + 10 next</p>
-</blockquote>
-<p>然后讲讲所有的方法, 简单的归类下</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line">修饰器</span><br><span class="line">isActivated() 			&#x2F;&#x2F;拦截游戏未激活</span><br><span class="line">isHuman()					&#x2F;&#x2F;听说拦截非人类?</span><br><span class="line">isWithinLimits(eth)		&#x2F;&#x2F;拦截太穷的人和 v 神 ???</span><br><span class="line"></span><br><span class="line">ether 买		&#x2F;&#x2F;从不同地址进的, 第一个参数是推荐人标识, 第二个是选的 team</span><br><span class="line">buyXid(id, team)  	</span><br><span class="line">buyXaddr(addr, team)</span><br><span class="line">buyXname(name, team)</span><br><span class="line"></span><br><span class="line">valuts 买		&#x2F;&#x2F;从不同地址进的, 第一个参数是推荐人标识, 第二个是选的 team, 第三个是根据 key 数量计算出来的 eth</span><br><span class="line">reLoadXid(id, team, eth)	</span><br><span class="line">reLoadXaddr(addr, team, eth)</span><br><span class="line">reLoadXname(name, team, eth)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">buyCore  			&#x2F;&#x2F; 这里就是判断了一下本轮是否结束了, 然后直接调用的 core,当然结束会走 endRound</span><br><span class="line">reLoadCore		&#x2F;&#x2F; 同上, 结束的判断, 还有就是减去 gen 的金额, 再调用 core</span><br><span class="line">core				&#x2F;&#x2F; 限制前100eth, 更新 end 时间, 超过0.1eth 判断空投, 更新玩家及轮次等数据, 调用2个分红方法</span><br><span class="line">distributeExternal 	&#x2F;&#x2F; 给固定的13% (10% aff,2% com,1% otherFomo) 及 P3D 打钱</span><br><span class="line">distributeInternal	&#x2F;&#x2F; 给空投1% 和 gen 和 pot 打钱</span><br><span class="line"></span><br><span class="line">提现跑路</span><br><span class="line">withdraw() 	</span><br><span class="line"></span><br><span class="line">结束一轮</span><br><span class="line">endRound()	&#x2F;&#x2F; pot 分成5分, win 拿48%, 2%给 com, 还有 gen, p3d, nextRound 则根据配置来分配, 其中 p3d 和下一轮逻辑比较简单, 而 gen 我还没太懂, 因为涉及到 mask 的我都没看明白( 没时间细看, 全是数学, 要慢慢推理分析 )		</span><br><span class="line"></span><br><span class="line">注册 name		&#x2F;&#x2F;注册一个 name 用于推广获取提成, 第一个参数是 name 标识, 第二个是推荐人的标识, 第三个是是否同步到其他游戏</span><br><span class="line">registerNameXID(name, id, all) </span><br><span class="line">registerNameXaddr(name, addr, all)</span><br><span class="line">registerNameXname(name, name, all)</span><br><span class="line"></span><br><span class="line">玩家信息相关 , 前2个一般是给外部调用的</span><br><span class="line">receivePlayerInfo			&#x2F;&#x2F;将传入玩家信息储存</span><br><span class="line">receivePlayerNameList		&#x2F;&#x2F;储存玩家的所有name</span><br><span class="line">determinePID				&#x2F;&#x2F;确定玩家信息, 若无则生成一个 pid</span><br><span class="line"></span><br><span class="line">玩家分红, keys相关</span><br><span class="line">calcUnMaskedEarnings  		&#x2F;&#x2F; 实现看不懂, 不过方法作用是用来计算能提现的收益</span><br><span class="line">calcKeysReceived(rid, eth)	&#x2F;&#x2F; 根据轮次返回 用eth能买多少 keys</span><br><span class="line">iWantXKeys					&#x2F;&#x2F; 根据 key 数量返回需要多少 eth</span><br><span class="line">managePlayer					&#x2F;&#x2F; 第 x 轮时将上一轮的收益移至此轮, 仅轮次开始后第一次购买执行</span><br><span class="line">updateGenVault				&#x2F;&#x2F; 计算及更新收益</span><br><span class="line">updateMasks					&#x2F;&#x2F; 更新被锁定的收益</span><br><span class="line">withdrawEarnings				&#x2F;&#x2F; 计算可提现的收益</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>这么多方法, 我也只能列个大致作用和我看的懂的逻辑, 具体的细节等我参透再出文章  </p>
-</blockquote>
-<blockquote>
-<p>最后总结游戏大致逻辑 :  玩家买 key–&gt; buyXxx(relaodXxx) 方法–&gt; xxxCore –&gt; core –&gt; distributeExternal &amp; distributeInternal –&gt; 游戏结束 –&gt; 玩家 buy 触发 endRound –&gt; 分了钱 pot 的钱, 部分转入下一轮 –&gt; 激活新一轮 –&gt; 接上最开始 进入循环 !!! 当然中途可以提现自己没锁住的收益, 以及注册 name 拉人啥的. </p>
-</blockquote>
-<h3 id="几个有意思的类库"><a href="#几个有意思的类库" class="headerlink" title="几个有意思的类库"></a>几个有意思的类库</h3><h4 id="MSFun-sol"><a href="#MSFun-sol" class="headerlink" title="MSFun.sol"></a>MSFun.sol</h4><blockquote>
-<p>首先说下, 这个库是用来做多重签名的, 啥意思呢? 就是一个方法, 必须好几个(多)人同意执行, 最后才会执行. 用法如下: </p>
-</blockquote>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">*                                ┌────────────────────┐</span><br><span class="line">*                                │ Setup Instructions │</span><br><span class="line">*                                └────────────────────┘</span><br><span class="line">* (Step 1) import the library into your contract</span><br><span class="line">* </span><br><span class="line">*    import &quot;.&#x2F;MSFun.sol&quot;;</span><br><span class="line">*</span><br><span class="line">* (Step 2) set up the signature data for msFun</span><br><span class="line">* </span><br><span class="line">*     MSFun.Data private msData;</span><br><span class="line">*                                ┌────────────────────┐</span><br><span class="line">*                                │ Usage Instructions │</span><br><span class="line">*                                └────────────────────┘</span><br><span class="line">* at the beginning of a function</span><br><span class="line">* </span><br><span class="line">*     function functionName() </span><br><span class="line">*     &#123;</span><br><span class="line">*         if (MSFun.multiSig(msData, required signatures, &quot;functionName&quot;) &#x3D;&#x3D; true)</span><br><span class="line">*         &#123;</span><br><span class="line">*             MSFun.deleteProposal(msData, &quot;functionName&quot;);</span><br><span class="line">* </span><br><span class="line">*             &#x2F;&#x2F; put function body here </span><br><span class="line">*         &#125;</span><br><span class="line">*     &#125;</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>大致就是先导包, 然后定义一个 MSFun.data 作为区分合约的标识, 然后再方法中使用 if 包围, if 第一句就是将之前的签名清空</p>
-</blockquote>
-<blockquote>
-<p>MSFun.multiSig( data标识, 需要签名的数量, 方法名称 )</p>
-</blockquote>
-<blockquote>
-<p>最后说下此类库在 fomo 中的样子: 首先 data 照旧, 而需要签名的数量来自 teamJust.sol, 它的定义是构造是初始为1, 以后每 add 一个 admin 或 dev 就把对应的 requiredSignatures 加一, remove 同理, 减一. 所以在部署时不改代码的话, 只要满足对应的身份限制, 加了这个MSFun.muitiSig 的方法默认是一个人调用就能执行</p>
-</blockquote>
-<h4 id="SafeMath-sol"><a href="#SafeMath-sol" class="headerlink" title="SafeMath.sol"></a>SafeMath.sol</h4><blockquote>
-<p>这个没啥好说的, 操作金额必备, 听说狼人杀就是少了这个被攻击的(整形溢出), 也许可以不懂怎么攻击, 但一定要懂怎么防范, so </p>
-</blockquote>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;**</span><br><span class="line">* @dev Multiplies two numbers, throws on overflow.</span><br><span class="line">*&#x2F;</span><br><span class="line">function mul(uint256 a, uint256 b) </span><br><span class="line">    internal </span><br><span class="line">    pure </span><br><span class="line">    returns (uint256 c) </span><br><span class="line">&#123;</span><br><span class="line">    if (a &#x3D;&#x3D; 0) &#123;</span><br><span class="line">        return 0;</span><br><span class="line">    &#125;</span><br><span class="line">    c &#x3D; a * b;</span><br><span class="line">    require(c &#x2F; a &#x3D;&#x3D; b, &quot;SafeMath mul failed&quot;);</span><br><span class="line">    return c;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>如你所见, 简单的判断即可确保不会由于溢出导致数据错乱</p>
-</blockquote>
-<h4 id="F3DKeysCalcLong-sol"><a href="#F3DKeysCalcLong-sol" class="headerlink" title="F3DKeysCalcLong.sol"></a>F3DKeysCalcLong.sol</h4><blockquote>
-<p>我只能猜到作用, 至于完全理解… 没上过大学的我瑟瑟发抖</p>
-</blockquote>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">keysRec(curEth, newEth)			&#x2F;&#x2F; 第一个参数就是using 后的调用方, 第二个参数是 准备花的 eth, 如我花0.01 eth , 用 round_[rId].eth.keysRec(0.01 eth); 得出的就是当前轮次时0.01eth 能买多少个 key, 注意返回的 keys 很大, 1个 实际上是 1e18 吧, </span><br><span class="line">ethRec(curKeys, sellKeys)		&#x2F;&#x2F; 同上, 输入想买的 keys 数量, 返回当前轮次 keys 基数下购买 keys 需要花的 eth</span><br><span class="line">keys(eth)						&#x2F;&#x2F; 根据 eth 计算可得多少 keys</span><br><span class="line">eth(keys)						&#x2F;&#x2F; 根据 keys 计算需要多少 eth</span><br></pre></td></tr></table></figure>
-
-<p>bundle.js 中, iWantKeys 逻辑</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">count = BN(<span class="built_in">parseInt</span>(count) * <span class="number">1e18</span>)</span><br><span class="line"><span class="keyword">let</span> priceQuotation = <span class="keyword">await</span> JUST.Bridges.Browser.contracts.Quick.read(<span class="string">'iWantXKeys'</span>, count)</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>keys 和 eth 应该是对应的, 而 eth 的变化规律如果画图的话应该是 指数级上升? 可以画成函数看看</p>
-</blockquote>
-<h2 id="Fomo3D-源码部署指南"><a href="#Fomo3D-源码部署指南" class="headerlink" title="Fomo3D 源码部署指南"></a>Fomo3D 源码部署指南</h2><blockquote>
-<p>代码在我的 gayhub 上 : <a href="https://github.com/gudqs7/fomo3d_truffle" target="_blank" rel="noopener">fomo3d_truffle</a> , 以下是 README</p>
-</blockquote>
-<h3 id="部署合约"><a href="#部署合约" class="headerlink" title="部署合约:"></a>部署合约:</h3><blockquote>
-<p>一共部署了3个合约, 其中3个收款地址被砍掉(改成了部署者的地址), p3d 也砍掉了<br>3个合约 我偷懒没有把合约地址写死, 用的是后续的 set 方法, 所以如果 truffle migrate 最后那段报错了, 可能没有 set 成功, 需要用其他方式调用( truffle console, 或者 remix 等)<br>合约部署完, 如无报错, 直接复制走 FoMo3Dlong 的地址就行了</p>
-</blockquote>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">npm install ganache-cli -g</span><br><span class="line">ganache-cli -l 471238800 -g 1 # 开启 testrpc 同时设定 gasLimit 和 gasPrice</span><br><span class="line">truffle compile</span><br><span class="line">truffle migrate --reset # 执行后, 复制 FoMo3Dlong: 后跟的地址</span><br><span class="line">#直接输出最终合约地址, 将不会打印编译过程</span><br><span class="line">truffle migrate --reset | grep &#39;FoMo3Dlong: 0x&#39; | awk  &#39;&#123; print $2 &#125;&#39;</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>推荐做法<br>truffle migrate –reset &gt; migrate.log<br>cat migrate.log  # 查看有无错误, 如合约均部署成功,但最后报错, 可能有几个赋值方法没有执行(我部署到 kovan 时就发生了这事,可以参考 migrations/2_deploy_fomo3d.js逻辑手动执行)<br>cat migrate.log | grep ‘FoMo3Dlong: 0x’ | awk  ‘{ print $2 }’</p>
-</blockquote>
-<h3 id="部署前端"><a href="#部署前端" class="headerlink" title="部署前端:"></a>部署前端:</h3><blockquote>
-<p>前端没有太多需要改的地方, 若使用英文版, 可参考下面命令行修改地址方式<br>若选择 bundle-cn.js 这个中文版, 则自己找到要修改的地方, 手动修改也行的<br>顺便说下 cn 里面还是 kovan测试网络的配置, 如需使用可把 bundle.js 里面的本地配置拷贝下</p>
-</blockquote>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">cd src&#x2F;js</span><br><span class="line">sed -i &quot;&quot; &#39;s&#x2F;&#123;&#123;address&#125;&#125;&#x2F;0x00&#x2F;g&#39; bundle.js # 非 mac 去除 -i 后的 &quot;&quot;</span><br><span class="line">cd ..&#x2F;..&#x2F;</span><br><span class="line">npm install &amp; npm run start</span><br></pre></td></tr></table></figure>
-
-<h3 id="游戏激活"><a href="#游戏激活" class="headerlink" title="游戏激活"></a>游戏激活</h3><blockquote>
-<p>刚想到一个不一定靠谱的简单方式, 把 migrations 下那个 js 里面加一个 activate 的方法调用</p>
-</blockquote>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">npm install remix-ide -g  # 安装个本地的 remix-ide</span><br><span class="line">remix-ide  #注意此时处于项目根目录</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>OK, 浏览器访问 <a href="localhost:8080">remix-ide</a>, 点击左上角第6个图标( Connect to localhost ), 弹框继续 connect</p>
-<p>左边多出 localhost, 点击 contracts 下的 FoMo3Dlong.sol 文件, ctrl + s , 触发编译 , 下一步</p>
-<p>点击右边的上边的 Run, 选择 web3 provider, 如端口不变, 一路 next, ok, 往下看, 有个选择 合约的 select, 选中 FoMo3Dlong, 然后在 输入框中输入 migrate 得到的合约地址, 然后点击 At Address</p>
-<p>最后点下 合约的 activate 方法</p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -2107,20 +1974,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">15</span>
+          <span class="site-state-item-count">16</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-count">18</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-count">18</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

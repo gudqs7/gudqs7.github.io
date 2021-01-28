@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"gudqs7.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Spring Cloud Openfeign 源码笔记关键类分析123456789101112131415161718192021222324252627282930313233# 1.FeignAutoConfiguration  配置了一个管理 feign 子容器的工厂(FeignContext).   配置一个 Targeter, 直接中专 fegin 的 target 方法(Default">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring Cloud Openfeign 源码笔记">
+<meta property="og:url" content="https://gudqs7.github.io/2021/01/28/source-code-spring-cloud-openfeign/index.html">
+<meta property="og:site_name" content="gudqs7&#39;s note">
+<meta property="og:description" content="Spring Cloud Openfeign 源码笔记关键类分析123456789101112131415161718192021222324252627282930313233# 1.FeignAutoConfiguration  配置了一个管理 feign 子容器的工厂(FeignContext).   配置一个 Targeter, 直接中专 fegin 的 target 方法(Default">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210128204558.png">
+<meta property="article:published_time" content="2021-01-28T05:59:51.000Z">
+<meta property="article:modified_time" content="2021-01-28T12:46:12.646Z">
+<meta property="article:author" content="gudqs7">
+<meta property="article:tag" content="source-code">
+<meta property="article:tag" content="interview">
+<meta property="article:tag" content="java">
+<meta property="article:tag" content="spring-cloud-openfeign">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210128204558.png">
+
+<link rel="canonical" href="https://gudqs7.github.io/2021/01/28/source-code-spring-cloud-openfeign/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Spring Cloud Openfeign 源码笔记 | gudqs7's note</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">gudqs7's note</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">心累没钱躺尸中</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://gudqs7.github.io/2021/01/28/source-code-spring-cloud-openfeign/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="gudqs7">
+      <meta itemprop="description" content="心累没钱躺尸中">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="gudqs7's note">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Spring Cloud Openfeign 源码笔记
+        </h1>
+
+        <div class="post-meta">
+			
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-01-28 13:59:51 / 修改时间：20:46:12" itemprop="dateCreated datePublished" datetime="2021-01-28T13:59:51+08:00">2021-01-28</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Spring/" itemprop="url" rel="index"><span itemprop="name">Spring</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/SourceCode/" itemprop="url" rel="index"><span itemprop="name">SourceCode</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Spring-Cloud-Openfeign/" itemprop="url" rel="index"><span itemprop="name">Spring Cloud Openfeign</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2021/01/28/source-code-spring-cloud-openfeign/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2021/01/28/source-code-spring-cloud-openfeign/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="Spring-Cloud-Openfeign-源码笔记"><a href="#Spring-Cloud-Openfeign-源码笔记" class="headerlink" title="Spring Cloud Openfeign 源码笔记"></a>Spring Cloud Openfeign 源码笔记</h1><h2 id="关键类分析"><a href="#关键类分析" class="headerlink" title="关键类分析"></a>关键类分析</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 1.FeignAutoConfiguration</span></span><br><span class="line">  配置了一个管理 feign 子容器的工厂(FeignContext). </span><br><span class="line">  配置一个 Targeter, 直接中专 fegin 的 target 方法(DefaultTargeter, 这里扩展可以实现降级哦)</span><br><span class="line">  配置了一个 feign client (ApacheHttpClient), 用于执行 HTTP 请求</span><br><span class="line">  还配备了 ok http client 方式的 feign client, 但默认不启用</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2.FeignClientsRegistrar</span></span><br><span class="line">  被 @EnableFeignClients 引入</span><br><span class="line">  扫描带 @FeignClient 注解的接口, 生成代理对象(FeignClientFactoryBean)注册到容器中</span><br><span class="line"></span><br><span class="line"><span class="comment"># 3.FeignClientFactoryBean</span></span><br><span class="line">  继承自 FactoryBean, Spring 的东西, getBean() 时调用跳转到 getObject()</span><br><span class="line">  getObject() 会调用通过 feign 对象生成代理对象</span><br><span class="line"></span><br><span class="line"><span class="comment"># 4.FeignInvocationHandler</span></span><br><span class="line">	JDK 动态代理生成对象的的方法拦截器</span><br><span class="line">	通过调用 SynchronousMethodHandler 的 invoke() 实现发送请求的功能</span><br><span class="line"></span><br><span class="line"><span class="comment"># 5.SynchronousMethodHandler</span></span><br><span class="line">	invoke() 会调用 FeignBlockingLoadBalancerClient 的 execute() 通过负载均衡获取 url 再调用 ApacheHttpClient 的 execute() 发送带实际 url 的 HTTP 请求.</span><br><span class="line"></span><br><span class="line"><span class="comment"># 6.ParseHandlersByName</span></span><br><span class="line">	具有核心方法 apply, 解析 @FeignClient 接口的所有方法的注解和参数信息, 转化为 RequestTemplate, 可用于构造 HTTP 请求对象. 转化后的信息存于 SynchronousMethodHandler 字段中.</span><br><span class="line"></span><br><span class="line"><span class="comment"># 7.FeignBlockingLoadBalancerClient</span></span><br><span class="line">	execute() 会调用 LoadBalancerClient 的 choose() 根据 serviceId(即 HTTP 的 host) 获取 url.</span><br><span class="line">	还负责调用 ApacheHttpClient 的 execute() 真正的发送 HTTP 请求.</span><br><span class="line"></span><br><span class="line"><span class="comment"># 8.LoadBalancerClient</span></span><br><span class="line">  commons 下 loadbalancer 项目的老伙计了... 干啥的来着? 忘了</span><br><span class="line"></span><br><span class="line"><span class="comment"># 9.ApacheHttpClient</span></span><br><span class="line">	负责发送 HTTP 请求.</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="openfeign-原理-EnableFeignClients-生效步骤"><a href="#openfeign-原理-EnableFeignClients-生效步骤" class="headerlink" title="openfeign 原理(@EnableFeignClients 生效步骤)"></a>openfeign 原理(@EnableFeignClients 生效步骤)</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">1.先解析 @EnableFeignClients 导入 FeignClientsRegistrar.class</span><br><span class="line">2.FeignClientsRegistrar 将扫描带 @FeignClient 注解的接口, 注册到容器中</span><br><span class="line">3.注册进容器的是一个 FeignClientFactoryBean</span><br><span class="line">4.FeignClientFactoryBean 其本质是一个 FactoryBean, 会在被 getBean() 时调用 getObject()</span><br><span class="line">5.getObject() 会从容器中取 Feign.Builder builder 对象再根据配置文件进行配置 </span><br><span class="line">6.接着会走 Targeter 对象(默认为 DefaultTargeter)的 target(), 其默认为 builder.target(target); 其中 builder 为 Feign.Builder 对象, target 为 <span class="built_in">type</span>(class), name(serviceId), url(http://name/path)</span><br><span class="line">7.target() 会先调用 build()生成一个 feign 对象, 再调用 feign.newInstance(target) 生成一个代理对象</span><br><span class="line">8.先看 build() 方法, 初始化了重要属性 targetToHandlersByName, 值为 new ParseHandlersByName(), 这个类的 apply() 会在过一会用到. apply() 逻辑是遍历挨个解析方法上的注解(如@RequestMapping, @RequestParam, @PathVariable等等)和参数, 转化后包装成 HTTP 请求相关的实体类, 存到 SynchronousMethodHandler 的字段中, 再返回 SynchronousMethodHandler 对象存到 map 里.</span><br><span class="line">9.再看 feign.newInstance(), 先调用刚说的重要属性 targetToHandlersByName.apply(), 获得一个 map, 里面键大致为类名+方法名+形参组成, 值是 SynchronousMethodHandler 对象(见 SynchronousMethodHandler.Factory.create()), 然后遍历代理类的所有方法, 将方法所对应的 SynchronousMethodHandler 从 map 中取出再存到另一个 map, 这个 map 的键则为 method; 接着使用 JDK 动态代理生成一个代理对象, 其用于拦截方法的类 InvocationHandler 具体为 FeignInvocationHandler, 这个类里面的 invoke 逻辑很简单, 先排除 Object 通用的方法的影响, 对于正常方法会调用 SynchronousMethodHandler 的 invoke()... 闹了半天就是个中转呗, 有类的 Handler 到了方法的 MethodHandler.</span><br><span class="line">10.SynchronousMethodHandler 的 invoke() 的核心代码是 this.client.execute(), 这里会走到 feign.Client 的具体实现类. 可能是 ApacheHttpClient(当 url 有地址时), 那就直接执行请求了, 也可能是 FeignBlockingLoadBalancerClient, 那么会调用 loadBalancerClient 的 choose 方法获取 url, 再执行 feignClient.execute(), 这次这个 feignClient 则肯定是 ApacheHttpClient 了, 于是最终就这样发送了请求.</span><br><span class="line"></span><br><span class="line"><span class="comment">#PS: </span></span><br><span class="line">有人问我(无中生友)发送的 HTTP 请求怎么构建? </span><br><span class="line">其实我上面说的很清楚了, 关键就在于 apply(), 好吧, 我说的具体一点... 关键在于 SpringMvcContract<span class="comment">#parseAndValidateMetadata()</span></span><br><span class="line">这个的入口在 apply() 的第一行, this.contract.parseAndValidateMetadata() 一直往里跳转, 就会进入 SpringMvcContract...  具体代码挺多的... 真的没必要细读... 因为其本身只相当于一个工具类, 而读源码应该放眼大局, 否则每段代码都认真读, 那太难了!!!</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>总结: 扫描 @FeignClient, 生成代理对象, 扔进容器. 拦截代理对象的方法, 调用方法对应的 SynchronousMethodHandler, 此类调用之前解析好的 RequestTemplate 生成请求对象, 再通过 Client 执行请求, 若配置了负载均衡, 则会调用 LoadBalancerClient 将 serviceId 先解析成具体的地址再转交给 ApacheHttpClient 执行请求.</p>
+</blockquote>
+<h2 id="代理对象的生成步骤"><a href="#代理对象的生成步骤" class="headerlink" title="代理对象的生成步骤"></a>代理对象的生成步骤</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">graph TB</span><br><span class="line"></span><br><span class="line">A1(FeignClientFactoryBean)</span><br><span class="line">A2(Feign.Builder)</span><br><span class="line">A3(Feign)</span><br><span class="line">A4(FeignInvocationHandler)</span><br><span class="line">A5(SynchronousMethodHandler)</span><br><span class="line">A6(FeignBlockingLoadBalancerClient)</span><br><span class="line">A7(ApacheHttpClient)</span><br><span class="line">A8(LoadBalancerClient)</span><br><span class="line">A9(ServiceInstance)</span><br><span class="line">A10(Response)</span><br><span class="line">A11(Decoder 链)</span><br><span class="line"></span><br><span class="line">A1--getObject 触发--&gt;A2</span><br><span class="line">A2--build 得到--&gt;A3</span><br><span class="line">A3--Proxy.newProxyInstance 用到--&gt;A4</span><br><span class="line">A4--invoke 里调用--&gt;A5</span><br><span class="line">A5--invoke 里调用--&gt;A6</span><br><span class="line">A6--execute 中先调用 --&gt;A8</span><br><span class="line">A6--execute 中后调用--&gt;A7</span><br><span class="line">A8--获取--&gt;A9</span><br><span class="line">A7--得到--&gt;A10</span><br><span class="line">A10--交给--&gt;A11</span><br><span class="line">A11--编码得到--&gt;A12(json)</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210128204558.png" alt="iShot2021-01-28 20.45.21"></p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>下次一定</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="gudqs7 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/bitcoin.png" alt="gudqs7 比特币">
+        <p>比特币</p>
+      </div>
+
+  </div>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/source-code/" rel="tag"># source-code</a>
+              <a href="/tags/interview/" rel="tag"># interview</a>
+              <a href="/tags/java/" rel="tag"># java</a>
+              <a href="/tags/spring-cloud-openfeign/" rel="tag"># spring-cloud-openfeign</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/01/27/source-code-spring-cloud-ribbon/" rel="prev" title="Spring Cloud Commons 之 loadbalancer 源码笔记">
+      <i class="fa fa-chevron-left"></i> Spring Cloud Commons 之 loadbalancer 源码笔记
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+    </div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Spring-Cloud-Openfeign-源码笔记"><span class="nav-number">1.</span> <span class="nav-text">Spring Cloud Openfeign 源码笔记</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#关键类分析"><span class="nav-number">1.1.</span> <span class="nav-text">关键类分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#openfeign-原理-EnableFeignClients-生效步骤"><span class="nav-number">1.2.</span> <span class="nav-text">openfeign 原理(@EnableFeignClients 生效步骤)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#代理对象的生成步骤"><span class="nav-number">1.3.</span> <span class="nav-text">代理对象的生成步骤</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="gudqs7"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">gudqs7</p>
+  <div class="site-description" itemprop="description">心累没钱躺尸中</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">16</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/gudqs7" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;gudqs7" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:gudqs7@gmail.com" title="E-Mail → mailto:gudqs7@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">gudqs7</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+  function loadCount() {
+    var d = document, s = d.createElement('script');
+    s.src = 'https://gudqs7s-note.disqus.com/count.js';
+    s.id = 'dsq-count-scr';
+    (d.head || d.body).appendChild(s);
+  }
+  // defer loading until the whole page loading is completed
+  window.addEventListener('load', loadCount, false);
+</script>
+<script>
+  var disqus_config = function() {
+    this.page.url = "https://gudqs7.github.io/2021/01/28/source-code-spring-cloud-openfeign/";
+    this.page.identifier = "2021/01/28/source-code-spring-cloud-openfeign/";
+    this.page.title = "Spring Cloud Openfeign 源码笔记";
+    };
+  NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {
+    if (window.DISQUS) {
+      DISQUS.reset({
+        reload: true,
+        config: disqus_config
+      });
+    } else {
+      var d = document, s = d.createElement('script');
+      s.src = 'https://gudqs7s-note.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', '' + +new Date());
+      (d.head || d.body).appendChild(s);
+    }
+  });
+</script>
+
+</body>
+</html>
