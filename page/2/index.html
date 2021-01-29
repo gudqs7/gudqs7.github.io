@@ -166,6 +166,140 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://gudqs7.github.io/2020/05/20/Go-study-memo-1-int-bool-string-error-array-slice-map/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="gudqs7">
+      <meta itemprop="description" content="心累没钱躺尸中">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="gudqs7's note">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/05/20/Go-study-memo-1-int-bool-string-error-array-slice-map/" class="post-title-link" itemprop="url">Go 学习笔记(一) : 3种方式得变量 / 常量与iota / 数据类型(int,bool,string,error,array,slice,map)</a>
+        </h2>
+
+        <div class="post-meta">
+			
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-05-20 09:20:11" itemprop="dateCreated datePublished" datetime="2020-05-20T09:20:11+08:00">2020-05-20</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-01-22 13:39:17" itemprop="dateModified" datetime="2021-01-22T13:39:17+08:00">2021-01-22</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/go/" itemprop="url" rel="index"><span itemprop="name">go</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2020/05/20/Go-study-memo-1-int-bool-string-error-array-slice-map/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2020/05/20/Go-study-memo-1-int-bool-string-error-array-slice-map/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="为了基础的基础"><a href="#为了基础的基础" class="headerlink" title="为了基础的基础"></a>为了基础的基础</h1><h2 id="package-import"><a href="#package-import" class="headerlink" title="package , import"></a>package , import</h2><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">"fmt"</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">	fmt.Println(<span class="string">"Hello World !"</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>包 , 与python类似, 与java不同. 用于模块化. 通过声明包, 和导入包可以实现程序的相互调用. 如 导入 fmt , 使用fmt的函数Println()<br>main.main()是 程序的运行入口, 无参数, 无返回值</p>
+</blockquote>
+<h2 id="变量声明"><a href="#变量声明" class="headerlink" title="变量声明"></a>变量声明</h2><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"><span class="keyword">import</span> <span class="string">"fmt"</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">	<span class="keyword">var</span> complete <span class="keyword">string</span> = <span class="string">"I 'm complete !"</span></span><br><span class="line">	<span class="keyword">var</span> autoType = <span class="string">"I'm auto "</span></span><br><span class="line">	<span class="keyword">var</span> simple := <span class="string">"I'm simple "</span></span><br><span class="line">	complete, autoType, simple = <span class="string">"complete again"</span>, <span class="string">"auto again"</span>, <span class="string">"simple again"</span></span><br><span class="line">	fmt.Println(complete,autoType,simple)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如上所示, 获得一个变量有3种方式</p>
+<blockquote>
+<p>完整的声明和赋值 (也可只声明, 后赋值)<br>声明时不写类型 , 必须同时赋值自动推导类型<br>省略var , 使用 := 声明+赋值, 仅用于声明<br>###常量</p>
+</blockquote>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> SEX_MALE <span class="keyword">int</span> = <span class="number">0</span></span><br><span class="line"><span class="keyword">const</span> SEX_FEMALE = <span class="number">1</span></span><br><span class="line"><span class="keyword">const</span> (</span><br><span class="line">	MALE = <span class="literal">iota</span>  <span class="comment">//0</span></span><br><span class="line">	FEMAILE  <span class="comment">//1</span></span><br><span class="line">	WHAT <span class="comment">//2</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>使用const关键字可声明常量, 使用()可一次声明多个 使用iota可便捷声, 规则为:<br>遇到const重置为0<br>同一行值相同<br>上一行为iota, 则本行不赋值时为 上一行iota值 + 1, 以此类推</p>
+</blockquote>
+<h2 id="数据类型小计"><a href="#数据类型小计" class="headerlink" title="数据类型小计"></a>数据类型小计</h2><h3 id="整形"><a href="#整形" class="headerlink" title="整形"></a>整形</h3><blockquote>
+<p>int : int8 , int16, int32, int 64<br>uint : uint8, uint16, uint32, uint64<br>rune, int, byte</p>
+</blockquote>
+<p>其中 int 与 uint 的区别是 有无符号 , rune 是 int32的别称, byte是uint8的别称, int虽然是32位但与int32不可互用</p>
+<h3 id="Boolean"><a href="#Boolean" class="headerlink" title="Boolean"></a>Boolean</h3><p>默认为false, 与java类似, 数0,空等不代表 false</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> ok <span class="keyword">bool</span> </span><br><span class="line">fmt.Println(ok) <span class="comment">//false</span></span><br><span class="line"><span class="keyword">var</span> gameover = <span class="literal">true</span></span><br><span class="line">isover := <span class="literal">false</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="字符串"><a href="#字符串" class="headerlink" title="字符串"></a>字符串</h3><p>与java类似, 双引号包围</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> str = <span class="string">"I'm a string!"</span></span><br></pre></td></tr></table></figure>
+<p>当多行时 使用 反引号 </p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> multistr = <span class="string">`This is </span></span><br><span class="line"><span class="string">a </span></span><br><span class="line"><span class="string">multiline</span></span><br><span class="line"><span class="string">`</span></span><br></pre></td></tr></table></figure>
+<p>使用 ` 时, 不转义\n,\t等</p>
+<blockquote>
+<p>使用string类型时, 注意string不可变, 类似java . 但可强转为byte[] 类型后操作</p>
+</blockquote>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> str=<span class="string">"hello"</span></span><br><span class="line">str[<span class="number">0</span>] = <span class="string">'c'</span> <span class="comment">//wrong!!!</span></span><br><span class="line"><span class="keyword">var</span> c = (<span class="keyword">byte</span>[])str</span><br><span class="line">c[<span class="number">0</span>]=<span class="string">'c'</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="error"><a href="#error" class="headerlink" title="error"></a>error</h3><p>Go内置有一个error类型，专门用来处理错误信息，Go的package里面还专门有一个包errors来处理错误：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">err := errors.New(<span class="string">"I am error message!"</span>)</span><br><span class="line"><span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">    fmt.Print(err)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="array"><a href="#array" class="headerlink" title="array"></a>array</h3><p>在go中, array是值类型, 而slice(切片),map 才是引用类型</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">arr := [<span class="number">3</span>]<span class="keyword">int</span>&#123;<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>&#125;</span><br><span class="line">array:=[...]<span class="keyword">int</span>&#123;<span class="number">3</span>,<span class="number">2</span>,<span class="number">1</span>,<span class="number">0</span>&#125;</span><br><span class="line">arr2 := [<span class="number">10</span>]<span class="keyword">int</span>&#123;<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>&#125; <span class="comment">//后7个元素则为零值 </span></span><br><span class="line"><span class="keyword">var</span> arr3 [<span class="number">10</span>]<span class="keyword">int</span></span><br><span class="line">arr3[<span class="number">0</span>]=<span class="number">9</span></span><br><span class="line">arr3[<span class="number">1</span>]=<span class="number">10</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>关于数组的赋值,取值与c和java类似<br>对于数组的初始化,分完整,部分(不写长度, 不写所有元素)<br>注意array是值类型, 互相传递赋值时, 不会相互影响</p>
+</blockquote>
+<h3 id="slice"><a href="#slice" class="headerlink" title="slice"></a>slice</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">array := [<span class="number">10</span>]<span class="keyword">int</span>&#123;<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>,<span class="number">6</span>,<span class="number">7</span>,<span class="number">8</span>,<span class="number">9</span>,<span class="number">10</span>&#125;</span><br><span class="line">aslice := array[:]</span><br><span class="line">bslice := aslice[<span class="number">2</span>:]</span><br><span class="line">bslice[<span class="number">3</span>] = <span class="number">99</span></span><br><span class="line">array[<span class="number">0</span>] = <span class="number">-99</span></span><br><span class="line">fmt.Println(aslice,bslice)</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>切片 , 可通过数组[n:m] 获取<br>切片是引用类型, 改变bslice , 同时aslice也会改变<br>改变arr不会改变aslice , 因为array是值类型</p>
+</blockquote>
+<h3 id="map"><a href="#map" class="headerlink" title="map"></a>map</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">"fmt"</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>&#123; </span><br><span class="line">    <span class="keyword">var</span> numbers <span class="keyword">map</span>[<span class="keyword">string</span>]<span class="keyword">int</span> =<span class="keyword">map</span>[<span class="keyword">string</span>]<span class="keyword">int</span>&#123;<span class="string">"all"</span>:<span class="number">9999</span>&#125;</span><br><span class="line">    others := <span class="built_in">make</span>(<span class="keyword">map</span>[<span class="keyword">string</span>]<span class="keyword">int</span>)</span><br><span class="line">    others[<span class="string">"name"</span>]=<span class="number">007</span></span><br><span class="line">    numbers[<span class="string">"one"</span>] = <span class="number">1</span></span><br><span class="line">    numbers[<span class="string">"ten"</span>] = <span class="number">10</span></span><br><span class="line">    numbers[<span class="string">"three"</span>] = <span class="number">3</span></span><br><span class="line">    <span class="built_in">delete</span>(numbers,<span class="string">"one"</span>)</span><br><span class="line">    val , ok := numbers[<span class="string">"not ex"</span>]</span><br><span class="line">    fmt.Println(numbers,numbers[<span class="string">"one"</span>],others,<span class="built_in">len</span>(numbers),val,ok)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>map类似与python种的字典, 操作与slice类似<br>元素赋值, 取值使用[]<br>map初始化使用 make 或者 map[string]int{}<br>使用delete删除key<br>使用多返回值检测是否存在key<br>使用len查看元素个数</p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://gudqs7.github.io/2020/05/20/soldity-source-code-memo-Fomo3D/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1294,20 +1428,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">16</span>
+          <span class="site-state-item-count">17</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-count">19</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-count">20</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
