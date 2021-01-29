@@ -65,6 +65,8 @@ categories:
 
 ## openfeign 原理(@EnableFeignClients 生效步骤)
 
+
+
 ```bash
 1.先解析 @EnableFeignClients 导入 FeignClientsRegistrar.class
 2.FeignClientsRegistrar 将扫描带 @FeignClient 注解的接口, 注册到容器中
