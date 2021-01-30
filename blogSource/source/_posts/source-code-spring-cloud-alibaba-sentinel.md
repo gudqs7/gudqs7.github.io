@@ -107,3 +107,22 @@ A9--然后-->B1
 
 
 ![image-20210130163418057](https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210130163421.png)
+
+
+
+
+
+### 整合 FeignCircuitBreaker.Builder 步骤
+
+> 即不注入自己的 Builder, 使用 openfeign 提供的 Builder, 通过扩展 CircuitBreakerFactory(即扩展 CircuitBreaker) 来实现流控降级(倒是 fallback 的处理便轻松了不少)
+
+
+
+```bash
+1.在 SentinelCircuitBreakerAutoConfiguration 注入一个 CircuitBreakerFactory.
+2.在 Openfeign 中, 会调用其 create() 创建得到一个 CircuitBreaker (即 SentinelCircuitBreaker)
+3.接着会在 FeignCircuitBreakerInvocationHandler.invoke() 中获取这个 CircuitBreaker, 调用其 run() 将要执行的 method 交给 SentinelCircuitBreaker 来处理.
+4.SentinelCircuitBreaker 中 run() 的实现就是简单的 SphU.entry() 来包装方法为资源进行流控降级, 至于 fallback 则直接调用 apply 交由 Openfeign 处理.
+```
+
+> 总结: 不写自己的 Builder, 简单多了! 主要是去掉了 fallback 相关配置的获取与处理.
