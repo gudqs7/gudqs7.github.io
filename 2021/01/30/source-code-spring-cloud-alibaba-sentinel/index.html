@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"gudqs7.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Sentinel 与 Openfeign 整合关键类123456789101112131415161718192021222324251.SentinelFeignAutoConfiguration	注入了 Feign.Builder(即 SentinelFeign.Builder) 到容器中2.SentinelFeign.Builder	重写 build 方法注入 sentinel 的 Invo">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring Cloud Alibaba Sentinel 源码笔记">
+<meta property="og:url" content="https://gudqs7.github.io/2021/01/30/source-code-spring-cloud-alibaba-sentinel/index.html">
+<meta property="og:site_name" content="gudqs7&#39;s note">
+<meta property="og:description" content="Sentinel 与 Openfeign 整合关键类123456789101112131415161718192021222324251.SentinelFeignAutoConfiguration	注入了 Feign.Builder(即 SentinelFeign.Builder) 到容器中2.SentinelFeign.Builder	重写 build 方法注入 sentinel 的 Invo">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210130163421.png">
+<meta property="article:published_time" content="2021-01-30T07:19:26.000Z">
+<meta property="article:modified_time" content="2021-01-30T09:05:00.572Z">
+<meta property="article:author" content="gudqs7">
+<meta property="article:tag" content="spring cloud alibaba">
+<meta property="article:tag" content="sentinel">
+<meta property="article:tag" content="Circuit Breaking">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210130163421.png">
+
+<link rel="canonical" href="https://gudqs7.github.io/2021/01/30/source-code-spring-cloud-alibaba-sentinel/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Spring Cloud Alibaba Sentinel 源码笔记 | gudqs7's note</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">gudqs7's note</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">心累没钱躺尸中</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://gudqs7.github.io/2021/01/30/source-code-spring-cloud-alibaba-sentinel/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="gudqs7">
+      <meta itemprop="description" content="心累没钱躺尸中">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="gudqs7's note">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Spring Cloud Alibaba Sentinel 源码笔记
+        </h1>
+
+        <div class="post-meta">
+			
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-01-30 15:19:26 / 修改时间：17:05:00" itemprop="dateCreated datePublished" datetime="2021-01-30T15:19:26+08:00">2021-01-30</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Spring/" itemprop="url" rel="index"><span itemprop="name">Spring</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/SourceCode/" itemprop="url" rel="index"><span itemprop="name">SourceCode</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Spring-Cloud/" itemprop="url" rel="index"><span itemprop="name">Spring Cloud</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2021/01/30/source-code-spring-cloud-alibaba-sentinel/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2021/01/30/source-code-spring-cloud-alibaba-sentinel/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="Sentinel-与-Openfeign-整合"><a href="#Sentinel-与-Openfeign-整合" class="headerlink" title="Sentinel 与 Openfeign 整合"></a>Sentinel 与 Openfeign 整合</h2><h3 id="关键类"><a href="#关键类" class="headerlink" title="关键类"></a>关键类</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">1.SentinelFeignAutoConfiguration</span><br><span class="line">	注入了 Feign.Builder(即 SentinelFeign.Builder) 到容器中</span><br><span class="line"></span><br><span class="line">2.SentinelFeign.Builder</span><br><span class="line">	重写 build 方法注入 sentinel 的 InvocationHandler(SentinelInvocationHandler)</span><br><span class="line"></span><br><span class="line">3.SentinelInvocationHandler</span><br><span class="line">	拦截方法, 包装方法为一个资源, 进行流控降级等处理</span><br><span class="line">	</span><br><span class="line">4.SentinelAutoConfiguration</span><br><span class="line">	注入了 SentinelResourceAspect 来支持 @SentinelResource 注解</span><br><span class="line">	注入了 SentinelBeanPostProcessor 来处理 @SentinelRestTemplate</span><br><span class="line">	注入了 SentinelDataSourceHandler 来加载各种数据源为规则配置</span><br><span class="line"></span><br><span class="line">5.SentinelResourceAspect</span><br><span class="line">	对加了 @SentinelResource 的方法添加 @Around 通知, 包围原方法已实现流控降级等处理.</span><br><span class="line">	</span><br><span class="line">6.SentinelBeanPostProcessor</span><br><span class="line">	对加了 @SentinelRestTemplate 注解的 RestTemplate bean, 添加一个 SentinelProtectInterceptor</span><br><span class="line"></span><br><span class="line">7.SentinelDataSourceHandler</span><br><span class="line">	解析 spring.cloud.sentinel.datasource 的配置, 加载配置的规则到 Sentinel 中.</span><br><span class="line">	</span><br><span class="line">8.SentinelProtectInterceptor</span><br><span class="line">	包装 RestTemplate 的请求, 使其可被流控降级等操作.</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<h3 id="整合步骤"><a href="#整合步骤" class="headerlink" title="整合步骤"></a>整合步骤</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">1.Feign 那边的步骤是, 先从容器中获取 Feign.Builder 对象, 并且 FeignContext 也会注入一个默认的 Builder 对象, 但是毕竟是子容器, 优先级没有父容器高(加载配置更后, 所以 @ConditionalOnMissingBean 触发, 子容器就不注册了). 因此我们在父容器中中配置一个 Builder 就能进行对接.</span><br><span class="line">2.Feign 的实现是通过 JDK 生成一个代理对象拦截方法来构造并执行 HTTP 请求, 因此其需要一个 InvocationHandler 来拦截配置; 在 Feign 中, 通过字段 invocationHandlerFactory 来创建这个 InvocationHandler, 所以我们注入自己实现的 Builder 需要设置这个字段.</span><br><span class="line">3.即 SentinelFeign.Builder.build() 中调用 super.invocationHandlerFactory(xxx) 来设置.</span><br><span class="line">4.xxx 是匿名内部类, 直接看 create 方法, 这里根据 @FeignClient 注解的配置(fallback/fallbackFactory) 创建了一个 SentinelInvocationHandler</span><br><span class="line">5.SentinelInvocationHandler.invoke() 的逻辑是使用 SphU.entry() 包围 feign 生成的 method(这个 method 是干正事的: 执行负载均衡和发送 Http 请求), 这就对这个 method 进行流量控制了; 然后还在 catch 中处理 fallback.</span><br><span class="line">6.至此, 与 feign 的对接就完成了</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>总结: 新建一个 Builder 令生成的 Feign 对象持有我们指定的 invocationHandlerFactory, 使其创建代理对象时使用我们创建的 SentinelInvocationHandler 拦截对象方法; 这样就把方法的执行包围起来, 进行流量控制和熔断降级(catch 异常调用 fallback)了.</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">graph TB</span><br><span class="line"></span><br><span class="line">A1(FeignClientsRegistrar)</span><br><span class="line">A2(FeignClientFactoryBean)</span><br><span class="line">A3(真实 XxxService 接口)</span><br><span class="line">A4(SentinelInvocationHandler)</span><br><span class="line">A5(SentinelFeignAutoConfiguration)</span><br><span class="line">A6(Feign.Builder 即 SentinelFeign.Builder)</span><br><span class="line">A7(Feign 对象)</span><br><span class="line">A8(代理对象)</span><br><span class="line">A9( sentinel 将方法当做资源进行拦截)</span><br><span class="line">B1(在 catch 中处理 fallback 熔断逻辑)</span><br><span class="line"></span><br><span class="line">A1--扫描 FeignClient 注解, 注入--&gt;A2</span><br><span class="line"></span><br><span class="line">A3--被 controller 调用, 触发--&gt;A4</span><br><span class="line"></span><br><span class="line">A5--注入了一个--&gt;A6</span><br><span class="line">A2--调用--&gt;A6</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">A6--的 build 方法创建一个--&gt;A7</span><br><span class="line">A7--调用 newInstance 方法创建了含--&gt;A4</span><br><span class="line">A8--用来代替--&gt;A3</span><br><span class="line">A4--的--&gt;A8</span><br><span class="line"></span><br><span class="line">A4--调用--&gt;A9</span><br><span class="line">A9--然后--&gt;B1</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<p><img src="https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210130163421.png" alt="image-20210130163418057"></p>
+<h3 id="整合-FeignCircuitBreaker-Builder-步骤"><a href="#整合-FeignCircuitBreaker-Builder-步骤" class="headerlink" title="整合 FeignCircuitBreaker.Builder 步骤"></a>整合 FeignCircuitBreaker.Builder 步骤</h3><blockquote>
+<p>即不注入自己的 Builder, 使用 openfeign 提供的 Builder, 通过扩展 CircuitBreakerFactory(即扩展 CircuitBreaker) 来实现流控降级(倒是 fallback 的处理便轻松了不少)</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">1.在 SentinelCircuitBreakerAutoConfiguration 注入一个 CircuitBreakerFactory.</span><br><span class="line">2.在 Openfeign 中, 会调用其 create() 创建得到一个 CircuitBreaker (即 SentinelCircuitBreaker)</span><br><span class="line">3.接着会在 FeignCircuitBreakerInvocationHandler.invoke() 中获取这个 CircuitBreaker, 调用其 run() 将要执行的 method 交给 SentinelCircuitBreaker 来处理.</span><br><span class="line">4.SentinelCircuitBreaker 中 run() 的实现就是简单的 SphU.entry() 来包装方法为资源进行流控降级, 至于 fallback 则直接调用 apply 交由 Openfeign 处理.</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>总结: 不写自己的 Builder, 简单多了! 主要是去掉了 fallback 相关配置的获取与处理.</p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>下次一定</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="gudqs7 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/bitcoin.png" alt="gudqs7 比特币">
+        <p>比特币</p>
+      </div>
+
+  </div>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/spring-cloud-alibaba/" rel="tag"># spring cloud alibaba</a>
+              <a href="/tags/sentinel/" rel="tag"># sentinel</a>
+              <a href="/tags/Circuit-Breaking/" rel="tag"># Circuit Breaking</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/01/29/source-code-spring-cloud-server-discover-and-register/" rel="prev" title="Spring Cloud 服务注册与发现源码笔记 (Nacos/Consul/Eureka)">
+      <i class="fa fa-chevron-left"></i> Spring Cloud 服务注册与发现源码笔记 (Nacos/Consul/Eureka)
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/01/30/source-code-spring-cloud-gateway/" rel="next" title="source-code-spring-cloud-gateway">
+      source-code-spring-cloud-gateway <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+    </div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Sentinel-与-Openfeign-整合"><span class="nav-number">1.</span> <span class="nav-text">Sentinel 与 Openfeign 整合</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#关键类"><span class="nav-number">1.1.</span> <span class="nav-text">关键类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#整合步骤"><span class="nav-number">1.2.</span> <span class="nav-text">整合步骤</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#整合-FeignCircuitBreaker-Builder-步骤"><span class="nav-number">1.3.</span> <span class="nav-text">整合 FeignCircuitBreaker.Builder 步骤</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="gudqs7"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">gudqs7</p>
+  <div class="site-description" itemprop="description">心累没钱躺尸中</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">19</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">19</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">26</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/gudqs7" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;gudqs7" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:gudqs7@gmail.com" title="E-Mail → mailto:gudqs7@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">gudqs7</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+  function loadCount() {
+    var d = document, s = d.createElement('script');
+    s.src = 'https://gudqs7s-note.disqus.com/count.js';
+    s.id = 'dsq-count-scr';
+    (d.head || d.body).appendChild(s);
+  }
+  // defer loading until the whole page loading is completed
+  window.addEventListener('load', loadCount, false);
+</script>
+<script>
+  var disqus_config = function() {
+    this.page.url = "https://gudqs7.github.io/2021/01/30/source-code-spring-cloud-alibaba-sentinel/";
+    this.page.identifier = "2021/01/30/source-code-spring-cloud-alibaba-sentinel/";
+    this.page.title = "Spring Cloud Alibaba Sentinel 源码笔记";
+    };
+  NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {
+    if (window.DISQUS) {
+      DISQUS.reset({
+        reload: true,
+        config: disqus_config
+      });
+    } else {
+      var d = document, s = d.createElement('script');
+      s.src = 'https://gudqs7s-note.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', '' + +new Date());
+      (d.head || d.body).appendChild(s);
+    }
+  });
+</script>
+
+</body>
+</html>

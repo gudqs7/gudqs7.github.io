@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"gudqs7.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Spring Gateway 源码笔记关键类123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051521.DispatcherHandler	Spring Webflux 的核心类, 负责协调 HandlerMapping 和 HandlerAdapter2.Hand">
+<meta property="og:type" content="article">
+<meta property="og:title" content="source-code-spring-cloud-gateway">
+<meta property="og:url" content="https://gudqs7.github.io/2021/01/30/source-code-spring-cloud-gateway/index.html">
+<meta property="og:site_name" content="gudqs7&#39;s note">
+<meta property="og:description" content="Spring Gateway 源码笔记关键类123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051521.DispatcherHandler	Spring Webflux 的核心类, 负责协调 HandlerMapping 和 HandlerAdapter2.Hand">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210131004943.png">
+<meta property="article:published_time" content="2021-01-30T09:07:38.000Z">
+<meta property="article:modified_time" content="2021-01-30T16:50:53.415Z">
+<meta property="article:author" content="gudqs7">
+<meta property="article:tag" content="spring gateway">
+<meta property="article:tag" content="spring cloud">
+<meta property="article:tag" content="gateway">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210131004943.png">
+
+<link rel="canonical" href="https://gudqs7.github.io/2021/01/30/source-code-spring-cloud-gateway/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>source-code-spring-cloud-gateway | gudqs7's note</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">gudqs7's note</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">心累没钱躺尸中</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://gudqs7.github.io/2021/01/30/source-code-spring-cloud-gateway/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="gudqs7">
+      <meta itemprop="description" content="心累没钱躺尸中">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="gudqs7's note">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          source-code-spring-cloud-gateway
+        </h1>
+
+        <div class="post-meta">
+			
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-01-30 17:07:38" itemprop="dateCreated datePublished" datetime="2021-01-30T17:07:38+08:00">2021-01-30</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-01-31 00:50:53" itemprop="dateModified" datetime="2021-01-31T00:50:53+08:00">2021-01-31</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Spring/" itemprop="url" rel="index"><span itemprop="name">Spring</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/SourceCode/" itemprop="url" rel="index"><span itemprop="name">SourceCode</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2021/01/30/source-code-spring-cloud-gateway/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2021/01/30/source-code-spring-cloud-gateway/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="Spring-Gateway-源码笔记"><a href="#Spring-Gateway-源码笔记" class="headerlink" title="Spring Gateway 源码笔记"></a>Spring Gateway 源码笔记</h1><h2 id="关键类"><a href="#关键类" class="headerlink" title="关键类"></a>关键类</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line">1.DispatcherHandler</span><br><span class="line">	Spring Webflux 的核心类, 负责协调 HandlerMapping 和 HandlerAdapter</span><br><span class="line"></span><br><span class="line">2.HandlerMapping</span><br><span class="line">	Spring Webflux 的核心类, 负责根据请求信息查找 handler</span><br><span class="line"></span><br><span class="line">3.HandlerAdapter</span><br><span class="line">	Spring Webflux 的核心类, 负责执行 handler</span><br><span class="line">	</span><br><span class="line">4.RoutePredicateHandlerMapping</span><br><span class="line">	Spring Gateway 实现的 HandlerMapping, 负责根据谓词查找 Route 对象并返回 handler(FilteringWebHandler)</span><br><span class="line"></span><br><span class="line">5.FilteringWebHandler</span><br><span class="line">	是一个 handler</span><br><span class="line">	用于获取 route 对象的信息(主要是 GatewayFilter), 然后封装所有拦截器(包括 GlobalFilter)到 DefaultGatewayFilterChain, 挨个执行, 倒叙回归.</span><br><span class="line">	</span><br><span class="line">6.RoutePredicateFactory</span><br><span class="line">	谓词实现类的工厂类</span><br><span class="line">	负责创建具体的谓词工厂(如 Path, Method, Before 等)</span><br><span class="line">	apply() 返回一个 Predicate</span><br><span class="line">	</span><br><span class="line">7.Predicate</span><br><span class="line">	定义了 <span class="built_in">test</span> 方法, 返回 Boolean 值, <span class="literal">true</span> 代表匹配, <span class="literal">false</span> 代表不匹配(指匹配 Route)</span><br><span class="line">	</span><br><span class="line">8.GlobalFilter/GatewayFilter</span><br><span class="line">	定义了一个拦截方法, 可拦截请求进行相应处理</span><br><span class="line">	</span><br><span class="line">9.AsyncPredicate/AndAsyncPredicate</span><br><span class="line">	AsyncPredicate 本质上是一个方法(单方法接口), 方法被调用时会调用保存的 Predicate 类型字段的 <span class="built_in">test</span>() 方法.</span><br><span class="line">  AndAsyncPredicate 是一个左右结构的 AsyncPredicate, 进行判断时先判断左边, 再判断右边</span><br><span class="line">  若不断的 and, 会形成树结构. 所以执行时类似遍历二叉树.</span><br><span class="line"></span><br><span class="line">10.RouteDefinitionRouteLocator</span><br><span class="line">	负责从不同的 Locator(如配置文件) 获取 RouteDefinition, 并负责将 RouteDefinition 转成 Route 对象</span><br><span class="line">	</span><br><span class="line">11.RouteDefinition</span><br><span class="line">	包含有路由的所有配置信息, 含谓词, 拦截器, id, url 等等, 但都是字符串.</span><br><span class="line">	</span><br><span class="line">12.Route</span><br><span class="line">	含有的配置信是转化好了的, 如 Predicate 和 GatewayFilter.</span><br><span class="line">	</span><br><span class="line">13.NettyRoutingFilter</span><br><span class="line">	使用 netty 发送 http/wss 等请求.</span><br><span class="line"></span><br><span class="line">14.GatewayFilterFactory</span><br><span class="line">	拦截器实现类的工厂类</span><br><span class="line">	负责创建具体的 GatewayFilter 对象.</span><br><span class="line"></span><br><span class="line">15.AbstractConfigurable</span><br><span class="line">	负责处理谓词的配置和拦截器的配置转化成不同的 Class 配置.</span><br><span class="line">	实际上由 shortcutFieldOrder 属性配合 Binder 实现.</span><br><span class="line">	即按 shortcutFieldOrder 配置的字段列表, 按顺序从 PropertySource 中读取数据进行绑定; 而 PropertySource 则是从 RouteDefinition 的配置信息加入到 Map 后再用 MapConfigurationPropertySource 包装 Map 而得到的.</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>总结: 除了谓词工厂和拦截器工厂这块的实现复杂, 其他都算比较简单, 哪怕响应式编程的代码到处都是, 也还是可以大致的理解代码的意思.</p>
+<p>这两个工厂其实基本是同一套逻辑, 同一套代码, 就是有一个接口名不同, 然后其作用也不同, 但很相似.</p>
+</blockquote>
+<h2 id="谓语的实现原理-如何判断哪些请求该走哪个道"><a href="#谓语的实现原理-如何判断哪些请求该走哪个道" class="headerlink" title="谓语的实现原理(如何判断哪些请求该走哪个道)?"></a>谓语的实现原理(如何判断哪些请求该走哪个道)?</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">1.Spring gateway 基于 Spring webflux, 因此会执行 DispatcherHandler, 这是一个 WebHandler, 所以会调用 DispatcherHandler.handle(), 这个类通过 HandlerMapping 查找对应的 handler 来执行.</span><br><span class="line">2.在初始化时会从容器中查找 HandlerMapping 类型的 bean, 用于查找 handler; 而 gateway 实现了一个 RoutePredicateHandlerMapping(GatewayAutoConfiguration 中注册进去的); 因此这里是入口!!!</span><br><span class="line">3.再看 RoutePredicateHandlerMapping 的逻辑, 其通过继承抽象类, 因此会在 getHandlerInternal() 中获取 handler. 接着回顾下 Route 对象的获取.</span><br><span class="line">4.其使用 RouteDefinitionRouteLocator 对象来调用 PropertiesRouteDefinitionLocator.getRouteDefinitions() 获取 RouteDefinition 集合对象(这里还有好几个不同的 Locator), 然后在 RouteDefinitionRouteLocator.convertToRoute() 中将 RouteDefinition 转成 Route 对象, 此时会调用 RouteDefinitionRouteLocator.combinePredicates() 将 RouteDefinition 中的 PredicateDefinition 集合信息转成了 AsyncPredicate 对象集合. 这个 AsyncPredicate 是通过解析谓词字符串, 根据谓词名称获取工厂类(PredicateFactory)再调用相应工厂类的方法(apply 方法)生成含相应逻辑判断的 GatewayPredicate 类(判断逻辑在 <span class="built_in">test</span> 方法中); 顺带一提谓词配置信息是 从 apply 的参数中传递过来的.</span><br><span class="line">5.Spring Gateway 默认注入了很多工厂(见 GatewayAutoConfiguration), 如 Host,Path,Method,Query,Cookie 等等.</span><br><span class="line">6.这样 在 RoutePredicateHandlerMapping.lookupRoute() 中的 r.getPredicate().apply(exchange) 就会执行 Route 中的谓词判断, 仅保留匹配的 Route, 然后再剩下的 Route 中取第一个返回. 最后将 Route 对象存到 exchange 中, 然后返回 FilteringWebHandler. </span><br><span class="line">7.这是一个 WebHandler, 会由自带的适配器 SimpleHandlerAdapter 执行, 即调用其 handle 方法.</span><br><span class="line">8.FilteringWebHandler 从 exchange 中取出 Route 对象, 在将 globalFilter 和 gatewayFilter 放到集合中(相当于链)再递归调用所有 Filter; 其中有几个 Filter 会执行请求, 即将请求分发到指定地址. 如 NettyRoutingFilter(见 GatewayAutoConfiguration).</span><br><span class="line">9.到此以将 Spring gateway 接收到的请求根据谓语匹配对应的 Route(路由) 再执行所有的 Filter 后请求 route 配置的地址.</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>总结: 从 Spring webflux 的入口, 先 getHandler(), 得到的是返回值 FilteringWebHandler, 这个返回值会被 SimpleHandlerAdapter 执行, 但与谓词的逻辑无关; 但 getHandler() 还将配置文件(以及其他地方)获取到的 RouteDefinition 转成 Route 对象, 同时也将 RouteDefinition 中的 PredicateDefinition 转换成了 Predicate, 再将多个 Predicate 组成树结构变成一个 AsyncPredicate; 然后调用 AsyncPredicate 遍历执行每个谓词判断. 有一个返回 false, 则整个结果返回 false (指 and 相连). 如此便完成了根据谓词判断是否匹配 Route!!</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line">graph TB</span><br><span class="line"></span><br><span class="line">A1(DispatcherHandler)</span><br><span class="line">A2(HandlerMapping#getHandler)</span><br><span class="line">A3(RoutePredicateHandlerMapping#getHandlerInternal)</span><br><span class="line">A4(RouteDefinitionRouteLocator#getRouteDefinitions)</span><br><span class="line">A5(RouteDefinition)</span><br><span class="line">A6(RouteDefinitionRouteLocator#convertToRoute)</span><br><span class="line">A7(Route)</span><br><span class="line">A8(RouteDefinitionRouteLocator#combinePredicates)</span><br><span class="line">A9(PredicateDefinition#谓词配置信息)</span><br><span class="line">A0(AsyncPredicate#可执行的谓词)</span><br><span class="line"></span><br><span class="line">B0(PredicateFactory#apply)</span><br><span class="line">B1(GatewayPredicate#test 谓词判断)</span><br><span class="line">B2(GlobalFilter 含 NettyRoutingFilter)</span><br><span class="line">B3(FilteringWebHandler)</span><br><span class="line">B4(SimpleHandlerAdapter#适配器)</span><br><span class="line">B5(DefaultGatewayFilterChain#拦截器链)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">A1--调用--&gt;A2</span><br><span class="line">A2--调用子类--&gt;A3</span><br><span class="line"></span><br><span class="line">A3--后触发所有--&gt;A0</span><br><span class="line">A0--通过--&gt;B1</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">A4--从配置文件等地方获得--&gt;A5</span><br><span class="line">A5--通过--&gt;A6</span><br><span class="line"></span><br><span class="line">A6--还调用--&gt;A8</span><br><span class="line">A8--将--&gt;A9</span><br><span class="line">A9--通过调用--&gt;B0</span><br><span class="line">B0--得到 Predicate 对象, 再由多个对象组合得到--&gt;A0</span><br><span class="line"></span><br><span class="line">B1--返回匹配的--&gt;A7</span><br><span class="line">A7--将其存到 exchange 对象中, 然后返回--&gt;B3</span><br><span class="line"></span><br><span class="line">B4--负责执行--&gt;B3</span><br><span class="line">B3--从 exchange 对象获取 Route 后再将--&gt;B2</span><br><span class="line">B2--打包封装成一个--&gt;B5</span><br><span class="line"></span><br><span class="line">B5--最终会执行--&gt;G1(NettyRoutingFilter#发起HTTP请求)</span><br><span class="line"></span><br><span class="line">A1--调用--&gt;B4</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<p><img src="https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210131004943.png" alt="iShot2021-01-31 00.48.56"></p>
+<h2 id="与-LoadBalancer-对接步骤"><a href="#与-LoadBalancer-对接步骤" class="headerlink" title="与 LoadBalancer 对接步骤"></a>与 LoadBalancer 对接步骤</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1.上面讲到执行所有的 Filter, 那么除了用户配置的 GatewayFilter, Gateway 配置的全局 Filter 也会执行(见 GatewayAutoConfiguration); 而负责处理 lb:// 的 Filter 是 ReactiveLoadBalancerClientFilter (见 GatewayReactiveLoadBalancerClientAutoConfiguration) </span><br><span class="line">2.具体方法为 ReactiveLoadBalancerClientFilter.filter(), 其逻辑是取出 host, 调用 LoadBalancer 的 choose() 获取 ServiceInstance, 然后将 url put 回 exchange 的上下文中存起来即可.</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="拦截器的执行方式"><a href="#拦截器的执行方式" class="headerlink" title="拦截器的执行方式?"></a>拦截器的执行方式?</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 拦截链是肯定的, 所有的 Filter 都可以先执行自己逻辑, 再使用 chain 触发下一个 Filter 直到无拦截器</span></span><br><span class="line"><span class="comment">// 然后开始返回, 因为是顺序进入, 所以是倒叙返回</span></span><br><span class="line"><span class="comment">// 返回后正常是一路不断往回返回, 但你的 Filter 也可以在 调用 chain 的时候不直接返回, 而是先暂存返回值, 再通过 exchange 对象(此时执行了其他 Filter 包括实际请求也执行了, 因此会有响应数据)取出响应数据(或返回值), 进行修改, 再 return 暂存的变量.</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">DefaultGatewayFilterChain</span> <span class="keyword">implements</span> <span class="title">GatewayFilterChain</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">int</span> index;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> List&lt;GatewayFilter&gt; filters;</span><br><span class="line"></span><br><span class="line">  DefaultGatewayFilterChain(List&lt;GatewayFilter&gt; filters) &#123;</span><br><span class="line">    <span class="keyword">this</span>.filters = filters;</span><br><span class="line">    <span class="keyword">this</span>.index = <span class="number">0</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">private</span> <span class="title">DefaultGatewayFilterChain</span><span class="params">(DefaultGatewayFilterChain parent, <span class="keyword">int</span> index)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">this</span>.filters = parent.getFilters();</span><br><span class="line">    <span class="keyword">this</span>.index = index;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> List&lt;GatewayFilter&gt; <span class="title">getFilters</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> filters;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> Mono&lt;Void&gt; <span class="title">filter</span><span class="params">(ServerWebExchange exchange)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> Mono.defer(() -&gt; &#123;</span><br><span class="line">      <span class="comment">// 这里挨个取出, 虽然没有对 filters 进行 pop 操作啥的, 但是下一个执行完后, 会调用 chain.filter</span></span><br><span class="line">      <span class="comment">// 等于在递归进入这个方法, 虽然是不同对象的.. 但因为维护了 parent 和 index 的值</span></span><br><span class="line">      <span class="comment">// 使得 this.index &lt; filters.size() 这个递归终止条件得以正确执行. 因此和递归是类似的.</span></span><br><span class="line">      <span class="comment">// 也就是说, 最后所有 filter 执行完后, 也会不断的回归.</span></span><br><span class="line">      <span class="comment">// 那么, 最后的 Filter 完成请求(比如 http 请求), 得到的 response 会存在 exchange 中</span></span><br><span class="line">      <span class="comment">// 这样回归过程(也就是 chain.filter 方法之后得代码就可以取得数据进行干预)</span></span><br><span class="line">      <span class="keyword">if</span> (<span class="keyword">this</span>.index &lt; filters.size()) &#123;</span><br><span class="line">        GatewayFilter filter = filters.get(<span class="keyword">this</span>.index);</span><br><span class="line">        DefaultGatewayFilterChain chain = <span class="keyword">new</span> DefaultGatewayFilterChain(<span class="keyword">this</span>, <span class="keyword">this</span>.index + <span class="number">1</span>);</span><br><span class="line">        <span class="keyword">return</span> filter.filter(exchange, chain);</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> Mono.empty(); <span class="comment">// complete</span></span><br><span class="line">      &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>下次一定</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="gudqs7 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/bitcoin.png" alt="gudqs7 比特币">
+        <p>比特币</p>
+      </div>
+
+  </div>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/spring-gateway/" rel="tag"># spring gateway</a>
+              <a href="/tags/spring-cloud/" rel="tag"># spring cloud</a>
+              <a href="/tags/gateway/" rel="tag"># gateway</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/01/30/source-code-spring-cloud-alibaba-sentinel/" rel="prev" title="Spring Cloud Alibaba Sentinel 源码笔记">
+      <i class="fa fa-chevron-left"></i> Spring Cloud Alibaba Sentinel 源码笔记
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+    </div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Spring-Gateway-源码笔记"><span class="nav-number">1.</span> <span class="nav-text">Spring Gateway 源码笔记</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#关键类"><span class="nav-number">1.1.</span> <span class="nav-text">关键类</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#谓语的实现原理-如何判断哪些请求该走哪个道"><span class="nav-number">1.2.</span> <span class="nav-text">谓语的实现原理(如何判断哪些请求该走哪个道)?</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#与-LoadBalancer-对接步骤"><span class="nav-number">1.3.</span> <span class="nav-text">与 LoadBalancer 对接步骤</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#拦截器的执行方式"><span class="nav-number">1.4.</span> <span class="nav-text">拦截器的执行方式?</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="gudqs7"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">gudqs7</p>
+  <div class="site-description" itemprop="description">心累没钱躺尸中</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">19</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">19</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">26</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/gudqs7" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;gudqs7" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:gudqs7@gmail.com" title="E-Mail → mailto:gudqs7@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">gudqs7</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+  function loadCount() {
+    var d = document, s = d.createElement('script');
+    s.src = 'https://gudqs7s-note.disqus.com/count.js';
+    s.id = 'dsq-count-scr';
+    (d.head || d.body).appendChild(s);
+  }
+  // defer loading until the whole page loading is completed
+  window.addEventListener('load', loadCount, false);
+</script>
+<script>
+  var disqus_config = function() {
+    this.page.url = "https://gudqs7.github.io/2021/01/30/source-code-spring-cloud-gateway/";
+    this.page.identifier = "2021/01/30/source-code-spring-cloud-gateway/";
+    this.page.title = "source-code-spring-cloud-gateway";
+    };
+  NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {
+    if (window.DISQUS) {
+      DISQUS.reset({
+        reload: true,
+        config: disqus_config
+      });
+    } else {
+      var d = document, s = d.createElement('script');
+      s.src = 'https://gudqs7s-note.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', '' + +new Date());
+      (d.head || d.body).appendChild(s);
+    }
+  });
+</script>
+
+</body>
+</html>
