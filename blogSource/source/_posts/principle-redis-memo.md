@@ -1,5 +1,5 @@
 ---
-title: principle-redis-memo
+title: Redis 底层探秘
 date: 2021-02-03 19:06:58
 tags: 
   - redis
@@ -7,6 +7,7 @@ tags:
 categories:
   - [Redis]
   - [NoSql]
+  - [Interview]
 ---
 
 

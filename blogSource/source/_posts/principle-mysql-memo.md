@@ -6,7 +6,7 @@ tags:
   - msyql-principle
 categories:
   - [MySQL]
-
+  - [Interview]
 ---
 
 

@@ -12,7 +12,7 @@ categories:
   - [Spring]
   - [MyBatis]
   - [Spring-MVC]
-  - [interview]
+  - [Interview]
 ---
 
 
