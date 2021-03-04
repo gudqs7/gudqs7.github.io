@@ -404,7 +404,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-01-25 23:11:18" itemprop="dateModified" datetime="2021-01-25T23:11:18+08:00">2021-01-25</time>
+                <time title="修改时间：2021-02-11 20:45:51" itemprop="dateModified" datetime="2021-02-11T20:45:51+08:00">2021-02-11</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -594,7 +594,9 @@
 <p>因为计算机做运算时, 取模运算速度远远慢于位运算, 而若容量始终为 2 的指数幂, 则根据 hash 获取数组下标时只需要 使用 <code>(数组长度-1) &amp; hash 值</code> 即可确定数组下标, 与取模得到的下标一样可靠.</p>
 <p>而扩容后后, 因为需要进行 rehash 运算来确定 数据的新下标, 多次进行取数组下标则更能体现位运算的优势.</p>
 </blockquote>
-<h4 id="为什么-HashMap-的加载因子是-0-75-3-4"><a href="#为什么-HashMap-的加载因子是-0-75-3-4" class="headerlink" title="为什么 HashMap 的加载因子是 0.75 (3/4)"></a>为什么 <code>HashMap</code> 的加载因子是 0.75 (3/4)</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">使用排除法:</span><br><span class="line">1.若加载因子为 1. 则每次 HashMap 满了才进行扩容, 必将有更高的几率触发 hash 碰撞导致数组下标一致需要转成链表或红黑树, 导致读取和更新速度降低.</span><br><span class="line">2.若加载因子为 0.5. 则每次 HashMap 都有一半容量剩余, 空间大大浪费, 对内存开销太大. 容易引发 OOM 事故.</span><br><span class="line"></span><br><span class="line">另外:</span><br><span class="line">0.5-1 之间那么多可能, 选哪个都行, 但作为 HashMap 的默认值, 选中间的 0.75, 走中庸之路, 也是解释的通的.</span><br></pre></td></tr></table></figure>
+<h4 id="为什么-HashMap-的加载因子是-0-75-3-4"><a href="#为什么-HashMap-的加载因子是-0-75-3-4" class="headerlink" title="为什么 HashMap 的加载因子是 0.75 (3/4)"></a>为什么 <code>HashMap</code> 的加载因子是 0.75 (3/4)</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">使用排除法:</span><br><span class="line">1.若加载因子为 1. 则每次 HashMap 满了才进行扩容, 必将有更高的几率触发 hash 碰撞导致数组下标一致需要转成链表或红黑树, 导致读取和更新速度降低.</span><br><span class="line">2.若加载因子为 0.5. 则每次 HashMap 都有一半容量剩余, 空间大大浪费, 对内存开销太大. 容易引发 OOM 事故.</span><br><span class="line">3.0.5-1 之间那么多可能, 选哪个都行, 但作为 HashMap 的默认值, 选中间的 0.75, 走中庸之路, 也是解释的通的.</span><br></pre></td></tr></table></figure>
+
+
 
 <h4 id="为什么-HashMap-1-8-扩容无需-rehash"><a href="#为什么-HashMap-1-8-扩容无需-rehash" class="headerlink" title="为什么 HashMap 1.8 扩容无需 rehash"></a>为什么 <code>HashMap</code> 1.8 扩容无需 rehash</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">1. 因为1.8的获取 hash 值的算法优化了. 无需一个 hashSeed 进行辅助运算 (主因)</span><br><span class="line">2. 由于 hash 值不变, 原链表中的所有节点只有 2 种可能:</span><br><span class="line">	一是 hash 值高于原数组长度, 则属于高位, 这些高位的节点, 新的下标一定是 (当前下标 + 旧数组长度). </span><br><span class="line">	另一种是 hash 值低于原数组长度, 属于低位, 这些节点的下标无需重新计算, 必然与当前下标一致</span><br><span class="line">	(不信自己那几个示例数据用画出完整二进制计算一下)(神奇的位运算)</span><br><span class="line">3. 重新计算下标时, 根据第 2 点可知, 其下标大小一定不高于(当前下标+旧数组长度), 即下一次循环的下标必然比上一次循环的下标要高, 所以 1.8 源码 resize 进行高低位分组然后转移数据时, 无需担心下一次循环会将刚刚放到新数组的值覆盖(下标相同则会覆盖)</span><br><span class="line">4. 1.8 的 resize 优化了算法, 保持了原有的链表顺序(不知道有啥用)</span><br></pre></td></tr></table></figure>
 
@@ -783,6 +785,865 @@
 <h4 id="削峰"><a href="#削峰" class="headerlink" title="削峰"></a>削峰</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">定义:</span><br><span class="line">	将请求高峰打平, 使得系统可以处理过来.</span><br><span class="line">示例:</span><br><span class="line">	某次秒杀 1 分钟过来 1 万请求, 而系统一分钟大概只能处理 1千 请求, 系统要处理完这些请求理论需要 10 分钟, 但如果不做处理, 请求瞬间打过来, 系统直接卡死, 卡住时候一分钟可能只能处理 100 请求. 此时需要将所有请求都打到队列里面, 系统再慢慢从队列中读取处理.</span><br></pre></td></tr></table></figure>
 
 
+
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://gudqs7.github.io/2021/02/04/principle-jvm-memo/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="gudqs7">
+      <meta itemprop="description" content="心累没钱躺尸中">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="gudqs7's note">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2021/02/04/principle-jvm-memo/" class="post-title-link" itemprop="url">JVM 底层探秘笔记</a>
+        </h2>
+
+        <div class="post-meta">
+			
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-02-04 11:07:44" itemprop="dateCreated datePublished" datetime="2021-02-04T11:07:44+08:00">2021-02-04</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-02-11 15:18:21" itemprop="dateModified" datetime="2021-02-11T15:18:21+08:00">2021-02-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/JVM/" itemprop="url" rel="index"><span itemprop="name">JVM</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2021/02/04/principle-jvm-memo/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2021/02/04/principle-jvm-memo/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="JVM-底层探秘笔记"><a href="#JVM-底层探秘笔记" class="headerlink" title="JVM 底层探秘笔记"></a>JVM 底层探秘笔记</h1><h2 id="JVM-速记"><a href="#JVM-速记" class="headerlink" title="JVM 速记"></a>JVM 速记</h2><h3 id="什么是-JVM"><a href="#什么是-JVM" class="headerlink" title="什么是 JVM?"></a>什么是 JVM?</h3><blockquote>
+<p> JVM 就是由编译器, 类加载器, 执行引擎, 运行时数据区组成. 其中数据区包含 堆,栈,本地方法栈, 方法区和程序计数器(PC 寄存器), 其中栈是由局部变量表, 操作数栈, 动态链接, 返回地址组成的.</p>
+</blockquote>
+<h3 id="你是怎么对-jvm-垃圾回收进行优化的"><a href="#你是怎么对-jvm-垃圾回收进行优化的" class="headerlink" title="你是怎么对 jvm 垃圾回收进行优化的?"></a>你是怎么对 jvm 垃圾回收进行优化的?</h3><blockquote>
+<p>根据服务器的配置, 调整青年代和老年代的内存大小及比例, 在回收频率和回收速度上做取舍, 使用 G1 垃圾回收期控制 STW 停顿时间, 提高吞吐量.</p>
+</blockquote>
+<h3 id="JVM-内存模型"><a href="#JVM-内存模型" class="headerlink" title="JVM 内存模型"></a>JVM 内存模型</h3><blockquote>
+<p>每个线程有自己的内存区域, 多线程之间通信主要通过共享内存来实现.</p>
+</blockquote>
+<ul>
+<li>有序性: 在 CPU 执行指令时, 可能会对非 happens-before 指令进行重排, 优化执行效率. 在单线程情况, 往往不会产生问题, 但涉及多线程时, 可能导致 bug.</li>
+<li>可见性: 一个线程修改了一个共享变量, 另一个线程不会知道这个改变, 这就是不可见, 要确保可见性, 一般使用 volatile 关键词, 当然, 加锁也可以.</li>
+<li>原子性: 即对于某代码, 实际执行时会分为好几个原子指令, 确保原子性必须加锁 (如synchronized) 处理</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">happens-before:</span><br><span class="line">读后写</span><br><span class="line">写后写</span><br><span class="line">锁后解锁</span><br><span class="line">可传递性</span><br></pre></td></tr></table></figure>
+
+<h3 id="多线程"><a href="#多线程" class="headerlink" title="多线程"></a>多线程</h3><blockquote>
+<p>线程是一个进程中的不同执行路径, 一个进程至少有一个主线程.</p>
+<p>进程是一个程序的抽象, 一个程序运行后一般为一个进程.</p>
+</blockquote>
+<p>线程状态:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">1.New (新建)</span><br><span class="line">2.Runnable (就绪)</span><br><span class="line">3.Running (运行中)</span><br><span class="line">4.Blocked (阻塞)</span><br><span class="line">5.WAITING (等待)</span><br><span class="line">6.TIMED_WAITING (超时等待)</span><br><span class="line">7.Dead (死亡)</span><br><span class="line"></span><br><span class="line">[t:thread对象, obj: 同步块中的对象]</span><br><span class="line">New: new Thread()</span><br><span class="line">Runnable: t.start(), t.yield()</span><br><span class="line">Running: after t.start() and cpu run it</span><br><span class="line">Blocked: when enter synchronized block</span><br><span class="line">WAITING: obj.wait(), t.join(), LockSupport.park()</span><br><span class="line">TIMED_WAITING: Thread.sleep(x), obj.wait(x), t.join(x)</span><br><span class="line">Dead: when t.run() is over</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="JVM-对象结构"><a href="#JVM-对象结构" class="headerlink" title="JVM 对象结构"></a>JVM 对象结构</h3><ul>
+<li><strong>对象头</strong>: 存储对象运行时数据和类型指针<ul>
+<li><strong>Mark Word</strong>: 运行时数据<ul>
+<li>标志位为01-未锁定: 对象 hash 码, 对象分代年龄</li>
+<li>标志位为00-轻量级锁定: 指向锁记录的指针</li>
+<li>标志位为10-重量级锁定: 执行重量级锁的指针</li>
+<li>标志位为11-GC标记: 空, 不需要记录信息</li>
+<li>标志位为01-可偏向: 偏向线程ID、偏向时间戳、对象分代年龄</li>
+</ul>
+</li>
+<li><strong>类型指针</strong>： 指向对象的类的元数据的指针</li>
+<li><strong>[数组长度]</strong>： 若对象时数组，则会保存数组长度</li>
+</ul>
+</li>
+<li><strong>实例数据</strong>： 保存字段内容，包括父级</li>
+<li><strong>对齐</strong>： 确保 8 字节，凑整</li>
+</ul>
+<h3 id="垃圾回收"><a href="#垃圾回收" class="headerlink" title="垃圾回收"></a>垃圾回收</h3><h4 id="标记算法"><a href="#标记算法" class="headerlink" title="标记算法"></a>标记算法</h4><ol>
+<li><strong>引用计数法</strong>: 通过计算对象的引用数来判断对象是否可回收. 缺点是无法处理循环引用的问题.</li>
+<li><strong>可达性分析算法</strong>: 从根对象(两个栈引用的对象、静态属性引用的对象、常量引用的对象)出发, 寻找所有引用的对象, 形成根对象的引用链, 判断对象是否与根对象的引用链相关联来决定对象是否可回收.</li>
+</ol>
+<h4 id="回收算法"><a href="#回收算法" class="headerlink" title="回收算法"></a>回收算法</h4><ol>
+<li><strong>标记-清除算法</strong>：标记后直接清除, 效率低, 产生内存碎片</li>
+<li><strong>标记-复制算法</strong>：需要两个大小相同的内存区域, 其中一块保持空闲, 先标记可用对象, 然后将可用对象复制到空闲区域, 再清空整块内存, 使其满足一块保持空闲, 如此循环即可.</li>
+<li><strong>标记-整理算法</strong>：标记后移动内存, 令内存使用的区域与未使用的区域均无碎片, 缺点是效率低, 有的是空间占用少.</li>
+<li><strong>分代算法</strong>：将堆分为新生代与老年代，根据自个区域的特定采用不同的回收算法. 新生代又分为 Eden 区(复制算法)、 Survivor 区(因使用复制算法, 分为 From、To 两块内存区域).</li>
+</ol>
+<h4 id="回收器"><a href="#回收器" class="headerlink" title="回收器"></a>回收器</h4><blockquote>
+<p>(前 3 个 Young GC 使用, 后面的 Full GC 使用)</p>
+</blockquote>
+<ol>
+<li><strong>Serial</strong> ：单线程，使用复制算法，整个过程一直 STW</li>
+<li><strong>ParNew</strong> ：多线程，使用复制算法，还是一直 STW</li>
+<li><strong>Parallel Scavenge</strong> ：多线程，使用复制算法，与 ParNew 不同之处在于其关注吞吐量，并可通过调节参数对吞吐量进行控制</li>
+<li><strong>Serial Old</strong>：单线程，使用标记-整理算法，老年代使用</li>
+<li><strong>Parallel Old</strong> ：多线程，使用标记-整理算法，与<strong>Parallel Scavenge</strong>一样，关注吞吐量。</li>
+<li><strong>CMS</strong> ：多线程，使用标记-清除算法，其步骤为：初始标记(STW)-并发标记-重新标记(STW)-清除，具有低停顿的性质，缺点是占用CPU资源严重，且产生内存碎片，整理内存碎片依旧会STW</li>
+<li><strong>G1</strong> ：多线程，与CMS类似，使用标记-整理算法，步骤为：初始标记(STW)-并发标记-最终标记(STW)-筛选清除(可控制停顿时间)，其优点是引入 Region 概念，优先清理垃圾更多的 Region</li>
+</ol>
+<h4 id="对象分配策略"><a href="#对象分配策略" class="headerlink" title="对象分配策略"></a>对象分配策略</h4><ul>
+<li>对象优先在 Eden 去分配</li>
+<li>大对象直接进入老年代</li>
+<li>长期存活的对象将进入老年代，可配置多少岁进入（默认15岁），熬过一次 Minor GC 涨一岁</li>
+<li>动态对象年龄判定， Survivor 区空间中相同年龄所有对象大小的总和大于空间的一半，则年龄大于或等于该年龄的对象直接进入老年代；</li>
+<li>空间分配担保，即防止新生代的对象大量存活时，Survivor 区装不下，则需要判定老年代是否还有足够大的连续空间（大于新生代Eden区或开启参数则取历代存活平均值），若有则可无需 FullGC，反之需要FullGC</li>
+</ul>
+<h2 id="JVM-详记"><a href="#JVM-详记" class="headerlink" title="JVM 详记"></a>JVM 详记</h2><h3 id="组成图"><a href="#组成图" class="headerlink" title="组成图"></a>组成图</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">graph LR</span><br><span class="line"></span><br><span class="line">R(JVM)</span><br><span class="line"></span><br><span class="line">A(编译器)</span><br><span class="line">B(类加载器)</span><br><span class="line">C(执行引擎)</span><br><span class="line">D(运行时数据区)</span><br><span class="line"></span><br><span class="line">D1(堆)</span><br><span class="line">D2(栈)</span><br><span class="line">D3(本地方法栈)</span><br><span class="line">D4(方法区)</span><br><span class="line">D5(程序计数器 Program Count Register)</span><br><span class="line"></span><br><span class="line">D2A(局部变量表)</span><br><span class="line">D2B(操作数栈)</span><br><span class="line">D2C(动态链接)</span><br><span class="line">D2D(返回地址)</span><br><span class="line"></span><br><span class="line">R--&gt;A</span><br><span class="line">R--&gt;B</span><br><span class="line">R--&gt;C</span><br><span class="line">R--&gt;D</span><br><span class="line"></span><br><span class="line">D--&gt;D1</span><br><span class="line">D--&gt;D2</span><br><span class="line">D--&gt;D3</span><br><span class="line">D--&gt;D4</span><br><span class="line">D--&gt;D5</span><br><span class="line"></span><br><span class="line">D2--&gt;D2A</span><br><span class="line">D2--&gt;D2B</span><br><span class="line">D2--&gt;D2C</span><br><span class="line">D2--&gt;D2D</span><br></pre></td></tr></table></figure>
+
+<h3 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h3><p><strong>JVM</strong>: </p>
+<ul>
+<li><strong>编译器</strong>：对 Java 代码做优化，并将代码中结构、数据、实际代码编译成字节码。</li>
+<li><strong>类加载器</strong>：<ul>
+<li><strong>类加载过程</strong>: 加载（把字节码二进制流加载到方法区，如文件到内存）、验证（文件格式、元数据合法性、字节码指令等的校验）、准备（静态变量分配内存、初始化零值）、解析（字符符号引用解析成直接引用）、初始化（执行生成的 cinit 方法，里面是对静态变量的赋值指令和 static 块代码）</li>
+<li><strong>new 对象过程</strong>: 先进行类加载(若未加载), 接着为对象分配内存(内存大小是固定的), 接着讲内存空间的字段值初始化为零值(即内存中的值都是根据字段类型所对应的默认值), 对对象进行必要的设置(如与类信息绑定, 对象头的数据初始化等), 到此, 一个对象产生了, 然后再执行它的 init 方法(构造方法)就 ok 了.</li>
+</ul>
+</li>
+<li><strong>执行引擎</strong>：主要负责方法的分派，执行指令控制操作数栈。</li>
+<li><strong>运行时数据区</strong>：<ul>
+<li><strong>堆</strong>: 最大的内存区域, <strong>线程共享</strong>, 主要用于存放对象实例数据, 由于垃圾回收的原因, 也可分为新年代与老年代, 新年代具体可分为 Eden 区, From Survivor 区, To Surviovr 区.</li>
+<li><strong>本地方法栈</strong>: 与栈功能类似, 但服务于 Native 方法, 而Native 方法使用何种语言实现由具体虚拟机实现.</li>
+<li><strong>方法区</strong>: 用于存储加载的类信息、常量、静态变量等，<strong>线程共享</strong>.</li>
+<li><strong>程序计数器 Program Count Register</strong>: 一块较小的内存空间, <strong>线程私有</strong>. 存储线程所执行的字节码指令的行号, 分支、循环、跳转、异常处理、线程恢复等功能都需要依赖此内存. 当运行本地方法时, 值为空.</li>
+<li><strong>栈</strong>: 是Java方法执行的内存模型, <strong>线程私有</strong>, 生命周期与线程相同, 每个方法执行时会创建一个栈桢, 方法的调用和结束对应着栈桢的入栈和出栈. (总结: 栈像个集合, 存储着每个方法的栈桢)<ul>
+<li>(以下属于栈桢)</li>
+<li>局部变量表: 一组变量值存储空间，用于存放方法参数和方法内部定义的局部变量</li>
+<li>操作数栈: 是一个后入先出的栈，数据的写入与写出都由字节码指令控制，一开始是空的；这很像CPU的操作</li>
+<li>动态链接: 指向运行时常量池中该栈桢所属方法的引用，为了支持方法调用过程中的动态链接。</li>
+<li>方法出口(返回地址): 提供用于回到方法被调用的位置的地址，一般为进入前PC计数器中的值。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>总结: 编译Java源代码, 创建内存并划分区域, 加载类字节码, 从入口开始执行指令, 本质上, 所有的执行都是方法直接的组合或嵌套而成, 因此最终所有的指令, 都在方法栈执行, 也就是操作数栈. 所以需要了解常用的指令, 如内存相关, 锁相关, 方法跳转, 指令间跳转(if/for).</p>
+</blockquote>
+<h3 id="指令（操作数栈）"><a href="#指令（操作数栈）" class="headerlink" title="指令（操作数栈）"></a>指令（操作数栈）</h3><ul>
+<li><strong>字节码与数据类型</strong><ul>
+<li>i 开头代表对 int 类型的数据操作</li>
+<li>l 开头代表对 long 类型的数据操作</li>
+<li>s 开头代表对 short 类型的数据操作</li>
+<li>b 开头代表对 byte 类型的数据操作</li>
+<li>c 开头代表对 char 类型的数据操作</li>
+<li>f 开头代表对 float 类型的数据操作</li>
+<li>d 开头代表对 double 类型的数据操作</li>
+<li>a 开头代表对 reference 类型的数据操作</li>
+</ul>
+</li>
+<li><strong>加载和存储指令</strong><ul>
+<li>讲一个局部变量加载到操作栈: iload、iload_<n>  即 <strong>load</strong></li>
+<li>将一个数值从操作数栈存储到局部变量表: istore、istore_<n> 即 store</li>
+<li>将一个常量加载到操作数栈: bipush、sipush、ldc</li>
+<li>扩充局部变量表的访问所以的指令： wide</li>
+</ul>
+</li>
+<li><strong>运算指令</strong><ul>
+<li>加法（iadd、ladd）、减法（isub、lsub）、乘法（imul、lmul）、除法（idiv、ldiv）、求余（irem、lrem）</li>
+<li>取反（ineg、lneg）、位移（ishl、ishr、iushr）、按位或（ior、lor）、按位与（iand、land）、按位异或（ixor、lxor）</li>
+<li>局部变量自增指令（iinc）</li>
+<li>比较指令（dcmpg、dcmpl、fcmpg、fcmpl）</li>
+</ul>
+</li>
+<li><strong>类型转换指令</strong><ul>
+<li>宽化不需要转换（隐式）</li>
+<li>宅化有 i2b、i2c、i2s、l2i、f2i、f2l、d2i、d2l、d2f</li>
+</ul>
+</li>
+<li><strong>对象创建于访问指令</strong><ul>
+<li>创建实例的指令：new</li>
+<li>创建数组的指令：newarray、anewarray、multianewarray</li>
+<li>访问类字段（static 字段）和实例字段的指令：getfield、putfield、getstatic、putstatic</li>
+<li>把一个数组元素度加载到操作数栈：baload、caload、saload；即 aload</li>
+<li>将一个操作数栈的值存储到数组元素中的指令：bastore、castore、sastore、即 astore</li>
+<li>取数组长度的指令:arraylength</li>
+<li>检查类实例类型的指令：instanceof、checkcast</li>
+</ul>
+</li>
+<li><strong>操作数栈管理指令</strong><ul>
+<li>将操作数栈的站定一个或两个元素出栈：pop、pop2</li>
+<li>复制栈顶一个或两个数值并将复制值或双份复制值重新压入栈顶：dup、dup2、dup_x1、dup2_x1</li>
+<li>将栈顶最顶端的两个值互换： swap</li>
+</ul>
+</li>
+<li><strong>控制转移指令</strong><ul>
+<li>条件分支：ifeq、iflt、ifle、ifne、ifgt、ifge、ifnull、ifnonnull、if_icmpeq…</li>
+<li>复合条件分支：tableswitch、lookupswitch</li>
+<li>无条件分支：goto、goto_w、jsr、jsr_w、ret</li>
+</ul>
+</li>
+<li><strong>方法调用和返回指令</strong><ul>
+<li>invokevirtual 调用对象的实例方法，根据对象的实际类型进行分派</li>
+<li>invokeinterface 调用接口方法，搜索实现了接口方法的对象，找出适合的方法调用</li>
+<li>invokespecial 调用一些需要特殊处理的方法，包括实例初始化方法、私有方法、父类方法</li>
+<li>invokestatic 调用静态方法 （static 方法）</li>
+<li>invokedynamic 指令用于在运行时动态解析出调用点限定符所引用的方法</li>
+<li>返回指令 ireturn、lreturn、freturn、dreturn、areturn、return（ void 返回值时）</li>
+</ul>
+</li>
+<li><strong>异常处理指令</strong> athrow；其他异常由涉及的指令抛出；另外 catch 不是由字节码指令实现，而是采用异常表</li>
+<li><strong>同步指令</strong><ul>
+<li>monitorenter 以栈顶元素作为锁开始同步</li>
+<li>monitorexit 推出同步</li>
+</ul>
+</li>
+</ul>
+<h3 id="类文件结构"><a href="#类文件结构" class="headerlink" title="类文件结构"></a>类文件结构</h3><ul>
+<li><strong>魔数</strong> 0xCAFEBABE  和<strong>主版本号</strong>(判断兼容性)</li>
+<li><strong>常量池</strong><ul>
+<li>文本字符串</li>
+<li>声明为 final 的常量值</li>
+<li>类和接口的全限定名</li>
+<li>字段的名称和描述符</li>
+<li>方法的名称和描述符</li>
+</ul>
+</li>
+<li><strong>常量池类型</strong>: 字符, 字段, 方法, 类名, 普通类型常量<ul>
+<li>字符串 CONSTANT_Utf8_info: tag u1, length u2, bytes, u1[]</li>
+<li>Integer, Float, Double,String</li>
+<li>类 CONSTANT_Class_info: tag u1, index u2 (指向字符串)</li>
+<li>CONSTANT_Name-AndType_info: tag u1, index u2, index u2</li>
+<li>字段 CONSTANT_Fieldref_info: tag u1, index u2(指向 CONSTANT_Class_info), index u2(指向CONSTANT_Name-AndType_info)</li>
+<li>字段 CONSTANT_Methodref_info: tag u1, index u2(指向 CONSTANT_Class_info), index u2(指向CONSTANT_Name-AndType_info)</li>
+</ul>
+</li>
+<li><strong>访问标识</strong>: 两个字节, 标识类还是接口, 是否 public, 是否 final, 是否 abstract, 是否注解, 枚举…</li>
+<li><strong>类索引、父类索引、接口索引集合</strong> ：都是 CONSTANT_Class_info，其实就是全限定名</li>
+<li><strong>字段表集合</strong>： 由多个字段表组成，下面为字段表的构成<ul>
+<li>access_flags 字段修饰符： 描述字段是否 public ，是否 private，是否 protected 等等</li>
+<li>name_index 字段的简单名称</li>
+<li>descriptor_index 字段的数据类型, 如 B（byte）、C（char）、D（double）、F（float）、L（对象类型）、[L（对象数组类型）</li>
+<li>attribute_info 字段的额外信息, 如字段为常量时会含有额外信息</li>
+</ul>
+</li>
+<li><strong>方法表集合</strong>：有多个方法表组成， 下面为方法表的构成<ul>
+<li>access_flags 方法修饰符：修饰方法是否为 public、是否为 private、是否为 static、是否 synchronized 等等</li>
+<li>name_index 方法的简单名称</li>
+<li>descriptor_index 方法的参数类型和返回值类型, 先参数，后返回值，且参数被括号包围，如 ()V、(LLDF)L</li>
+<li>attribute_info 方法的额外信息, 里面有名为 Code 的属性, 存放方法代码编译成的字节码指令</li>
+</ul>
+</li>
+<li><strong>属性表集合</strong>：类、字段和方法的额外信息存放处，类型有<ul>
+<li>方法表的 Code：</li>
+<li>字段表的 ConstantValue</li>
+<li>方法表的异常信息 Exceptions</li>
+<li>类中的内部类 InnerClasses</li>
+<li>源码行号与字节码行号的对应关系 LineNumberTable</li>
+<li>栈桢中局部变量表中变量与Java源码定义变量直接的关系 LocalVariableTable</li>
+<li>泛型的签名信息 Signature</li>
+</ul>
+</li>
+</ul>
+<h3 id="类加载过程"><a href="#类加载过程" class="headerlink" title="类加载过程"></a>类加载过程</h3><ul>
+<li><strong>加载</strong><ul>
+<li>通过一个类的全限定名来获取定义此类的二进制字节流</li>
+<li>将这个字节流所代表的惊天存储结构转化为方法区的运行时数据结构</li>
+<li>在内存中生成一个代表这个类的 java.lang.Class 对象,作为方法区这个类的各种数据的访问入口</li>
+</ul>
+</li>
+<li><strong>验证</strong><ul>
+<li>文件格式验证（如魔数，版本号、常量的类型等等）会简单校验字节流，将字节流转为内存里的数据结构</li>
+<li>元数据验证（这个类是否有父类、继承的类是否合法、非抽象类是否实现了所有抽象方法等等）</li>
+<li>字节码验证（校验方法代码中的字节码指令语义是否正确、保证方法的类型转换时有效的）</li>
+<li>符号引用验证（校验常量区的符号引用是否正确，确保解析阶段能正常执行）</li>
+</ul>
+</li>
+<li><strong>准备</strong><ul>
+<li>为静态变量分配内存，并初始化为零值</li>
+</ul>
+</li>
+<li><strong>解析</strong><ul>
+<li>类或接口的解析：解析的符号引用的类不是数组则需要先加载这个类，再校验访问权限</li>
+<li>字段解析：先从自身找，自身无且实现了接口，则找继承的接口中的引用，自身无也无实现接口，则找父类，都找不到则报错，找到则校验权限。</li>
+<li>方法解析：与字段类似，从自身到实现的接口、继承的父类中找，找到后校验权限。</li>
+<li>接口方法解析：从自身接口中或父接口中找、找到无需校验权限（都是 public）</li>
+</ul>
+</li>
+<li><strong>初始化</strong><ul>
+<li>执行 cinit 方法，方法中执行对静态变量的赋值指令和 static 快</li>
+<li>父类的初始化方法一定先于子类执行</li>
+<li>执行时会加锁同步执行、因此不要进行耗时操作</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>顺带一提类加载器，作用是加载字节码二进制流到虚拟机中，除了系统顶级的类加载器（用于加载 rt.jar）是由 C++ 实现外，其他的类加载器都是 Java代码，通过组合一个类加载器（即父类加载器），实现双亲委派模型：即总是先通过父类加载类，除非父类加载失败；若自己实现一个类加载器，一般需要组合 ClassLoader.getSystemClassLoader()</p>
+<p>系统的类加载器有:</p>
+<ul>
+<li>启动类加载器 Bootstrap ClassLoader 加载 JAVA_HOME/lib 下的类，如 rt.jar</li>
+<li>扩展类加载器 Extension ClassLoader 加载 JAVA_HOME/lib/ext 下的类</li>
+<li>应用程序类加载器 Application ClassLoader 加载 classpath 下的类</li>
+</ul>
+</blockquote>
+<h3 id="Java-内存模型"><a href="#Java-内存模型" class="headerlink" title="Java 内存模型"></a>Java 内存模型</h3><p>主要是为了屏蔽调各种硬件和操作系统的内存访问差异，以实现 Java 程序在各种平台下都能达到一致的内存访问效果。可有效防止不同平台的并发访问因平台差异有所不同引发线程安全问题。</p>
+<ul>
+<li><strong>主内存与工作内存</strong>：这里变量不包括线程私有的内存区域<ul>
+<li>所有变量都存储主内存中</li>
+<li>每条线程有自己的工作内存</li>
+<li>线程的工作内存中保存了该线程使用到的变量的主内存副本拷贝</li>
+<li>线程对变量的所有操作（读取、赋值等）都必须在工作内存中进行，而不能直接读写主内存的变量。</li>
+<li>不同线程之间无法直接访问对方工作内存中的变量</li>
+<li>线程间变量值的传递均需要通过主内存来完成</li>
+<li>主内存类似于物理硬件中的内存，而工作内存优先存储于寄存器和高速缓存中（看 JVM 具体实现）</li>
+</ul>
+</li>
+<li><strong>内存间交互操作</strong><ul>
+<li>lock：作用于主内存的变量，它把一个变量表示为一条线程独占的状态。</li>
+<li>unlock：作用于主内存的变量，它把一个处于锁定状态的变量释放出来，释放后的变量才可以被其他线程锁定。</li>
+<li>read：作用于主内存的变量，它把一个变量的值从主内存传输到线程的工作内存中，以便随后的 load 动作使用</li>
+<li>load：作用于工作内存的变量，它把 read 操作从主内存中得到的变量值放入工作内存的变量副本中。</li>
+<li>use：作用于工作内存的变量，它把工作内存中一个变量的值传递给执行引擎，每当虚拟机遇到一个需要使用变量的值的字节码指令都会执行这个操作。</li>
+<li>assign：作用于工作内存的变量，它把一个从执行引擎接收到的值赋给工作内存的变量，每当虚拟机遇到一个需要给变量赋值的字节码指令时执行这个操作。</li>
+<li>store：存储作用于工作内存的变量，它把工作内存中一个变量的值传递给主内存中，以便随后的 write 操作使用</li>
+<li>write：作用于主内存的变量，它把 store 操作从工作内存中得到的变量的值放入主内存中的变量中。</li>
+</ul>
+</li>
+<li><strong>对于 volatile 型变量的特殊规则</strong><ul>
+<li>保证此变量对所有线程的可见性，但不保证原子性，因此部分操作仍是线程不安全的， 如 i++</li>
+<li>禁用指令重排序优化， 即保证变量的赋值操作的顺序与代码中的顺序一致；其他变量可能会因指令重排序优化而不一致。</li>
+</ul>
+</li>
+<li><strong>对于 long 和 double 型变量的特殊规则</strong><ul>
+<li>对于这两类型变量， JVM 规范不严格要求对 8个操作（read、load等）都具有原子性</li>
+<li>但大多数虚拟机实现仍保证了这一点，所有不需要把这类型的变量特别的添加 volatile 修饰</li>
+</ul>
+</li>
+<li><strong>原子性、可见性、有序性</strong><ul>
+<li><strong>原子性</strong>：有 Java 内存模型来直接保证原子性变量操作包括（read、load、assign、use、store、write），基本可以认为基本数据类型的访问读写是具有原子性的，可使用 synchronized 实现原子性</li>
+<li><strong>可见性</strong>：是指当一个线程修改了共享变量的值，其他线程能够立即得知这个修改。volatile、synchronized、final 可实现可见性</li>
+<li><strong>有序性</strong>：如果在本线程内观察，所有的操作都是有序的；如果在一个线程观察另一个线程，所有的操作都是无序的。可使用 volatile、synchronized 实现有序性</li>
+</ul>
+</li>
+<li><strong>先行发生原则</strong><ul>
+<li>程序次序规则：在一个线程中，按照程序代码顺序，书写在前的操作先行发生于书写在后的操作。</li>
+<li>管程锁定规则：一个 unlock 操作先行发生与后面对同一个锁的 lock 操作。</li>
+<li>volatile 变量规则：对一个 volatile 变量的写操作先行发生于后面对这个变量的读操作。</li>
+<li>线程启动规则：Thread 对象的 start 方法先行发生于此线程的每一个动作</li>
+<li>线程终止规则：线程中所有操作都先行发生于对此线程的终止检测。</li>
+<li>线程中断规则：对线程 interrupt 方法的调用先行发生于被中断线程的代码检测到中断事件的发生。</li>
+<li>对象终结规则：一个对象的初始化完成先行发生于他的 finalize 方法的开始</li>
+<li>传递性：如果操作 A 先行发生于操作 B， 操作 B 先行发生于操作 C，那就可以得出操作 A 先行发生于操作 C 的结论。</li>
+</ul>
+</li>
+</ul>
+<h3 id="Java-线程安全"><a href="#Java-线程安全" class="headerlink" title="Java 线程安全"></a>Java 线程安全</h3><blockquote>
+<p>定义: 当多个线程访问一个对象时，如果不用考虑这些线程在运行时环境下的调度和交替执行，也不需要进行额外同步（就是调用者不需要额外同步，代码本身可使用同步），或者在调用方进行任何其他的协调操作，调用这个对象的行为都可以获得正确的结果，那这个对象时线程安全的。 </p>
+<p>作者说：把“调用这个对象的行为” 限定为 “单词调用” ，也可称为线程安全。这是个弱化。</p>
+</blockquote>
+<ul>
+<li><strong>Java 语言中的线程安全</strong><ul>
+<li><strong>不可变</strong>：不可变的对象一定是线程安全的；如 String</li>
+<li><strong>绝对线程安全</strong>：与定义等同，过于严格</li>
+<li><strong>相对线程安全</strong>：仅保证对这个对象单独的操作是线程安全的，如 Vector。</li>
+<li><strong>线程兼容</strong>：对象本身不安全，但通过操作前后加同步手段来保证操作线程安全。则称为线程兼容，如 ArrayList。</li>
+<li><strong>线程对立</strong>：即使使用同步手段，还是无法做到线程安全的代码。比如 System.setIn()</li>
+</ul>
+</li>
+<li><strong>线程安全的实现方法</strong><ul>
+<li><strong>互斥同步</strong>：即只被一个线程使用，如 synchronized </li>
+<li><strong>非阻塞同步</strong>：一般指乐观锁，即先进行操作，若无其他线程争用共享数据，那操作就成功了；如果共享数据有争用，产生了冲突，那就采用其他的补偿措施（通常是重试）；依赖 CAS 原子操作，即系统底层支持</li>
+<li><strong>无同步方案</strong>：一般指 ThreadLocal，将变量控制在线程中，不与其他线程共享，则也是线程安全的。</li>
+</ul>
+</li>
+<li><strong>锁优化</strong><ul>
+<li><strong>自旋锁与自适应锁</strong>：自旋指线程在等待锁时不让出CPU资源，而是循环的重试来获取锁；自然，可以配置重试次数，可以配置是否开启。自适应指的是自旋的时间或者说次数，根据虚拟机统计的自旋获得锁的成功与否，来增长或缩短自旋的时间。</li>
+<li><strong>锁消除</strong>：即 JVM 判断某些代码的变量无需使用同步，因为这些变量不会被其他线程锁读写，如方法里是局部变量的 StringBuffer 对象的 append 方法。其使用 synchronized，但局部变量都是线程私有的，并不会被其他线程读写。</li>
+<li><strong>锁粗化</strong>：避免锁粒度太小导致频繁的互斥，带来额外的开销，虚拟机会对这种情况将锁的范围粗化。</li>
+<li><strong>轻量级锁</strong>：即当一个锁没有两条以上的线程争用的时候，通过 CAS 操作加锁和解锁，比重量级锁开销更少。若超过两个线程争用，则通过修改对象头标志位将锁升级为重量级锁，因为此时再使用 CAS 反而是一种消耗（这是因为 CAS 总是会失败）</li>
+<li><strong>偏向锁</strong>：即一个线程第一次通过 CAS 获得这个锁后，之后再获取将不再需要加锁（即使释放了锁也没关系），这是因为在第一次获取时会将对象头的标志改为偏向锁，并记录线程 ID（这个动作也是通过 CAS 进行的），这样以后只需要对比线程 ID，刷脸入场。</li>
+</ul>
+</li>
+</ul>
+<h3 id="大致流程"><a href="#大致流程" class="headerlink" title="大致流程"></a>大致流程</h3><ol>
+<li>编译器编译 .java 后缀文件得到字节码文件 .class；</li>
+<li>类加载器加载字节码文件到运行时区域；</li>
+<li>执行器为类的方法创建栈桢，并结合操作数栈执行字节码指令，遇到方法调用的指令，则可能需要根据对象类型判断执行哪个具体的方法，然后执行对应的字节码指令。</li>
+</ol>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://gudqs7.github.io/2021/02/03/principle-redis-memo/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="gudqs7">
+      <meta itemprop="description" content="心累没钱躺尸中">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="gudqs7's note">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2021/02/03/principle-redis-memo/" class="post-title-link" itemprop="url">principle-redis-memo</a>
+        </h2>
+
+        <div class="post-meta">
+			
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-02-03 19:06:58 / 修改时间：22:54:42" itemprop="dateCreated datePublished" datetime="2021-02-03T19:06:58+08:00">2021-02-03</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Redis/" itemprop="url" rel="index"><span itemprop="name">Redis</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/NoSql/" itemprop="url" rel="index"><span itemprop="name">NoSql</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2021/02/03/principle-redis-memo/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2021/02/03/principle-redis-memo/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="Redis-底层探秘"><a href="#Redis-底层探秘" class="headerlink" title="Redis 底层探秘"></a>Redis 底层探秘</h1><h2 id="Redis-数据结构实现原理"><a href="#Redis-数据结构实现原理" class="headerlink" title="Redis 数据结构实现原理"></a>Redis 数据结构实现原理</h2><blockquote>
+<p>copy from <a href="https://juejin.cn/post/6844903856313368589#heading-3" target="_blank" rel="noopener">https://juejin.cn/post/6844903856313368589#heading-3</a></p>
+</blockquote>
+<h3 id="1-string"><a href="#1-string" class="headerlink" title="1.string"></a>1.string</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// sdshdr64 变成 sdshdr32, 则相应的 len 和 alloc 变成 uint32_t</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> __<span class="title">attribute__</span> ((__<span class="title">packed__</span>)) <span class="title">sdshdr64</span> &#123;</span></span><br><span class="line">    <span class="keyword">uint64_t</span> len; </span><br><span class="line">    <span class="keyword">uint64_t</span> alloc;</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">char</span> flags; </span><br><span class="line">    <span class="keyword">char</span> buf[];</span><br><span class="line">&#125;;</span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">  len：已使用的长度，即字符串的真实长度</span></span><br><span class="line"><span class="comment">  alloc：除去标头和终止符('\0')后的长度</span></span><br><span class="line"><span class="comment">  flags：低3位表示字符串类型，其余5位未使用（我暂时没发现redis在哪里使用过这个属性）</span></span><br><span class="line"><span class="comment">  buf[]：存储字符数据</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>redis 写的字符串库有以下4个优点：</p>
+</blockquote>
+<ul>
+<li>降低获取字符串长度的时间复杂度到O(1)</li>
+<li>减少了修改字符串时的内存重分配次数</li>
+<li>兼容c字符串的同时，提高了一些字符串工具方法的效率</li>
+<li>二进制安全（数据写入的格式和读取的格式一致）</li>
+</ul>
+<blockquote>
+<p>总结: string 就是字符串, 但 Redis 其实有实现自己的类库提高各方面的速度, 只能说, 专业!!!</p>
+</blockquote>
+<h3 id="2-list"><a href="#2-list" class="headerlink" title="2.list"></a>2.list</h3><h4 id="ziplist"><a href="#ziplist" class="headerlink" title="ziplist"></a>ziplist</h4><p>ziplist并不是一个类名，其结构是下面这样的： <code>&lt;zlbytes&gt;&lt;zltail&gt;&lt;entries&gt;&lt;entry&gt;...&lt;entry&gt;&lt;zlend&gt;</code></p>
+<p>其中各部分代表的含义如下：</p>
+<ul>
+<li>zlbytes：4个字节（32bits），表示ziplist占用的总字节数</li>
+<li>zltail：4个字节（32bits），表示ziplist中最后一个节点在ziplist中的偏移字节数</li>
+<li>entries：2个字节（16bits），表示ziplist中的元素数</li>
+<li>entry：长度不定，表示ziplist中的数据</li>
+<li>zlend：1个字节（8bits），表示结束标记，这个值固定为ff（255）</li>
+</ul>
+<p>这些数据均为小端存储，所以可能有些人查看数据的二进制流与其含义对应不上，其实是因为读数据的方式错了</p>
+<p>ziplist内部采取数据压缩的方式进行存储，压缩方式就不是重点了，我们仅从宏观来看，ziplist类似一个封装的数组，通过zltail可以方便地进行追加和删除尾部数据、使用entries可以方便地计算长度</p>
+<h4 id="quicklist"><a href="#quicklist" class="headerlink" title="quicklist"></a>quicklist</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">quicklist</span> &#123;</span></span><br><span class="line">    quicklistNode *head;</span><br><span class="line">    quicklistNode *tail;</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> count;        <span class="comment">/* ziplist所有节点的个数 */</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> len;          <span class="comment">/* quicklistNode节点的个数 */</span></span><br><span class="line">    <span class="keyword">int</span> <span class="built_in">fill</span> : <span class="number">16</span>;              <span class="comment">/* 单个节点的填充因子 */</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> compress : <span class="number">16</span>; <span class="comment">/* 压缩端结点的深度 */</span></span><br><span class="line">&#125; quicklist;</span><br></pre></td></tr></table></figure>
+
+<p>我们可以明显地看出，quicklist是一个双向链表的结构，但是内部又涉及了ziplist，我们可以这么说，在宏观上，quicklist是一个双向链表，在微观上，每一个quicklist的节点都是一个ziplist</p>
+<p>在redis.conf中，可以使用下面两个参数来进行优化：</p>
+<ul>
+<li>list-max-ziplist-size：表示每个quicklistNode的字节大小。默认为2，表示8KB</li>
+<li>list-compress-depth：表示quicklistNode节点是否要压缩。默认为0，表示不压缩</li>
+</ul>
+<p>这种存储方式的优点和链表的优点一致，就是插入和删除的效率很高，而链表查询的效率又由ziplist来进行弥补，所以quicklist就成为了list数据结构的首选</p>
+<blockquote>
+<p>总结: 是一个双向链表 + ziplist, 同时具有两者的优点(指插入速度和查询速度, 具体咋回事, 怎么做到的.. 完全不知道啊).</p>
+</blockquote>
+<h3 id="3-hash"><a href="#3-hash" class="headerlink" title="3.hash"></a>3.hash</h3><h4 id="ziphash"><a href="#ziphash" class="headerlink" title="ziphash"></a>ziphash</h4><p>zipmap其格式形如下面这样： <code>&lt;zmlen&gt;&lt;len&gt;&quot;foo&quot;&lt;len&gt;&lt;free&gt;&quot;bar&quot;&lt;len&gt;&quot;hello&quot;&lt;len&gt;&lt;free&gt;&quot;world&quot;</code></p>
+<p>各部分的含义如下：</p>
+<ul>
+<li>zmlen：1个字节，表示zipmap的总字节数</li>
+<li>len：1~5个字节，表示接下来存储的字符串长度</li>
+<li>free：1个字节，是一个无符号的8位数，表示字符串后面的空闲未使用字节数，由于修改与键对应的值而产生</li>
+</ul>
+<p>这其中相邻的两个字符串就分别是键和值，比如在上面的例子中，就表示<code>&quot;foo&quot; =&gt; &quot;bar&quot;, &quot;hello&quot; =&gt; &quot;world&quot;</code>这样的对应关系</p>
+<p>这种方式的缺点也很明显，就是查找的时间复杂度为O(n)，所以只能当作一个轻量级的hashmap来使用</p>
+<h4 id="dict"><a href="#dict" class="headerlink" title="dict"></a>dict</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">dict</span> &#123;</span></span><br><span class="line">    dictType *type;	<span class="comment">/* 指向自定义类型的指针，可以存储各类型数据 */</span></span><br><span class="line">    <span class="keyword">void</span> *privdata; <span class="comment">/* 私有数据的指针 */</span></span><br><span class="line">    dictht ht[<span class="number">2</span>];	<span class="comment">/* 两个hash表，一般只有h[0]有效，h1[1]只在rehash的时候才有值 */</span></span><br><span class="line">    <span class="keyword">long</span> rehashidx; <span class="comment">/* -1：没有在rehash的过程中，大于等于0：表示执行rehash到第几步 */</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> iterators; 	<span class="comment">/* 正在遍历的迭代器个数 */</span></span><br><span class="line">&#125; dict;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 真正的</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">dictEntry</span> &#123;</span></span><br><span class="line">    <span class="keyword">void</span> *key;</span><br><span class="line">    <span class="keyword">union</span> &#123;</span><br><span class="line">        <span class="keyword">void</span> *val;</span><br><span class="line">        <span class="keyword">uint64_t</span> u64;</span><br><span class="line">        <span class="keyword">int64_t</span> s64;</span><br><span class="line">        <span class="keyword">double</span> d;</span><br><span class="line">    &#125; v;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">dictEntry</span> *<span class="title">next</span>;</span></span><br><span class="line">&#125; dictEntry;</span><br></pre></td></tr></table></figure>
+
+<p>很明显是一个链表，我们知道这是采用链式结构存储就足够了</p>
+<p>这种方式会消耗较多的内存，所以一般数据较少时会采用轻量级的zipmap</p>
+<blockquote>
+<p>总结: 是个链表, 缺点是消耗内存高, 因此数据较少会采用 zipmap 这种…. 按字节精打细算的方式存储.</p>
+</blockquote>
+<h3 id="4-set"><a href="#4-set" class="headerlink" title="4.set"></a>4.set</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">intset</span> &#123;</span></span><br><span class="line">    <span class="keyword">uint32_t</span> encoding;</span><br><span class="line">    <span class="keyword">uint32_t</span> length;</span><br><span class="line">    <span class="keyword">int8_t</span> contents[];</span><br><span class="line">&#125; intset;</span><br></pre></td></tr></table></figure>
+
+<p>其中各字段含义如下：</p>
+<ul>
+<li>encoding：数据编码格式，表示每个数据元素用几个字节存储（可取的值有2、4，和8）</li>
+<li>length：元素个数</li>
+<li>contents：柔性数组，这部分内存单独分配，不包含在intset中</li>
+</ul>
+<p>intset有一个数据升级的概念，比方说我们有一个16位整数的set，这时候插入了一个32位整数，所以就导致整个集合都升级为32位整数，但是反过来却不行，这也就是柔性数组的由来</p>
+<p>如果集合过大，会采用dict的方式来进行存储</p>
+<blockquote>
+<p>总结: 底层是个数组的 inset 结构体, 另外集合过大会采用 dict 来存储.</p>
+</blockquote>
+<h3 id="5-zset"><a href="#5-zset" class="headerlink" title="5.zset"></a>5.zset</h3><p>zset，有很多地方也叫做sorted set，是一个键值对的结构，其键被称为member，也就是集合元素（zset依然是set，所以member不能相同），其对应的值被称为score，是一个浮点数，可以理解为优先级，用于排列zset的顺序</p>
+<p>其也有两种存储方式，一种是ziplist/zipmap的格式，这种方式我们就不过多介绍了，只需要了解这种格式将数据按照score的顺序排列即可</p>
+<p>另一种存储格式是采用了skiplist，意为跳跃表，可以看成平衡树映射的数组，其查找的时间复杂度和平衡树基本没有差别，但是实现更为简单，形如下面这样的结构（图来源<a href="https://www.cnblogs.com/thrillerz/p/4505550.html" target="_blank" rel="noopener">跳跃表的原理）</a>：</p>
+<p><img src="https://user-gold-cdn.xitu.io/2019/5/29/16b042094c9cec82?imageView2/0/w/1280/h/960/ignore-error/1" alt="例图"></p>
+<blockquote>
+<p>总结: 看不懂….</p>
+<p>再看看这个吧… 更细致一点! <a href="https://juejin.cn/post/6844904192042074126" target="_blank" rel="noopener">https://juejin.cn/post/6844904192042074126</a></p>
+</blockquote>
+<h2 id="Redis-的持久化"><a href="#Redis-的持久化" class="headerlink" title="Redis 的持久化"></a>Redis 的持久化</h2><blockquote>
+<p> 摘记一下: copy from <a href="https://mp.weixin.qq.com/s/zfkhQFEBkKSRsfKF63R94A" target="_blank" rel="noopener">https://mp.weixin.qq.com/s/zfkhQFEBkKSRsfKF63R94A</a></p>
+</blockquote>
+<h3 id="RDB"><a href="#RDB" class="headerlink" title="RDB"></a>RDB</h3><p>写RDB文件是Redis的一种持久化方式。在指定的时间间隔内将内存中的数据写入到磁盘，RDB文件是一个紧凑的二进制文件，每一个文件都代表了<strong>某一个时刻</strong>（执行fork的时刻）Redis完整的数据快照，恢复数据时，将快照文件读入内存即可。</p>
+<p><strong>触发保存RDB文件4种情况</strong></p>
+<ol>
+<li>手动执行save命令、bgsave</li>
+<li>满足配置文件中配置的save相关配置项时，自动触发</li>
+<li>手动执行flushall</li>
+<li>关闭redis , 执行 shutdown 命令</li>
+</ol>
+<p><strong>如何让redis加载rdb文件？</strong></p>
+<p>只需要将rdb文件放在redis的启动目录下，redis其中时会自动加载它。</p>
+<p><strong>RDB模式的优缺点：</strong></p>
+<p>优点：RDB过程中，由子进程代替主进程进行备份的IO操作。保证了主进程仍然提供高性能的服务。适合大规模的数据备份恢复过程。</p>
+<p>缺点：</p>
+<ol>
+<li>默认情况下，它是每隔一段时间进行一次数据备份，所以一旦出现最后一次持久化的数据丢失，将丢失大规模的数据。</li>
+<li>fork()子进程时会占用一定的内存空间，如果在fork()子进程的过程中，父进程夯住了，那也就是redis卡住了，不能对外提供服务。所以不要让生成RDB文件的时间间隔太长，不然每次生成的RDB文件过大对Redis本身也是有影响的。</li>
+</ol>
+<img src="https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210203195703.png" alt="image-20210203195701943" style="zoom:50%;" />
+
+<blockquote>
+<p>总结: 每隔一段时间(一般比较久)触发的全量备份, 备份速度取决于使用情况, 备份时 Redis 仍然可读可写, 但写还是有些问题. 缺点是宕机容易丢失较久的数据.</p>
+</blockquote>
+<h3 id="AOF"><a href="#AOF" class="headerlink" title="AOF"></a>AOF</h3><p>Append Only File，他也是Redis的持久化策略。即将所有的写命令都以日志的方式追加记录下来（只追加，不修改），恢复的时候将这个文件中的命令读出来回放。</p>
+<p><strong>aof模式的优缺点</strong><br><strong>优点</strong>：</p>
+<ol>
+<li>aof是用追加的形式写，没有随机磁盘IO那样的寻址开销，性能还是比较高的。</li>
+<li>aof可以更好的保护数据不丢失或者尽可能的少丢失：设置让redis每秒同步一次数据，即使redis宕机了，最多也就丢失1秒的数据。</li>
+<li>即使aof真的体积很大，也可以设置后台重写，不影响客户端的重写。</li>
+<li>aof适合做灾难性的误删除紧急恢复：比如不小心执行了flushall，然后可以在发生rewrite之前 快速备份下aof文件，去掉末尾的 flushall，通过恢复机制恢复数据。</li>
+</ol>
+<p><strong>缺点</strong>：使用aof一直追加写，导致aof的体积远大于RDB文件的体积，恢复数据、修复的速度要比rdb慢很多。</p>
+<p>aof的重写</p>
+<blockquote>
+<p>AOF采取的是文件追加的方式,文件的体积越来越大,为了优化这种现象,增加了重写机制,当aof文件的体积到达我们在上面的配置文件上的阕值时,就会触发重写策略,只保留和数据恢复相关的命令。</p>
+</blockquote>
+<p>手动触发重写</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># redis会fork出一条新的进程</span></span><br><span class="line"><span class="comment"># 同样是先复制到一份新的临时文件,最后再rename,遍历每一条语句,记录下有set的语句</span></span><br><span class="line">bgrewriteaof</span><br></pre></td></tr></table></figure>
+
+<h3 id="RDB和AOF的选择"><a href="#RDB和AOF的选择" class="headerlink" title="RDB和AOF的选择"></a>RDB和AOF的选择</h3><ul>
+<li>如果我们的redis只是简单的作为缓存，那两者都不要也没事。</li>
+<li>如果数据需要持久化，那不要仅仅使用RDB，因为一旦发生故障，你会丢失很多数据。</li>
+<li>同时开启两者: 在这种情况下,redis优先加载的是aof,因为它的数据很可能比rdb更全,但是并不建议只是用aof,因为aof不是那么的安全,很可能存在潜在的bug。</li>
+</ul>
+<p><strong>推荐：</strong></p>
+<ul>
+<li>建议在从机slave上只备份rdb文件，而且只要15分钟备份一次就够了。</li>
+<li>如果启动了aof,我们尽量减少rewrite的频率,基础大小设置为5G完全可以,起步也要3G。</li>
+<li>如果我们不选择aof, 而是选择了主从复制的架构实现高可用同样可以,能省掉一大笔IO操作,但是意外发生的话,会丢失十几分钟的数据。</li>
+</ul>
+<img src="https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210203195723.png" alt="image-20210203195722608" style="zoom:50%;" />
+
+
+
+<blockquote>
+<p>总结: AOF 记录的是对Redis数据库做更改的命令列表, 类似 MySQL 的 binlog.</p>
+</blockquote>
+<h2 id="一致性-Hash-算法"><a href="#一致性-Hash-算法" class="headerlink" title="一致性 Hash 算法"></a>一致性 Hash 算法</h2><blockquote>
+<p>copy from <a href="https://juejin.cn/post/6844903670430040078#heading-1" target="_blank" rel="noopener">https://juejin.cn/post/6844903670430040078#heading-1</a></p>
+</blockquote>
+<blockquote>
+<p>总计: 一个选取集群内服务器的算法, 使其在大量的请求下可做到流量均匀的落到每台服务器上.</p>
+<p>首先引入一个概念, 就是 hash 环, 其是 hash 的取值范围大小, 展开就是 范围下限-范围上限, 围起来则是一个环.</p>
+<p>实现原理是, 对每个服务器取 hash, 记录下 hash 位置, 再对每个请求的特定信息(如ip, Redis Key)也取 hash, 在根据这两个 hash 大小关系, 顺时针(找比其更大的)寻找离得最近的服务器;</p>
+<p>因为大量的请求会均匀的散落在 hash 环上, 这个是 hash 算法决定的性质, 同理大量的服务器节点也会均衡的散落在 hash 值范围内, 因此总体来看, 请求总是均匀的打落到每台服务器.</p>
+<p>但这也引出一个问题, 就是 hash 值范围过大, 而服务器数量过少, 无法保证服务器均衡的散落在整个 hash 上, 因此引入虚拟节点, 使得每个虚拟节点的 hash 与原节点不一致, 然后每个节点创建大量的(比如1000)虚拟节点, 计算的 hash 则会均匀的散落在 hash 环上了.</p>
+</blockquote>
+<blockquote>
+<p>再总结: 充分利用 hash 算法的特性, 以及加入取 hash 找距离近的服务器这个理念, 使得即使对服务器进行伸缩, 也可以降低被影响的key.</p>
+</blockquote>
+<h3 id="对比-HashSlot"><a href="#对比-HashSlot" class="headerlink" title="对比 HashSlot"></a>对比 HashSlot</h3><p>了解了一致性Hash算法的特点后，我们也不难发现一些不尽人意的地方：</p>
+<ul>
+<li>整个分布式缓存需要一个路由服务来做负载均衡，存在单点问题（如果路由服务挂了，整个缓存也就凉了）</li>
+<li>Hash环上的节点非常多或者更新频繁时，查找性能会比较低下</li>
+</ul>
+<p>针对这些问题，Redis在实现自己的分布式集群方案时，设计了全新的思路：基于P2P结构的HashSlot算法，下面简单介绍一下：</p>
+<ol>
+<li><p>使用HashSlot</p>
+<p>类似于Hash环，Redis Cluster采用HashSlot来实现Key值的均匀分布和实例的增删管理。</p>
+<p>首先默认分配了16384个Slot（这个大小正好可以使用2kb的空间保存），每个Slot相当于一致性Hash环上的一个节点。接入集群的所有实例将均匀地占有这些Slot，而最终当我们Set一个Key时，使用<code>CRC16(Key) % 16384</code>来计算出这个Key属于哪个Slot，并最终映射到对应的实例上去。</p>
+<p>那么当增删实例时，Slot和实例间的对应要如何进行对应的改动呢？</p>
+<p>举个例子，原本有3个节点A,B,C，那么一开始创建集群时Slot的覆盖情况是：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">节点A	0－5460</span><br><span class="line">节点B	5461－10922</span><br><span class="line">节点C	10923－16383</span><br><span class="line">复制代码</span><br></pre></td></tr></table></figure>
+
+<p>现在假设要增加一个节点D，RedisCluster的做法是将之前每台机器上的一部分Slot移动到D上（注意这个过程也意味着要对节点D写入的KV储存），成功接入后Slot的覆盖情况将变为如下情况：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">节点A	1365-5460</span><br><span class="line">节点B	6827-10922</span><br><span class="line">节点C	12288-16383</span><br><span class="line">节点D	0-1364,5461-6826,10923-12287</span><br><span class="line">复制代码</span><br></pre></td></tr></table></figure>
+
+<p>同理删除一个节点，就是将其原来占有的Slot以及对应的KV储存均匀地归还给其他节点。</p>
+</li>
+<li><p>P2P节点寻找</p>
+<p>现在我们考虑如何实现去中心化的访问，也就是说无论访问集群中的哪个节点，你都能够拿到想要的数据。其实这有点类似于路由器的路由表，具体说来就是：</p>
+<ul>
+<li>每个节点都保存有完整的<code>HashSlot - 节点</code>映射表，也就是说，每个节点都知道自己拥有哪些Slot，以及某个确定的Slot究竟对应着哪个节点。</li>
+<li>无论向哪个节点发出寻找Key的请求，该节点都会通过<code>CRC(Key) % 16384</code>计算该Key究竟存在于哪个Slot，并将请求转发至该Slot所在的节点。</li>
+</ul>
+<p>总结一下就是两个要点：<strong>映射表</strong>和<strong>内部转发</strong>，这是通过著名的<strong><a href="https://blog.csdn.net/chen77716/article/details/6275762" target="_blank" rel="noopener">Gossip协议</a></strong>来实现的。</p>
+</li>
+</ol>
+<blockquote>
+<p>总结: 映射表记录了我这个 key 计算 hash 位于的槽属于哪个节点, 若是节点自身, 则处理请求, 若不是则转发到那个节点. </p>
+</blockquote>
+<h2 id="CAP理论"><a href="#CAP理论" class="headerlink" title="CAP理论"></a>CAP理论</h2><blockquote>
+<p>摘记一下: copy from <a href="https://mp.weixin.qq.com/s/zfkhQFEBkKSRsfKF63R94A" target="_blank" rel="noopener">https://mp.weixin.qq.com/s/zfkhQFEBkKSRsfKF63R94A</a></p>
+</blockquote>
+<ul>
+<li><strong>C(Consistency 强一致性)</strong></li>
+<li><strong>A(Availability可用性)</strong></li>
+<li><strong>P(Partition tolerance分区容错性)</strong></li>
+</ul>
+<p>CAP 的理论核心是: 一个分布式的系统,不可能很好的满足一致性,可用性,分区容错性这三个需求,最多同时只能满足两个.因此CAP原理将nosql分成了三大原则:</p>
+<ul>
+<li>CA- 单点集群,满足强一致性和可用性,比如说oracle,扩展性收到了限制。</li>
+<li>CP- 满足一致性,和分区容错性<strong>Redis和MongoDB都属于这种类型。</strong></li>
+<li>AP- 选择了可用性和分区容错性,他也是大多数网站的选择,容忍数据可以暂时不一致,但是不容忍系统挂掉。</li>
+</ul>
+<h2 id="Redis-配置文件"><a href="#Redis-配置文件" class="headerlink" title="Redis 配置文件"></a>Redis 配置文件</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## 启动redis的方式</span></span><br><span class="line"> 2./redis-server /path/to/redis.conf</span><br><span class="line"> 3</span><br><span class="line"> 4<span class="comment"># 可以像下面这样让在当前配置文件包含引用其他配置文件</span></span><br><span class="line"> 5include /path/to/local.conf</span><br><span class="line"> 6include /path/to/other.conf</span><br><span class="line"> 7</span><br><span class="line"> 8<span class="comment"># 指定哪些客户端可以连接使用redis</span></span><br><span class="line"> 9Examples:</span><br><span class="line">10bind 192.168.1.100 10.0.0.1  <span class="comment"># 指定ip</span></span><br><span class="line">11bind 127.0.0.1 ::1 <span class="comment"># 仅限于本机可访问</span></span><br><span class="line">12</span><br><span class="line">13<span class="comment"># 是否处于受保护的模式，默认开启</span></span><br><span class="line">14protected-mode yes</span><br><span class="line">15</span><br><span class="line">16<span class="comment"># 对外暴露的端口</span></span><br><span class="line">17port 16379</span><br><span class="line">18</span><br><span class="line">19<span class="comment"># TCP的通用配置</span></span><br><span class="line">20tcp-backlog 511</span><br><span class="line">21timeout 0</span><br><span class="line">22tcp-keepalive 300</span><br><span class="line">23</span><br><span class="line">24<span class="comment"># 是否以守护进程的方式运行，默认为no</span></span><br><span class="line">25daemonize yes</span><br><span class="line">26</span><br><span class="line">27<span class="comment"># 如果进程在后台运行，需要指定这个pid文件</span></span><br><span class="line">28pidfile /var/run/redis_6379.pid</span><br><span class="line">29</span><br><span class="line">30<span class="comment"># 日志级别</span></span><br><span class="line">31<span class="comment"># debug 测试开发节点</span></span><br><span class="line">32<span class="comment"># verbose (和dubug很像，会产生大量日志)</span></span><br><span class="line">33<span class="comment"># notice (生产环境使用)</span></span><br><span class="line">34<span class="comment"># warning (only very important / critical messages are logged)</span></span><br><span class="line">35loglevel notice</span><br><span class="line">36</span><br><span class="line">37<span class="comment"># 日志文件名</span></span><br><span class="line">38logfile <span class="string">""</span></span><br><span class="line">39</span><br><span class="line">40<span class="comment"># 数据库的数量，默认16个</span></span><br><span class="line">41databases 16</span><br><span class="line">42</span><br><span class="line">43<span class="comment"># 是否总是显示logo</span></span><br><span class="line">44always-show-logo yes</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47<span class="comment"># 设置redis的登陆密码（默认没有密码）</span></span><br><span class="line">48<span class="comment"># 设置完密码后，使用redis-cli登陆时，使用auth password 认证登陆</span></span><br><span class="line">49requirepass foobared</span><br><span class="line">50</span><br><span class="line">51<span class="comment"># 设置能连接上redis的客户端的最大数量</span></span><br><span class="line">52maxclients 10000</span><br><span class="line">53</span><br><span class="line">54<span class="comment"># 给redis设置最大的内存容量</span></span><br><span class="line">55maxmemory &lt;bytes&gt;</span><br><span class="line">56</span><br><span class="line">57<span class="comment"># 内存达到上限后的处理策略</span></span><br><span class="line">58<span class="comment"># volatile-lru -&gt; 只针对设置了过期时间的key进行LRU移除</span></span><br><span class="line">59<span class="comment"># allkeys-lru -&gt; 删除LRU算法的Key</span></span><br><span class="line">60<span class="comment"># volatile-lfu -&gt; 使用具有过期集的密钥在近似的LFU中进行驱逐。</span></span><br><span class="line">61<span class="comment"># allkeys-lfu -&gt; 使用近似的LFU退出任何密钥。</span></span><br><span class="line">62<span class="comment"># volatile-random -&gt; 随机删除即将过期的key</span></span><br><span class="line">63<span class="comment"># allkeys-random -&gt; 随机删除</span></span><br><span class="line">64<span class="comment"># volatile-ttl -&gt; 删除即将过期的</span></span><br><span class="line">65<span class="comment"># noeviction -&gt; 永不过期，返回错误</span></span><br><span class="line">66maxmemory-policy noeviction</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210203194805.png" alt="image-20210203194803411"></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://gudqs7.github.io/2021/02/01/principle-mysql-memo/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="gudqs7">
+      <meta itemprop="description" content="心累没钱躺尸中">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="gudqs7's note">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2021/02/01/principle-mysql-memo/" class="post-title-link" itemprop="url">MySQL 探秘笔记</a>
+        </h2>
+
+        <div class="post-meta">
+			
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-02-01 15:21:08" itemprop="dateCreated datePublished" datetime="2021-02-01T15:21:08+08:00">2021-02-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-02-03 23:24:28" itemprop="dateModified" datetime="2021-02-03T23:24:28+08:00">2021-02-03</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/MySQL/" itemprop="url" rel="index"><span itemprop="name">MySQL</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2021/02/01/principle-mysql-memo/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2021/02/01/principle-mysql-memo/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="MySQL-探秘笔记"><a href="#MySQL-探秘笔记" class="headerlink" title="MySQL 探秘笔记"></a>MySQL 探秘笔记</h1><h2 id="由SQL语句的执行过程引出-MySQL-核心组件"><a href="#由SQL语句的执行过程引出-MySQL-核心组件" class="headerlink" title="由SQL语句的执行过程引出 MySQL 核心组件"></a>由SQL语句的执行过程引出 MySQL 核心组件</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">1.客户端发送 SQL 语句给 MySQL.</span><br><span class="line">2.MySQL 的 Server 层与客户端通信, 得到 SQL 语句.</span><br><span class="line">3.Server 层先检查缓存, 后调用分析器.</span><br><span class="line">4.分析器解析 SQL 语句得到解析树, 然后调用优化器.</span><br><span class="line">5.优化器基于成本控制来寻找较优解, 如逻辑转换/选取索引/计算成本/改进计划, 最终得到查询计划; 然后调用执行器</span><br><span class="line">5.执行器根据查询计划执行存储引擎并获取返回结果再返回给客户端.</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 存储引擎 InnoDB</span></span><br><span class="line">0.先根据语句的 <span class="built_in">where</span> 查询需要操作的列, 若单条, 单个执行, 多条(未知, 遍历执行不太可能...)</span><br><span class="line">1.由于事务是自动开启的(默认设置), 因此单条语句也会自动被事务包围.</span><br><span class="line">2.所以先写 undo <span class="built_in">log</span>(默认置于共享表空间), 写这个是用于事务回滚的.</span><br><span class="line">3.接着将修改写入到 Buffer Pool(即修改内存中的值).</span><br><span class="line">4.二阶段提交第一阶段, 写 redo <span class="built_in">log</span>, 此作用为防止写 binlog 时宕机造成数据不一致(前提是开了 binlog); 这里标记 redo <span class="built_in">log</span> 为 prepare 状态.</span><br><span class="line">5.接着写 binlog, 若有从库集群, 应该还要等待从库同步.</span><br><span class="line">6.二阶段提交第二阶段, 写完 binlog 后, 将 redo <span class="built_in">log</span> 标记成 commit, 代表这次提交和 binlog 保持了一致.</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># PS 二阶段提交会标记 redo log 为 prepare 状态, 这样如果数据库宕机(在写 binlog 时)再重启, 读取到这个标志, 就知道提交不是完整的, 于是就要通过判断 binlog 的LSN 做一些处理了.(啥处理我也不知道, 可能是照常提交, 也可能是回滚)</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>PS: 选取索引只能用一个索引, 除了 union 好像会触发合并索引, 但合并后也算一个索引.</p>
+<p>即使是 update 语句也会使用优化器寻找查询计划, 因为当带条件时, 需要先锁定记录, 再进行修改.</p>
+</blockquote>
+<p><img src="https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210203163808.png" alt="image-20210203163806936"></p>
+<h3 id="几个核心组件的作用"><a href="#几个核心组件的作用" class="headerlink" title="几个核心组件的作用"></a>几个核心组件的作用</h3><ul>
+<li>连接器: 网络编程建立端口监听, 接收客户端发送的SQL语句</li>
+<li>分析器: 对SQL进行语法、词法上的分析。</li>
+<li>优化器: 生成执行计划、选择索引。<ul>
+<li>*<em>逻辑转换: *</em>包括否定消除、等值传递和常量传递、常量表达式求值、外连接转换为内连接、子查询转换、视图合并等；</li>
+<li>*<em>优化准备: *</em>例如索引 ref 和 range 访问方法分析、查询条件扇出值（fan out，过滤后的记录数）分析、常量表检测；</li>
+<li>*<em>基于成本优化: *</em>包括访问方法和连接顺序的选择等；</li>
+<li>*<em>执行计划改进: *</em>例如表条件下推、访问方法调整、排序避免以及索引条件下推。</li>
+</ul>
+</li>
+<li>执行器: 操作执行引擎，获取SQL的执行结果</li>
+<li>存储引擎(执行引擎): 负责具体的语句执行, 查询等.</li>
+</ul>
+<blockquote>
+<p>PS: 基数(值某列数据去重后剩余个数, 估算得到) 会被用于分析索引的过滤效果.</p>
+</blockquote>
+<blockquote>
+<p>然后是存储引擎里面的一些概念</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 存储引擎中</span></span><br><span class="line">Buffer Pool: 用于缓存表数据的改动, 有自己的落盘时机.</span><br><span class="line"></span><br><span class="line">Redo <span class="built_in">log</span> Buffer: 用于缓存 redo <span class="built_in">log</span>, 有自己的落盘时机.</span><br><span class="line">	commit 事务时落盘</span><br><span class="line">	可配置 everysec 每秒触发落盘</span><br><span class="line"></span><br><span class="line">Binlog Buffer: 用于缓存 binlog, 即记录每个改动, 有自己的落盘时机.</span><br><span class="line">	commit 事务时</span><br><span class="line">		</span><br><span class="line">undo <span class="built_in">log</span> 文件: 默认存于共享表空间中, 也可单独存放于一个表空间. 保存 undo <span class="built_in">log</span>, 有瘦身机制.</span><br><span class="line"></span><br><span class="line">redo <span class="built_in">log</span>: 用于保存 Buffer Pool 发送的变动. 防止 Buffer Pool 的脏页未刷新到磁盘就宕机导致数据丢失.</span><br><span class="line">binlog: 记录逻辑表的改动, 可用于集群同步数据, 审计SQL渗透, 备份/恢复数据库.</span><br><span class="line">undo <span class="built_in">log</span>: 用于保存事务中的改动, 便于事务失败触发回滚时回滚数据.</span><br><span class="line"></span><br><span class="line">redo <span class="built_in">log</span> vs binlog</span><br><span class="line">一个(redo <span class="built_in">log</span>)保存数据页变动, 而数据页是实际的物理空间加载到内存中的缓存, 所以记录的是物理上的改动.</span><br><span class="line">一个(binlog)保存逻辑上的改动, 比如 xx 表的 id=xxx 的行的 xx 列数据修改为了 xx. 或者哪张表新增了一行, 数据是 xxx...  所以记录的是逻辑上的改动.</span><br><span class="line">两者最大的区别就是 redo <span class="built_in">log</span> 是大小是有限的, 到了一定的大小, 会将无用的数据删掉, 而 binlog 更是一种备份, 只会越来越大... 而且没法通过瘦身保持某个大小...</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="事务的实现"><a href="#事务的实现" class="headerlink" title="事务的实现"></a>事务的实现</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 事务回滚</span></span><br><span class="line">1.undo <span class="built_in">log</span>: 分 insert/update, update 又分 update/delete; 但无论啥类型, 目的都是辅助事务回滚, </span><br><span class="line">	其中 insert 比较简单, 当回滚时根据记录下的主键(联合主键)通过索引找到对应行, 删除即可.</span><br><span class="line">	当回滚时 update 是根据记录的主键找到记录后, 再根据记录下的修改过的列数据, 反向修改回去.</span><br><span class="line">	当回滚时 delete 是根据记录的整行数据, 然后 insert 回去.</span><br><span class="line">2.但一个事务往往不止一条 SQL, 因此也不止一个 undo <span class="built_in">log</span>, 每增加一条 SQL, undo <span class="built_in">log</span> 也随之增加, 这些 undo <span class="built_in">log</span> 会组成一个链条.</span><br><span class="line">2.若为单个事务, 当回滚时, 情况比较简单, 即只需从链条尾部, 反向遍历, 往前回滚每个 undo <span class="built_in">log</span> 就行了.</span><br><span class="line">3.若为多个事务, 与单个事务类似, 只是还需要注意链条的维护(即维持链条的连通性)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 隔离级别</span></span><br><span class="line">1.原理是开启事务会创建一个 ReadView, 其作用是判断 undo <span class="built_in">log</span> 链条中哪些数据是可读的.</span><br><span class="line">2.先说 ReadView, 其存有当前事务 id, 事务启动时那会未提交的事务 id 列表, 所有未提交事务中最小的事务, 下一个事务id; 这里面未提交的事务是重点.</span><br><span class="line">3.RR: 可重复读, 事务一开启则创建一个 ReadView, 直到事务结束; 接着倒着遍历链条, 直到 undo <span class="built_in">log</span> 是比自己小且不在未提交事务中的事务记录时停下, 仅获取此时的数据, 由于事务开启过程中, ReadView 不改变, 因此整个事务过程中的读取总是一致的.</span><br><span class="line">4.RC: 读已提交, 和 RR 略有不同, 不同之处在于其每次 select 都会重新获取 ReadView, 这使得若有事务提交后, 再 select 数据, 则生成的 ReadView 数据会发生变化(即未提交事务 id 列表中少了刚刚提交的事务). 因此同样的逻辑进行判断, RC 能读取到已提交的事务的改动.</span><br><span class="line"></span><br><span class="line"><span class="comment"># PS: 居然问我 读未提交??  那不是不需要 ReadView 就能实现吗...</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>图为回滚对应的 undo 链; 以及隔离级别原理的 ReadView.</p>
+</blockquote>
+<p><img src="https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210203155235.png" alt="image-20210203155232258"></p>
+<p><img src="https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210203155257.png" alt="image-20210203155256012"></p>
+<h2 id="MySQL-速记"><a href="#MySQL-速记" class="headerlink" title="MySQL 速记"></a>MySQL 速记</h2><h3 id="SQL-优化"><a href="#SQL-优化" class="headerlink" title="SQL 优化"></a>SQL 优化</h3><h4 id="索引原理"><a href="#索引原理" class="headerlink" title="索引原理"></a>索引原理</h4><blockquote>
+<p>MySQL 索引一般选择 B+树做为数据结构存储. B+ 树的优点是, 对文件IO的访问次数控制在 3 次, 保证速度的同时, 能存储千万行数据.</p>
+</blockquote>
+<h4 id="索引"><a href="#索引" class="headerlink" title="索引"></a>索引</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1.对常用列添加索引, 视具体情况选择单一索引或复合索引(一般为复合)</span><br><span class="line">2.通过 Explain 语句分析执行计划, 将 type 提升到至少 index 级别.</span><br><span class="line">3.通过 Explain 语句分析执行计划, 将 extra 中 Using filesort消除(排序列加索引), Using join buffer消除 (通过给关联表的关联列加索引), Using temporary (一般通过分组列加索引), Using where(根据最左原则对条件列加复合索引)</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="事务"><a href="#事务" class="headerlink" title="事务"></a>事务</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">ACID:</span><br><span class="line">A: 原子性, 多个操作要么都做, 要么都不做</span><br><span class="line">C: 一致性, 数据库文件的状态必须从一个一致性状态到另一个一致性状态.</span><br><span class="line">I: 隔离性, 事物之间相互隔离, 互不影响.</span><br><span class="line">D: 持续性, 一个事务一但提交, 则对数据库的改变是永久的.</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="隔离级别"><a href="#隔离级别" class="headerlink" title="隔离级别"></a>隔离级别</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">1.读未提交: 可读取其他未提交事务的执行结果(如更新了某个字段), 可能会造成读取错误的数据(未提交的事务回滚了), 造成脏读.</span><br><span class="line">2.读已提交: 可读取其他已提交事务的执行结果, 2次读取数据还是可能不一致(其他事务又提交了), 造成不可重复读.</span><br><span class="line">3.可重复读: 确保同一事务内多次读取数据时, 会看到相同的数据. 但可能造成幻读, 如批量修改登录密码后, 另一个事务新增了一条记录, 导致新纪录未修改.</span><br><span class="line">4.串行化: 事务串行化执行, 效率低.</span><br></pre></td></tr></table></figure>
+
+<h4 id="MySQL-默认隔离级别"><a href="#MySQL-默认隔离级别" class="headerlink" title="MySQL 默认隔离级别"></a>MySQL 默认隔离级别</h4><p><code>可重读读</code></p>
+<h3 id="数据库锁"><a href="#数据库锁" class="headerlink" title="数据库锁"></a>数据库锁</h3><h4 id="锁原理"><a href="#锁原理" class="headerlink" title="锁原理"></a>锁原理</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">行锁: 分为排它锁(X) 和共享锁(S). 即写锁和读锁.</span><br><span class="line">表锁: 分为元数据锁(MDL)和表锁.</span><br></pre></td></tr></table></figure>
+
+<h4 id="锁触发方式"><a href="#锁触发方式" class="headerlink" title="锁触发方式"></a>锁触发方式</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">行锁: 隐式(条件带有索引则锁对应列, 不带索引则锁全部行, RR 总会带有 GAP 锁, RC 不会), 显式(使用 for update, lock in share mode)</span><br><span class="line">表锁: 隐式(对整个表不带条件进行增删改, 或任何 DDL 操作) 显示(使用 for update, lock in share mode)</span><br></pre></td></tr></table></figure>
 
 
       
@@ -1503,432 +2364,10 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://gudqs7.github.io/2021/01/25/source-code-jdk/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="gudqs7">
-      <meta itemprop="description" content="心累没钱躺尸中">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="gudqs7's note">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2021/01/25/source-code-jdk/" class="post-title-link" itemprop="url">source-code-jdk</a>
-        </h2>
-
-        <div class="post-meta">
-			
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2021-01-25 23:12:48" itemprop="dateCreated datePublished" datetime="2021-01-25T23:12:48+08:00">2021-01-25</time>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/2021/01/25/source-code-jdk/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2021/01/25/source-code-jdk/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://gudqs7.github.io/2021/01/25/source-code-spring-mvc/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="gudqs7">
-      <meta itemprop="description" content="心累没钱躺尸中">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="gudqs7's note">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2021/01/25/source-code-spring-mvc/" class="post-title-link" itemprop="url">Spring MVC 源码笔记</a>
-        </h2>
-
-        <div class="post-meta">
-			
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2021-01-25 23:12:41" itemprop="dateCreated datePublished" datetime="2021-01-25T23:12:41+08:00">2021-01-25</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-01-26 21:25:55" itemprop="dateModified" datetime="2021-01-26T21:25:55+08:00">2021-01-26</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Spring/" itemprop="url" rel="index"><span itemprop="name">Spring</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/SourceCode/" itemprop="url" rel="index"><span itemprop="name">SourceCode</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Spring-MVC/" itemprop="url" rel="index"><span itemprop="name">Spring MVC</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/2021/01/25/source-code-spring-mvc/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2021/01/25/source-code-spring-mvc/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="Spring-MVC-源码笔记"><a href="#Spring-MVC-源码笔记" class="headerlink" title="Spring MVC 源码笔记"></a>Spring MVC 源码笔记</h1><h2 id="关键类分析"><a href="#关键类分析" class="headerlink" title="关键类分析"></a>关键类分析</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">WebMvcConfigurationSupport</span><br><span class="line">	默认注册了很多东西,如 HandlerMapping 几个实现, HandlerAdaptor 几个实现</span><br><span class="line"></span><br><span class="line">HandlerMapping</span><br><span class="line">	添加容器内所有带有 RequestMaping 的类的公开方法到 mappings 中存起来</span><br><span class="line">		(AbstractHandlerMethodMapping<span class="comment">#afterPropertiesSet中)</span></span><br><span class="line">    根据 request 的 uri 查找对应的 HandlerMethod, 步骤概述:</span><br><span class="line">    	把RequestMapping注解内的 path 作为 key 保持到一个 map1</span><br><span class="line">    	其他信息封装成 mapping 作为 key 也保持到另一个 map2</span><br><span class="line">    	根据 uri去 map1 获取 mapping, 再根据 mapping 获取 HandlerMethod</span><br><span class="line">    	封装成 Match 对象, 与其他匹配对象做比较后, 返回 HandlerMethod</span><br><span class="line"></span><br><span class="line">HandlerAdapter</span><br><span class="line">	初始化参数解析，返回值解析等</span><br><span class="line">		(RequestMappingHandlerAdapter<span class="comment">#afterPropertiesSet)</span></span><br><span class="line">	根据 handler 确定对应的 HandlerAdapter, 然后 HandlerAdapter 负责执行这个 handler</span><br><span class="line">    如 RequestMappingHandlerAdapter 则负责执行 HandlerMethod</span><br><span class="line">    	简单说就是封装 HandlerMethod, 根据参数值设置参数, 然后调用方法, 再处理返回值封装成 ModelAndView</span><br><span class="line">    另外，这里如果使用了@ResponseBody，会进入 RequestResponseBodyMethodProcessor</span><br><span class="line">    	然后使用 messageConverters（json）写入到响应流</span><br><span class="line">    	最后 mv 也直接返回null, 不需要render了.</span><br><span class="line"></span><br><span class="line">ViewResolver</span><br><span class="line">	负责将 ModelAndView 解析成HTML, 如JSP, FreeMarker</span><br><span class="line"></span><br><span class="line">HandlerExecutionChian</span><br><span class="line">	管理拦截器和封装Handler, 负责拦截器的实际调用逻辑实现</span><br><span class="line">	</span><br><span class="line">DispatcherServlet</span><br><span class="line">	调度整个HTTP请求响应流程, 调用各个子组件负责执行处理方法, 解析视图, 处理异常等.</span><br></pre></td></tr></table></figure>
-
-
-
-
-
-<h2 id="SSM项目-Spring-容器和-Spring-MVC-容器的创建过程及关系"><a href="#SSM项目-Spring-容器和-Spring-MVC-容器的创建过程及关系" class="headerlink" title="SSM项目 Spring 容器和 Spring MVC 容器的创建过程及关系"></a>SSM项目 Spring 容器和 Spring MVC 容器的创建过程及关系</h2><h3 id="Spring-容器的创建"><a href="#Spring-容器的创建" class="headerlink" title="Spring 容器的创建"></a>Spring 容器的创建</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">org.springframework.web.context.ContextLoader<span class="comment">#initWebApplicationContext</span></span><br><span class="line">1.先判断此方法是否重复运行, 若重复则报异常.</span><br><span class="line">2.记录日志, 记录开始时间用于计算启动消耗时间</span><br><span class="line">3.将容器对象存储在本地而非 servletContext, 防止 ServletContext 关闭后无法访问</span><br><span class="line">4.根据配置的类名, 实例化一个容器并赋值给 this.context</span><br><span class="line">5.标准代码, 但其实就是 setParent(null), 前提是不扩展子类咯. 也就是说这个就是顶级容器了</span><br><span class="line">6.根据 web.xml 的配置对容器做相应的配置, 初始化, 将 ServletContext 存入到 environment 对象中; 执行 InitializerClass, 调用容器 refresh 完成容器加载</span><br><span class="line">7.打印容器初始化完成日志和记录耗时</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>总结: 监听 ServletContext 创建完毕的事件, 然后创建一个 web 容器, 配置一些东西(id, parent, environment)并初始化(refresh)</p>
-</blockquote>
-<h3 id="MVC-子容器的创建"><a href="#MVC-子容器的创建" class="headerlink" title="MVC 子容器的创建"></a>MVC 子容器的创建</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1.首先是 DispatchServlet 本身是一个 Servlet, 因此他有生命周期 init(), 其父类 init() 会将 ServletConfig 的配置(web.xml 中的 initParams)与 servlet 对象绑定, 这样 DispatchServlet 对象的字段就有值了.</span><br><span class="line">2.然后在 DispatchServlet 的父类 FrameworkServlet<span class="comment">#initServletBean 中, 会创建一个容器并使其加载.(详细见 FrameworkServlet#initWebApplicationContext() )</span></span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>总结: 就是利用 Servlet 的生命周期只会执行一次 init 的特性, 查找父容器, 创建子容器.</p>
-</blockquote>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line">org.springframework.web.servlet.HttpServletBean#init</span><br><span class="line">    <span class="comment">// 1.把 servletConfig 的 initParameters 都加入 PropertySource, 根据 requiredProperties 判断所需配置项是否齐全</span></span><br><span class="line">		<span class="comment">// 2.将配置项绑定到 Servlet 对象(this) 上(子类的字段也算).</span></span><br><span class="line">		<span class="comment">// 3.调用子类初始化方法</span></span><br><span class="line">  </span><br><span class="line">org.springframework.web.servlet.FrameworkServlet#initServletBean</span><br><span class="line">    <span class="comment">// 0.父类的 init 执行完, 此时 contextConfigLocation 已经有值了</span></span><br><span class="line">		<span class="comment">// 1.记录日志和开始时间</span></span><br><span class="line">		<span class="comment">// 2.创建子容器, 与父容器绑定, 做一些配置, 调用 refresh() 完成加载.</span></span><br><span class="line">		<span class="comment">// 3.打印日志, 打印耗时</span></span><br><span class="line"></span><br><span class="line">  </span><br><span class="line">org.springframework.web.servlet.FrameworkServlet#initWebApplicationContext</span><br><span class="line">    <span class="comment">// 1.从 ServletContext 中获取 Spring 容器.(那么谁放进去的呢? 没错, 就是 ContextLoader,监听了 ServletContext 事件)</span></span><br><span class="line">		<span class="comment">// 2.若容器在构造方法处被注入(可能是注解开发 Spring MVC 的方式会触发), 先忽视  -- 来自 web.xml 形式启动分析</span></span><br><span class="line">		<span class="comment">// 3.根据绑定得到的配置的 contextClass 创建一个子容器, 进行一些配置和初始化, 调用 refresh() 完成容器加载</span></span><br><span class="line">		<span class="comment">// 4.防止子容器不支持 refresh, 或子容器不是刚刚创建的, 因此手动触发 onRefresh(), 这个方法会加载一些默认的 bean(用处很大的那种)</span></span><br><span class="line">		<span class="comment">// 5.将容器设置到 ServletContext 中(根据配置, 默认允许)</span></span><br><span class="line">		<span class="comment">// 6.返回创建的子容器对象</span></span><br><span class="line"></span><br><span class="line">  </span><br><span class="line">org.springframework.web.servlet.FrameworkServlet#configureAndRefreshWebApplicationContext</span><br><span class="line">    <span class="comment">// 1.根据绑定得到的配置设置容器 id, 若无则生成默认的</span></span><br><span class="line">		<span class="comment">// 2.设置 ServletContext/ServletConfig 对象</span></span><br><span class="line">		<span class="comment">// 3.为子容器添加一个监听只监听子容器刷新事件的监听器, 用于容器加载完毕后调用 FrameworkServlet.onApplicationEvent()</span></span><br><span class="line">		<span class="comment">// 4.将 ServletConfig/ServletContext 加入到 environment 中.</span></span><br><span class="line">		<span class="comment">// 5.执行 web.xml 中配置的 Initializers, 为子容器做的初始化</span></span><br><span class="line">		<span class="comment">// 6.调用子容器的 refresh(), 完成容器的加载</span></span><br><span class="line"></span><br><span class="line">  </span><br><span class="line">org.springframework.web.servlet.DispatcherServlet#initStrategies</span><br><span class="line">    <span class="comment">// 加载文件上传处理 bean</span></span><br><span class="line">		<span class="comment">// 加载国际化处理 bean</span></span><br><span class="line">		<span class="comment">// 加载主题切换处理 bean</span></span><br><span class="line">		<span class="comment">// 加载 HandlerMapping bean</span></span><br><span class="line">		<span class="comment">// 加载 HandlerAdapter bean</span></span><br><span class="line">		<span class="comment">// 加载异常处理 bean</span></span><br><span class="line">		<span class="comment">// 加载 HttpServletRequest 转视图名称处理策略 bean</span></span><br><span class="line">		<span class="comment">// 加载视图解析器</span></span><br><span class="line">		<span class="comment">// 加载 FlashMap 管理 bean</span></span><br><span class="line"></span><br><span class="line">		<span class="comment">// 每一个加载的逻辑都是类似的, 先从容器中根据 Xxx.class getBean</span></span><br><span class="line">		<span class="comment">// 若无, 则调用 getDefaultStrategy() 从 DispatcherServlet.properties 配置文件中读取</span></span><br></pre></td></tr></table></figure>
-
-
-
-<h3 id="DispatchServlet-的创建"><a href="#DispatchServlet-的创建" class="headerlink" title="DispatchServlet 的创建"></a>DispatchServlet 的创建</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1.Tomcat 会创建配置在 web.xml 的 Servlet</span><br><span class="line">2.接着会触发 init 方法, init 调用了创建子容器的方法后, 还添加了容器加载完毕事件监听来回调 DispatcherServlet<span class="comment">#onRefresh</span></span><br><span class="line">3.DispatcherServlet<span class="comment">#onRefresh 会 initStrategies() 加载很多策略接口 bean.</span></span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>总结: 和子容器的创建息息相关.</p>
-</blockquote>
-<h2 id="Dispatch-过程"><a href="#Dispatch-过程" class="headerlink" title="Dispatch 过程"></a>Dispatch 过程</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">1.覆盖 HttpServlet 的 service 方法, 调用 FrameworkServlet<span class="comment">#processRequest()</span></span><br><span class="line">2.此方法中进行一些上下文的准备工作, 以及处理日志, 异常(非 controller 异常), 然后调用 DispatcherServlet<span class="comment">#doService()</span></span><br><span class="line">3.doService() 中对 request 做一些准备工作, 然后调用 DispatcherServlet<span class="comment">#doDispatch()</span></span><br><span class="line">4.doDispatch() 先用 handlerMappings 查找合适的 handler(并加入拦截器链), 再通过 handlerAdapters 得到 handler 的适配器, 在合适的地方触发拦截器; 然后调用适配器的 handle() 得到 ModelAndView</span><br><span class="line">5.得到 ModelAndView 后, 先判断是否捕获到了异常, 是则调用 handlerExceptionResolvers 的 resolveException() 处理异常</span><br><span class="line">6.接着, 调用 viewResolvers 的 resolveViewName, 将 viewName 解析成一个 View 对象</span><br><span class="line">7.调用 View 对象的 render(), 将视图通过 response 响应到前端.</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>总结: handlerMappings 找 handler 并包装拦截器链, handlerAdapters 找可执行的 HandlerAdapter, viewResolvers 解析视图, 渲染视图.</p>
-</blockquote>
-<h3 id="超长源码注释"><a href="#超长源码注释" class="headerlink" title="超长源码注释"></a>超长源码注释</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 入口 HttpServlet.service</span></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">service</span><span class="params">(HttpServletRequest request, HttpServletResponse response)</span></span></span><br><span class="line"><span class="function">  <span class="keyword">throws</span> ServletException, IOException </span>&#123;</span><br><span class="line"></span><br><span class="line">  HttpMethod httpMethod = HttpMethod.resolve(request.getMethod());</span><br><span class="line">  <span class="keyword">if</span> (httpMethod == HttpMethod.PATCH || httpMethod == <span class="keyword">null</span>) &#123;</span><br><span class="line">    processRequest(request, response);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">super</span>.service(request, response);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>接着进入到 processRequest, 我只写注释了啊</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line">org.springframework.web.servlet.FrameworkServlet#processRequest</span><br><span class="line">    <span class="comment">// 1.记录启动时间</span></span><br><span class="line">		<span class="comment">// 2.准备国际化处理上下文</span></span><br><span class="line">		<span class="comment">// 3.准备属性管理上下文</span></span><br><span class="line">		<span class="comment">// 4.获取并缓存一个 asyncManager(异步)</span></span><br><span class="line">		<span class="comment">// 5.初始化两个 ContextHolder</span></span><br><span class="line">		<span class="comment">// 6.处理文件上传, 根据不同策略查找可执行的 controller 方法, 查到后加入拦截器, 再通过适配器来执行 controller 方法, 然后把得到的 ModelAndView 解析成视图对象, 并渲染到前端.</span></span><br><span class="line">		<span class="comment">// 7.重置两个 ContextHolder</span></span><br><span class="line">		<span class="comment">// 8.打印日志, 发布事件</span></span><br><span class="line"></span><br><span class="line">  </span><br><span class="line">org.springframework.web.servlet.DispatcherServlet#doService</span><br><span class="line">    <span class="comment">// 1.打印日志, 记录请求信息</span></span><br><span class="line">		<span class="comment">// 2.保存一份请求上下文的快照, 这样嵌套的请求在回归时可以恢复数据</span></span><br><span class="line">		<span class="comment">// 3.将容器中的一些 bean 配置到请求上下文中</span></span><br><span class="line">		<span class="comment">// 4.处理文件上传, 根据不同策略查找可执行的 controller 方法, 查到后加入拦截器, 再通过适配器来执行 controller 方法, 然后把得到的 ModelAndView 解析成视图对象, 并渲染到前端.</span></span><br><span class="line">		<span class="comment">// 5.若需要, 将快照恢复到请求上下文</span></span><br><span class="line"></span><br><span class="line">  </span><br><span class="line">org.springframework.web.servlet.DispatcherServlet#doDispatch</span><br><span class="line">    <span class="comment">// 1.准备一些变量</span></span><br><span class="line">		<span class="comment">// 2.判断并处理文件上传请求, 若是, processedRequest 则变为 MultipartHttpServletRequest 类型的对象.</span></span><br><span class="line">		<span class="comment">// 3.遍历之前加载的 handlerMappings, 调用 getHandler 接口获取执行链对象并返回. 找不到则返回 null</span></span><br><span class="line">		<span class="comment">// 4.根据 handler 获取合适的适配器</span></span><br><span class="line">		<span class="comment">// 5.遍历执行拦截器的 preHandle(), 若遇到 renturn false, 则结束 doDispatch</span></span><br><span class="line">		<span class="comment">// 6.执行实际的 controller 的方法得到 ModelAndView 对象.</span></span><br><span class="line">		<span class="comment">// 7.处理默认的 viewName</span></span><br><span class="line">		<span class="comment">// 8.遍历执行拦截器的 postHandle()</span></span><br><span class="line">		<span class="comment">// 9.若有异常则处理异常: 遍历之前加载的异常处理器策略类, 调用 resolveException()</span></span><br><span class="line">		<span class="comment">//10.若无异常则根据需要根据 ModelAndView的对象的视图名配合之前加载的视图解析器获取 View 对象, 再调用 render() 渲染视图.</span></span><br><span class="line">		<span class="comment">//11.最后执行拦截器的 triggerAfterCompletion</span></span><br><span class="line"></span><br><span class="line">  </span><br><span class="line">org.springframework.web.servlet.DispatcherServlet#getHandler</span><br><span class="line">    <span class="comment">// 遍历之前加载的 handlerMappings, 调用其 getHandler 接口获取 handler 和拦截器封装成 chain 对象并返回. 找不到则返回 null</span></span><br><span class="line">  </span><br><span class="line"></span><br><span class="line">org.springframework.web.servlet.DispatcherServlet#getHandlerAdapter</span><br><span class="line">    <span class="comment">// 遍历之前加载的 handlerAdapters, 调用 supports 判断是否支持 handler, 支持则返回 adapter</span></span><br><span class="line">  </span><br><span class="line">  </span><br><span class="line">org.springframework.web.servlet.HandlerExecutionChain#applyPreHandle</span><br><span class="line">    <span class="comment">// 从头到尾遍历拦截器, 执行 preHandle(), 若拦截器返回 false, 则立刻 triggerAfterCompletion, 然后 return false</span></span><br><span class="line">  </span><br><span class="line">  </span><br><span class="line">org.springframework.web.servlet.DispatcherServlet#processDispatchResult</span><br><span class="line">    <span class="comment">// 若有异常则处理异常: 遍历之前加载的异常处理器策略类, 调用 resolveException()</span></span><br><span class="line">		<span class="comment">// 若无异常则根据需要根据视图名和视图解析器渲染视图</span></span><br><span class="line">		<span class="comment">// 最后执行拦截器的 triggerAfterCompletion</span></span><br><span class="line"></span><br><span class="line">  </span><br><span class="line">org.springframework.web.servlet.DispatcherServlet#processHandlerException</span><br><span class="line">    <span class="comment">// 遍历之前加载的异常处理器策略类, 调用 resolveException()</span></span><br><span class="line">  </span><br><span class="line">  </span><br><span class="line">org.springframework.web.servlet.DispatcherServlet#render</span><br><span class="line">    <span class="comment">// 先遍历视图解析器, 根据视图名获取实际视图对象</span></span><br><span class="line">		<span class="comment">// 最后调用实际视图对象的 render (渲染方法)</span></span><br><span class="line"></span><br><span class="line">  </span><br><span class="line">org.springframework.web.servlet.DispatcherServlet#resolveViewName</span><br><span class="line">    <span class="comment">// 遍历视图解析器, 根据视图名获取实际视图对象</span></span><br></pre></td></tr></table></figure>
-
-
-
-
-
-<h2 id="某些实现原理"><a href="#某些实现原理" class="headerlink" title="某些实现原理"></a>某些实现原理</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">1.拦截器原理</span><br><span class="line">2.默认的 HandlerMapping/HandlerAdapter 在何时加入?</span><br><span class="line">3.参数是如何与 HTTP 请求 body 绑定的(序列化, 格式化, 绑定)?</span><br><span class="line">4.参数校验是如何进行的?</span><br><span class="line">5.有关参数与返回值的一些拦截与干预(@RequestBody, @ResponseBody).</span><br></pre></td></tr></table></figure>
-
-
-
-<h3 id="拦截器原理"><a href="#拦截器原理" class="headerlink" title="拦截器原理"></a>拦截器原理</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">何时加入?</span><br><span class="line">	从 WebMvcConfigurationSupport 的子类中调用 addInterceptors </span><br><span class="line">	添加一些拦截器和拦截器的路径配置 InterceptorRegistry 和 MappedInterceptor</span><br><span class="line">    实现拦截器路径匹配, 在 new HandlerExecutionChian 时判断</span><br><span class="line"></span><br><span class="line">何时执行?</span><br><span class="line">	DispatcherServlet 负责在正确的时机调用 HandlerExecutionChian 来调用 preHanlde 等方法.</span><br><span class="line">	拿到 HandlerExecutionChian 后调用 preHanlde</span><br><span class="line">	HandlerAdapter 执行完 handler 后, 调用 postHandle</span><br><span class="line">	解析视图并渲染到response之后, 调用 afterCompletion</span><br><span class="line">	如果中途出现异常, 或 preHandle 提前结束, 则也调用 afterCompletion</span><br><span class="line"></span><br><span class="line">总结</span><br><span class="line">	DispatcherServlet 去调用 HandlerExecutionChian 去调用 拦截器具体方法. </span><br><span class="line">	复杂点是添加一个拦截器到被加入到 HandlerExecutionChian 比较复杂一点, 以及带路径匹配的拦截器实现略复杂一些.</span><br></pre></td></tr></table></figure>
-
-
-
-<h3 id="默认的-HandlerMapping-HandlerAdapter-在何时加入"><a href="#默认的-HandlerMapping-HandlerAdapter-在何时加入" class="headerlink" title="默认的 HandlerMapping/HandlerAdapter 在何时加入?"></a>默认的 HandlerMapping/HandlerAdapter 在何时加入?</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">org.springframework.web.servlet.DispatcherServlet#initStrategies</span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">initStrategies</span><span class="params">(ApplicationContext context)</span> </span>&#123;</span><br><span class="line">  <span class="comment">// 加载文件上传处理 bean</span></span><br><span class="line">  <span class="comment">// 加载国际化处理 bean</span></span><br><span class="line">  <span class="comment">// 加载主题切换处理 bean</span></span><br><span class="line">  <span class="comment">// 加载 HandlerMapping bean</span></span><br><span class="line">  <span class="comment">// 加载 HandlerAdapter bean</span></span><br><span class="line">  <span class="comment">// 加载异常处理 bean</span></span><br><span class="line">  <span class="comment">// 加载 HttpServletRequest 转视图名称处理策略 bean</span></span><br><span class="line">  <span class="comment">// 加载视图解析器</span></span><br><span class="line">  <span class="comment">// 加载 FlashMap 管理 bean</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// 每一个 init 的逻辑都是类似的, 先从容器中根据 Xxx.class getBean</span></span><br><span class="line">  <span class="comment">// 若无, 则调用 getDefaultStrategy() 从 DispatcherServlet.properties 配置文件中读取</span></span><br><span class="line">  initMultipartResolver(context);</span><br><span class="line">  initLocaleResolver(context);</span><br><span class="line">  initThemeResolver(context);</span><br><span class="line">  initHandlerMappings(context);</span><br><span class="line">  initHandlerAdapters(context);</span><br><span class="line">  initHandlerExceptionResolvers(context);</span><br><span class="line">  initRequestToViewNameTranslator(context);</span><br><span class="line">  initViewResolvers(context);</span><br><span class="line">  initFlashMapManager(context);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-
-<h3 id="参数是如何与-HTTP-请求-body-绑定的-序列化-格式化-绑定"><a href="#参数是如何与-HTTP-请求-body-绑定的-序列化-格式化-绑定" class="headerlink" title="参数是如何与 HTTP 请求 body 绑定的(序列化, 格式化, 绑定)?"></a>参数是如何与 HTTP 请求 body 绑定的(序列化, 格式化, 绑定)?</h3><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">1.在适配器执行 handler 的时候, 即 RequestMappingHandlerAdapter#invokeHandlerMethod</span><br><span class="line">2.此方法会进行一些其他处理, 然后准备执行方法前解析参数, 即在 InvocableHandlerMethod#getMethodArgumentValues() 中</span><br><span class="line"><span class="number">3</span>.这个方法中会遍历每一个参数, 再遍历配置的所有 resolvers, 通过 supportsParameter 接口判断是否支持参数解析, 是则调用 resolveArgument 接口获得实参</span><br><span class="line">4.这其中, 最重要的是 resolvers, 其一般在 RequestMappingHandlerAdapter#getDefaultArgumentResolvers() 中添加默认和用户自定义的 resoloves.</span><br><span class="line">5.如 RequestResponseBodyMethodProcessor#resolveArgument() 用于处理带 @RequestBody 注解的参数.</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>总结: 适配器执行具体方法前, 先用反射获取这个方法的 参数(形参)集合, 挨个遍历从 resolvers 找支持解析的类来解析, 得到的返回值作为实参先存起来, 最后调用具体方法时就可以带上实参们执行就实现了将 HTTP 的数据绑定到 controller 的方法参数上的功能.</p>
-<p>参考 RequestResponseBodyMethodProcessor#resolveArgument()</p>
-</blockquote>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> Object <span class="title">resolveArgument</span><span class="params">(MethodParameter parameter, @Nullable ModelAndViewContainer mavContainer,</span></span></span><br><span class="line"><span class="function"><span class="params">                              NativeWebRequest webRequest, @Nullable WebDataBinderFactory binderFactory)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">  <span class="comment">// 调用 readWithMessageConverters 读取 body 的数据, 再序列化 json 成相应的 Java Bean</span></span><br><span class="line">  <span class="comment">// 使用 binder 检查 arg 的值是否与 @Valid 的那些注解相关的规则相符, 若有错误, 则抛异常.</span></span><br><span class="line"></span><br><span class="line">  parameter = parameter.nestedIfOptional();</span><br><span class="line">  Object arg = readWithMessageConverters(webRequest, parameter, parameter.getNestedGenericParameterType());</span><br><span class="line">  String name = Conventions.getVariableNameForParameter(parameter);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (binderFactory != <span class="keyword">null</span>) &#123;</span><br><span class="line">    WebDataBinder binder = binderFactory.createBinder(webRequest, arg, name);</span><br><span class="line">    <span class="keyword">if</span> (arg != <span class="keyword">null</span>) &#123;</span><br><span class="line">      validateIfApplicable(binder, parameter);</span><br><span class="line">      <span class="keyword">if</span> (binder.getBindingResult().hasErrors() &amp;&amp; isBindExceptionRequired(binder, parameter)) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> MethodArgumentNotValidException(parameter, binder.getBindingResult());</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (mavContainer != <span class="keyword">null</span>) &#123;</span><br><span class="line">      mavContainer.addAttribute(BindingResult.MODEL_KEY_PREFIX + name, binder.getBindingResult());</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> adaptArgumentIfNecessary(arg, parameter);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-
-<h3 id="参数校验是如何进行的"><a href="#参数校验是如何进行的" class="headerlink" title="参数校验是如何进行的?"></a>参数校验是如何进行的?</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 参考上面的代码</span></span><br><span class="line"><span class="keyword">if</span> (binderFactory != <span class="keyword">null</span>) &#123;</span><br><span class="line">  WebDataBinder binder = binderFactory.createBinder(webRequest, arg, name);</span><br><span class="line">  <span class="keyword">if</span> (arg != <span class="keyword">null</span>) &#123;</span><br><span class="line">    validateIfApplicable(binder, parameter);</span><br><span class="line">    <span class="keyword">if</span> (binder.getBindingResult().hasErrors() &amp;&amp; isBindExceptionRequired(binder, parameter)) &#123;</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> MethodArgumentNotValidException(parameter, binder.getBindingResult());</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (mavContainer != <span class="keyword">null</span>) &#123;</span><br><span class="line">    mavContainer.addAttribute(BindingResult.MODEL_KEY_PREFIX + name, binder.getBindingResult());</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 这段代码 validateIfApplicable() 就进行了参数校验, 代码如下:</span></span><br><span class="line"><span class="comment">// 逻辑是: 遍历参数所有的注解, 包含 validatedAnn 或以 Valid 开头的注解都进行校验</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">validateIfApplicable</span><span class="params">(WebDataBinder binder, MethodParameter parameter)</span> </span>&#123;</span><br><span class="line">  Annotation[] annotations = parameter.getParameterAnnotations();</span><br><span class="line">  <span class="keyword">for</span> (Annotation ann : annotations) &#123;</span><br><span class="line">    Validated validatedAnn = AnnotationUtils.getAnnotation(ann, Validated<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">    <span class="keyword">if</span> (validatedAnn != <span class="keyword">null</span> || ann.annotationType().getSimpleName().startsWith(<span class="string">"Valid"</span>)) &#123;</span><br><span class="line">      Object hints = (validatedAnn != <span class="keyword">null</span> ? validatedAnn.value() : AnnotationUtils.getValue(ann));</span><br><span class="line">      Object[] validationHints = (hints <span class="keyword">instanceof</span> Object[] ? (Object[]) hints : <span class="keyword">new</span> Object[] &#123;hints&#125;);</span><br><span class="line">      binder.validate(validationHints);</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 然后是 validate 具体的对象.</span></span><br><span class="line"><span class="comment">// 逻辑是: 遍历所有的 validators, 挨个调用 validate 校验</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">validate</span><span class="params">(Object... validationHints)</span> </span>&#123;</span><br><span class="line">  Object target = getTarget();</span><br><span class="line">  Assert.state(target != <span class="keyword">null</span>, <span class="string">"No target to validate"</span>);</span><br><span class="line">  BindingResult bindingResult = getBindingResult();</span><br><span class="line">  <span class="comment">// Call each validator with the same binding result</span></span><br><span class="line">  <span class="keyword">for</span> (Validator validator : getValidators()) &#123;</span><br><span class="line">    <span class="keyword">if</span> (!ObjectUtils.isEmpty(validationHints) &amp;&amp; validator <span class="keyword">instanceof</span> SmartValidator) &#123;</span><br><span class="line">      ((SmartValidator) validator).validate(target, bindingResult, validationHints);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (validator != <span class="keyword">null</span>) &#123;</span><br><span class="line">      validator.validate(target, bindingResult);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 再往下就没啦... Spring 没有具体的实现, 所以要导入 Hibernate 的啥啥啥包, 这是有原因的.</span></span><br></pre></td></tr></table></figure>
-
-
-
-
-
-<h3 id="有关参数与返回值的一些拦截与干预-RequestBody-ResponseBody"><a href="#有关参数与返回值的一些拦截与干预-RequestBody-ResponseBody" class="headerlink" title="有关参数与返回值的一些拦截与干预(@RequestBody, @ResponseBody)."></a>有关参数与返回值的一些拦截与干预(@RequestBody, @ResponseBody).</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 参考 RequestMappingHandlerAdapter#afterPropertiesSet()</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">afterPropertiesSet</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="comment">// Do this first, it may add ResponseBody advice beans</span></span><br><span class="line">  initControllerAdviceCache();</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">this</span>.argumentResolvers == <span class="keyword">null</span>) &#123;</span><br><span class="line">    List&lt;HandlerMethodArgumentResolver&gt; resolvers = getDefaultArgumentResolvers();</span><br><span class="line">    <span class="keyword">this</span>.argumentResolvers = <span class="keyword">new</span> HandlerMethodArgumentResolverComposite().addResolvers(resolvers);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">this</span>.initBinderArgumentResolvers == <span class="keyword">null</span>) &#123;</span><br><span class="line">    List&lt;HandlerMethodArgumentResolver&gt; resolvers = getDefaultInitBinderArgumentResolvers();</span><br><span class="line">    <span class="keyword">this</span>.initBinderArgumentResolvers = <span class="keyword">new</span> HandlerMethodArgumentResolverComposite().addResolvers(resolvers);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">this</span>.returnValueHandlers == <span class="keyword">null</span>) &#123;</span><br><span class="line">    List&lt;HandlerMethodReturnValueHandler&gt; handlers = getDefaultReturnValueHandlers();</span><br><span class="line">    <span class="keyword">this</span>.returnValueHandlers = <span class="keyword">new</span> HandlerMethodReturnValueHandlerComposite().addHandlers(handlers);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>由上可知, argumentResolvers/returnValueHandlers 都是此时初始化的, 再点进去看代码发现, 除了默认的, 还有用户自定义的 customArgumentResolvers/customReturnValueHandlers;</p>
-</blockquote>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 寻找字段的引用发现</span></span><br><span class="line">WebMvcConfigurationSupport#addReturnValueHandlers</span><br><span class="line">WebMvcConfigurationSupport#addArgumentResolvers</span><br><span class="line"><span class="comment">// 这两个方法可以继承后加入加入自己的 ArgumentResolvers/ReturnValueHandlers, 也就是项目里面继承 WebMvcConfiguration 的那个类, 重写这两个方法, 加入自己的类即可实现对参数/返回值的干预; 常用于统一加密/解密, 记录日志等.</span></span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>除此之外, 两边的默认值都有 RequestResponseBodyMethodProcessor, 这就是用于处理@RequestBody/@ResponseBody 的了, 往里面深入的看, 能看到其使用 messageConverters 读取 body 数据, 然后也会在对应的地方触发 advice 的方法.</p>
-</blockquote>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 参考 AbstractMessageConverterMethodArgumentResolver#readWithMessageConverters</span></span><br><span class="line"><span class="keyword">for</span> (HttpMessageConverter&lt;?&gt; converter : <span class="keyword">this</span>.messageConverters) &#123;</span><br><span class="line">  Class&lt;HttpMessageConverter&lt;?&gt;&gt; converterType = (Class&lt;HttpMessageConverter&lt;?&gt;&gt;) converter.getClass();</span><br><span class="line">  GenericHttpMessageConverter&lt;?&gt; genericConverter =</span><br><span class="line">    (converter <span class="keyword">instanceof</span> GenericHttpMessageConverter ? (GenericHttpMessageConverter&lt;?&gt;) converter : <span class="keyword">null</span>);</span><br><span class="line">  <span class="keyword">if</span> (genericConverter != <span class="keyword">null</span> ? genericConverter.canRead(targetType, contextClass, contentType) :</span><br><span class="line">      (targetClass != <span class="keyword">null</span> &amp;&amp; converter.canRead(targetClass, contentType))) &#123;</span><br><span class="line">    <span class="keyword">if</span> (message.hasBody()) &#123;</span><br><span class="line">      HttpInputMessage msgToUse =</span><br><span class="line">        getAdvice().beforeBodyRead(message, parameter, targetType, converterType);</span><br><span class="line">      body = (genericConverter != <span class="keyword">null</span> ? genericConverter.read(targetType, contextClass, msgToUse) :</span><br><span class="line">              ((HttpMessageConverter&lt;T&gt;) converter).read(targetClass, msgToUse));</span><br><span class="line">      body = getAdvice().afterBodyRead(body, msgToUse, parameter, targetType, converterType);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> &#123;</span><br><span class="line">      body = getAdvice().handleEmptyBody(<span class="keyword">null</span>, message, parameter, targetType, converterType);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-
-
-
-
-
-<h2 id="参数的N种绑定方式"><a href="#参数的N种绑定方式" class="headerlink" title="参数的N种绑定方式"></a>参数的N种绑定方式</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 参考 RequestMappingHandlerAdapter#getDefaultArgumentResolvers</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> List&lt;HandlerMethodArgumentResolver&gt; <span class="title">getDefaultArgumentResolvers</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  List&lt;HandlerMethodArgumentResolver&gt; resolvers = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Annotation-based argument resolution</span></span><br><span class="line">  resolvers.add(<span class="keyword">new</span> RequestParamMethodArgumentResolver(getBeanFactory(), <span class="keyword">false</span>));</span><br><span class="line">  resolvers.add(<span class="keyword">new</span> RequestParamMapMethodArgumentResolver());</span><br><span class="line">  resolvers.add(<span class="keyword">new</span> PathVariableMethodArgumentResolver());</span><br><span class="line">  resolvers.add(<span class="keyword">new</span> PathVariableMapMethodArgumentResolver());</span><br><span class="line">  resolvers.add(<span class="keyword">new</span> MatrixVariableMethodArgumentResolver());</span><br><span class="line">  resolvers.add(<span class="keyword">new</span> MatrixVariableMapMethodArgumentResolver());</span><br><span class="line">  resolvers.add(<span class="keyword">new</span> ServletModelAttributeMethodProcessor(<span class="keyword">false</span>));</span><br><span class="line">  resolvers.add(<span class="keyword">new</span> RequestResponseBodyMethodProcessor(getMessageConverters(), <span class="keyword">this</span>.requestResponseBodyAdvice));</span><br><span class="line">  resolvers.add(<span class="keyword">new</span> RequestPartMethodArgumentResolver(getMessageConverters(), <span class="keyword">this</span>.requestResponseBodyAdvice));</span><br><span class="line">  resolvers.add(<span class="keyword">new</span> RequestHeaderMethodArgumentResolver(getBeanFactory()));</span><br><span class="line">  resolvers.add(<span class="keyword">new</span> RequestHeaderMapMethodArgumentResolver());</span><br><span class="line">  resolvers.add(<span class="keyword">new</span> ServletCookieValueMethodArgumentResolver(getBeanFactory()));</span><br><span class="line">  resolvers.add(<span class="keyword">new</span> ExpressionValueMethodArgumentResolver(getBeanFactory()));</span><br><span class="line">  resolvers.add(<span class="keyword">new</span> SessionAttributeMethodArgumentResolver());</span><br><span class="line">  resolvers.add(<span class="keyword">new</span> RequestAttributeMethodArgumentResolver());</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Type-based argument resolution</span></span><br><span class="line">  resolvers.add(<span class="keyword">new</span> ServletRequestMethodArgumentResolver());</span><br><span class="line">  resolvers.add(<span class="keyword">new</span> ServletResponseMethodArgumentResolver());</span><br><span class="line">  resolvers.add(<span class="keyword">new</span> HttpEntityMethodProcessor(getMessageConverters(), <span class="keyword">this</span>.requestResponseBodyAdvice));</span><br><span class="line">  resolvers.add(<span class="keyword">new</span> RedirectAttributesMethodArgumentResolver());</span><br><span class="line">  resolvers.add(<span class="keyword">new</span> ModelMethodProcessor());</span><br><span class="line">  resolvers.add(<span class="keyword">new</span> MapMethodProcessor());</span><br><span class="line">  resolvers.add(<span class="keyword">new</span> ErrorsMethodArgumentResolver());</span><br><span class="line">  resolvers.add(<span class="keyword">new</span> SessionStatusMethodArgumentResolver());</span><br><span class="line">  resolvers.add(<span class="keyword">new</span> UriComponentsBuilderMethodArgumentResolver());</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Custom arguments</span></span><br><span class="line">  <span class="keyword">if</span> (getCustomArgumentResolvers() != <span class="keyword">null</span>) &#123;</span><br><span class="line">    resolvers.addAll(getCustomArgumentResolvers());</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Catch-all</span></span><br><span class="line">  resolvers.add(<span class="keyword">new</span> RequestParamMethodArgumentResolver(getBeanFactory(), <span class="keyword">true</span>));</span><br><span class="line">  resolvers.add(<span class="keyword">new</span> ServletModelAttributeMethodProcessor(<span class="keyword">true</span>));</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> resolvers;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>看几个常见的</p>
-</blockquote>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">1.RequestParamMethodArgumentResolver: 负责解析带 @RequestParam 注解的普通参数</span><br><span class="line">2.RequestParamMapMethodArgumentResolver: 负责解析带 @RequestParam 的 Map 参数....</span><br><span class="line">3.PathVariableMethodArgumentResolver/PathVariableMapMethodArgumentResolver: 同上解析带 @PathVariable 注解的参数</span><br><span class="line">4.RequestResponseBodyMethodProcessor: 负责解析带 @RequestBody 的参数</span><br><span class="line">5.RequestHeaderMethodArgumentResolver: 负责解析带 @RequestHeader 的参数 (表示没用过)</span><br><span class="line">6.ServletRequestMethodArgumentResolver: 负责解析 HttpServletRequest 等类型的参数(即 req, 用的贼多)</span><br><span class="line">7.ServletResponseMethodArgumentResolver: 负责解析 HttpServletResponse 等类型的参数(即 resp, 下载接口没少用)</span><br><span class="line">8.RequestParamMethodArgumentResolver: 啥都解析.... 即不带任何注解的普通类型.</span><br></pre></td></tr></table></figure>
-
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://gudqs7.github.io/2021/01/24/source-code-spring-boot/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="gudqs7">
-      <meta itemprop="description" content="心累没钱躺尸中">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="gudqs7's note">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2021/01/24/source-code-spring-boot/" class="post-title-link" itemprop="url">Spring Boot 源码笔记</a>
-        </h2>
-
-        <div class="post-meta">
-			
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2021-01-24 02:04:22" itemprop="dateCreated datePublished" datetime="2021-01-24T02:04:22+08:00">2021-01-24</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-01-25 23:17:48" itemprop="dateModified" datetime="2021-01-25T23:17:48+08:00">2021-01-25</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Spring/" itemprop="url" rel="index"><span itemprop="name">Spring</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/SourceCode/" itemprop="url" rel="index"><span itemprop="name">SourceCode</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Spring-Boot/" itemprop="url" rel="index"><span itemprop="name">Spring Boot</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/2021/01/24/source-code-spring-boot/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2021/01/24/source-code-spring-boot/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="Spring-Boot-源码分析"><a href="#Spring-Boot-源码分析" class="headerlink" title="Spring Boot 源码分析"></a>Spring Boot 源码分析</h1><h2 id="run-流程"><a href="#run-流程" class="headerlink" title="run 流程"></a>run 流程</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">1.StopWatch 提供的计算耗时的功能, 创建一个后立即开始计时.</span><br><span class="line">2.创建一个引导容器, 并在此时(容器未使用前)把 spring.factories 找到 Bootstrapper 接口的类对应的方法触发, 来给引导容器里注册一些东西(如果有需要)</span><br><span class="line">3.从 spring.factories 找 SpringApplicationRunListener 的类, 实例化后存到 SpringApplicationRunListeners 中.</span><br><span class="line">4.触发所有存入的 SpringApplicationRunListener 的 starting 事件.</span><br><span class="line">5.将 args 内容中的参数们(类似 --spring.port=9999)解析成键值对存到 applicationArguments 对象中.</span><br><span class="line">6.创建了一个 environment 对象, 添加了好几个功能各异的 PropertySource, 触发所有存入的 SpringApplicationRunListener 的 environmentPrepared 事件</span><br><span class="line">7.根据 this.bannerMode 判断是否打印 Banner, 以及打印在哪里, 根据 this.banner 判断打印什么样的 Banner (佛祖保佑.png)</span><br><span class="line">8.根据 web 类型创建不同的 ApplicationContext, 这里的创建, 仅实例化而已, 没有从构造方法调用 loadBeanDefinitions 和 refresh 的逻辑</span><br><span class="line">9.将 applicationStartup (步骤记录器)赋值给 context.</span><br><span class="line">10.对容器做些配置, 然后发布 contextPrepared 事件, 接着关闭引导容器; 然后使用 BeanDefinitionLoader 扫描解析 getAllSources (如Class) 并将得到的 BeanDefinition 注册到容器, 最后发布 contextLoaded 事件</span><br><span class="line">11.注册一个钩子, 当 JVM 关闭时, 相应的关闭 context, 然后调用容器的 refresh 方法(然后进入到 Spring 源码分析那段, 自行脑补)</span><br><span class="line">12.StopWatch 计时器停止计时, 接着打印计时数据</span><br><span class="line">13.发布 started 事件</span><br><span class="line">14.从容器中取出 ApplicationRunner/CommandLineRunner 两类 bean, 并调用它们的 run 方法.</span><br><span class="line">15.catch 到异常则发布 failed 事件</span><br><span class="line">16.发布 running 事件</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>从整体结构下来, 我们发现, 其主要是创建了一个引导容器(似乎也就是事件监听用到了, 其他地方完全无瓜), 然后扫描得到一些 SpringApplicationRunListener 存起来, 之后在合适的地方发布事件, 然后创建以及配置 environment 对象, 创建以及配置 ApplicationContext 对象, 解析 primarySources 来加载 BeanDefinition 到容器, 然后调用容器的 refresh 方法进入 Spring 的加载流程, 最后处理事件和调用 ApplicationRunner/CommandLineRunner 的 bean. 其中 加载 BeanDefinition 和执行  refresh 方法其实就是与 Spring 一样的逻辑.</p>
-</blockquote>
-<h3 id="SpringApplication-与-ApplicationContext-的关系与联系"><a href="#SpringApplication-与-ApplicationContext-的关系与联系" class="headerlink" title="SpringApplication 与 ApplicationContext 的关系与联系"></a>SpringApplication 与 ApplicationContext 的关系与联系</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">1.SpringApplication 有独特的 environment 对象, 这是因为 application.xml 配置以及 Spring Cloud Config 这些都需要在容器创建前加载配置文件.</span><br><span class="line">2.ApplicationContext 是 new 的时候就会立刻触发 加载 BeanDefinition 和 refresh(), 而 SpringApplication 则是先 new 一个, 配置好后, 才分别调用方法去 加载 BeanDefinition 和 refresh().</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">总得来讲, SpringApplication 相比 ApplicationContext 多出的就是 SpringApplicationRunListener 的事件管理, environment 对象加载与配置, 以及 run 方法的生命周期.</span><br></pre></td></tr></table></figure>
-
-
-
-<h3 id="这些-SpringApplicationRunListener-事件都被谁监听了-有什么作用"><a href="#这些-SpringApplicationRunListener-事件都被谁监听了-有什么作用" class="headerlink" title="这些 SpringApplicationRunListener 事件都被谁监听了, 有什么作用?"></a>这些 SpringApplicationRunListener 事件都被谁监听了, 有什么作用?</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 在 spring-boot-project/spring-boot/src/main/resources/META-INF/spring.factories</span></span><br><span class="line"><span class="comment">#   有一个 SpringApplicationRunListener, 其作用是:</span></span><br><span class="line">org.springframework.boot.context.event.EventPublishingRunListener</span><br><span class="line">1.构造方法: 初始化一个事件广播器, 并将 SpringApplication 的 listeners 注册进去. (listeners 是在构造方法中从 spring.factories 加载 ApplicationListener 得到的数据)</span><br><span class="line">2.转发 starting,environmentPrepared,contextPrepared,contextLoaded 事件给 ApplicationListener</span><br><span class="line">3.在 contextLoaded 事件时, 遍历所有的 ApplicationListener 对象, 若其实现了 ApplicationContextAware 接口, 则将 context 注入.</span><br><span class="line">4.started,running,failed 事件均直接用 context.publishEvent 发布事件, 与 listeners 无关 (而且 listeners 这些东西如果仅配置在 spring.factories 而没有被扫描到容器内, 那么就是真的无关了)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 总结: 配置在 spring.factories 的 ApplicationListener 并不会触发所有 run 生命周期的事件. 因此有时实现 SpringApplicationRunListener 还是很有必要的) 当然, 若你写的 ApplicationListener 即配置在 spring.factories 中也会被扫描到容器内, 则无此忧虑.</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 接着看 ApplicationListener 的作用</span></span><br><span class="line">1.ClearCachesApplicationListener: 在 ContextRefreshedEvent(容器加载完后) 清空缓存</span><br><span class="line">2.ParentContextCloserApplicationListener: 给子容器加一个监听, 使得父容器关闭后, 子容器也跟着关闭(还会递归子容器的容器吧.png)</span><br><span class="line">3.FileEncodingApplicationListener: 对比配置的编码格式, 不符合则报异常(若配置了)</span><br><span class="line">4.DelegatingApplicationListener: 新建一个事件广播器, 将配置文件中 context.listener.classes 的 class 实例化并作为监听者注册到广播器, 然后转发所有事件.</span><br><span class="line">5.EnvironmentPostProcessorApplicationListener</span><br><span class="line">    接受 ApplicationEnvironmentPreparedEvent 事件, 然后把从 spring.factories 获得的 EnvironmentPostProcessor 的 classNames 实例化, 然后遍历执行 postProcessEnvironment(), 其中 ConfigFileApplicationListener 用于加载 application.xxx(yml,xml,properties) 文件的配置到 environment 中的 PropertySource 里. (另外一提, Spring Cloud Config 应该也是这里实现的)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 总结: 原来配置文件是这么被加载进去的, 没有在主流程中写, 而是监听事件, 再调用 EnvironmentPostProcessor, 层层封装, 扩展性好强(读起来也好蓝).</span></span><br></pre></td></tr></table></figure>
-
-
-
-<h3 id="超长源码注释"><a href="#超长源码注释" class="headerlink" title="超长源码注释"></a>超长源码注释</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 我们从源码的 spring-boot/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-tomcat 下, 找到 SampleTomcatApplication.java 类, 直接看它的 main 方法.</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">  SpringApplication.run(SampleTomcatApplication<span class="class">.<span class="keyword">class</span>, <span class="title">args</span>)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>接着, 我们点进 run 方法, 瞧瞧里面干了啥</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 看起来不多嘛......(看前如是写道, 看完已是凌晨四点)</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> ConfigurableApplicationContext <span class="title">run</span><span class="params">(String... args)</span> </span>&#123;</span><br><span class="line">  <span class="comment">// 1.StopWatch 提供的计算耗时的功能, 创建一个后立即开始计时.</span></span><br><span class="line">  <span class="comment">// 2.创建一个引导容器, 并在此时(容器未使用前)把 spring.factories 找到 Bootstrapper 接口的类对应的方法触发, 来给引导容器里注册一些东西(如果有需要)</span></span><br><span class="line">  <span class="comment">// 3.从 spring.factories 找 SpringApplicationRunListener 的类, 实例化后存到 SpringApplicationRunListeners 中.</span></span><br><span class="line">  <span class="comment">// 4.触发所有存入的 SpringApplicationRunListener 的 starting 事件.</span></span><br><span class="line">  <span class="comment">// 5.将 args 内容中的参数们(类似 --spring.port=9999)解析成键值对存到 applicationArguments 对象中.</span></span><br><span class="line">  <span class="comment">// 6.创建了一个 environment 对象, 添加了好几个功能各异的 PropertySource, 触发所有存入的 SpringApplicationRunListener 的 environmentPrepared 事件</span></span><br><span class="line">  <span class="comment">// 7.根据 this.bannerMode 判断是否打印 Banner, 以及打印在哪里, 根据 this.banner 判断打印什么样的 Banner (佛祖保佑.png)</span></span><br><span class="line">  <span class="comment">// 8.根据 web 类型创建不同的 ApplicationContext, 这里的创建, 仅实例化而已, 没有从构造方法调用 loadBeanDefinitions 和 refresh 的逻辑</span></span><br><span class="line">  <span class="comment">// 9.将 applicationStartup (步骤记录器)赋值给 context.</span></span><br><span class="line">  <span class="comment">//10.对容器做些配置, 然后发布 contextPrepared 事件, 接着关闭引导容器; 然后根据 primarySource 使用 BeanDefinitionLoader 加载 BeanDefinition 到容器, 最后发布 contextLoaded 事件</span></span><br><span class="line">  <span class="comment">//11.注册一个钩子, 当 JVM 关闭时, 相应的关闭 context, 然后调用容器的 refresh 方法(然后进入到 Spring 源码分析那段, 自行脑补)</span></span><br><span class="line">  <span class="comment">//12.计时器停止计时, 接着打印计时数据</span></span><br><span class="line">  <span class="comment">//13.发布 started 事件</span></span><br><span class="line">  <span class="comment">//14.从容器中取出 ApplicationRunner/CommandLineRunner 两类 bean, 并调用它们的 run 方法.</span></span><br><span class="line">  <span class="comment">//15.catch 到异常则发布 failed 事件</span></span><br><span class="line">  <span class="comment">//16.发布 running 事件</span></span><br><span class="line"></span><br><span class="line">  StopWatch stopWatch = <span class="keyword">new</span> StopWatch();</span><br><span class="line">  stopWatch.start();</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 创建一个引导容器, 并在此时(容器未使用前)从 spring.factories 扫描一些实现了 Bootstrapper 接口的类, 来给引导容器里注册一些东西(如果有需要)</span></span><br><span class="line">  DefaultBootstrapContext bootstrapContext = createBootstrapContext();</span><br><span class="line">  ConfigurableApplicationContext context = <span class="keyword">null</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 往系统变量里设置一个变量 headless, 看上去和 AWT 有关, 暂且忽略之</span></span><br><span class="line">  configureHeadlessProperty();</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 扫描 spring.factories 中配置的实现了 SpringApplicationRunListener 的类们</span></span><br><span class="line">  <span class="comment">//   实例化后放到 SpringApplicationRunListeners (其就是个容器管理类) 存起来.</span></span><br><span class="line">  SpringApplicationRunListeners listeners = getRunListeners(args);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 触发所有存入的 SpringApplicationRunListener 的 starting 事件.</span></span><br><span class="line">  listeners.starting(bootstrapContext, <span class="keyword">this</span>.mainApplicationClass);</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="comment">// 将 args 内容中的参数(类似 --spring.port=9999)解析成键值对存到 applicationArguments 对象中.</span></span><br><span class="line">    ApplicationArguments applicationArguments = <span class="keyword">new</span> DefaultApplicationArguments(args);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 创建了一个 environment 对象, 添加了好几个功能各异的 PropertySource,</span></span><br><span class="line">    <span class="comment">//   触发所有存入的 SpringApplicationRunListener 的 environmentPrepared 事件</span></span><br><span class="line">    <span class="comment">//   将 environment 中 spring.main 开头的配置数据, 一一对应绑定到 SpringApplication(即this)的字段上去</span></span><br><span class="line">    ConfigurableEnvironment environment = prepareEnvironment(listeners, bootstrapContext, applicationArguments);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 将 environment 的 spring.beaninfo.ignore 配置复制到 System.Property 去(若不存在)</span></span><br><span class="line">    configureIgnoreBeanInfo(environment);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 根据 this.bannerMode 判断是否打印 Banner, 以及打印在哪里, 根据 this.banner 判断打印什么样的 Banner (佛祖保佑.png)</span></span><br><span class="line">    Banner printedBanner = printBanner(environment);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 根据 web 类型创建不同的 ApplicationContext, 但其实差别不大, 就时多了 web 容器的特征(如启动 tomcat)</span></span><br><span class="line">    <span class="comment">// 另外与 Spring 源码分析时不同, 这里的创建, 仅实例化而已, 没有从构造方法调用 loadBeanDefinitions 和 refresh 的逻辑</span></span><br><span class="line">    context = createApplicationContext();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 将 applicationStartup (步骤记录器)赋值给 context.</span></span><br><span class="line">    context.setApplicationStartup(<span class="keyword">this</span>.applicationStartup);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 对 context 做一些配置, 执行 initializers 的 initialize()</span></span><br><span class="line">    <span class="comment">// 发布 contextPrepared 事件</span></span><br><span class="line">    <span class="comment">// 关闭引导容器, 即发布 BootstrapContextClosedEvent 事件给之前加的 closeListener (监听者)</span></span><br><span class="line">    <span class="comment">// 使用 BeanDefinitionLoader 根据 sources 和 run 方法参数 primarySource 加载 BeanDefinition 到容器中.</span></span><br><span class="line">    <span class="comment">// 发布 contextLoaded 事件</span></span><br><span class="line">    prepareContext(bootstrapContext, context, environment, listeners, applicationArguments, printedBanner);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 注册一个钩子, 当 JVM 关闭时, 相应的关闭 context, 然后调用容器的 refresh 方法(然后进入到 Spring 源码分析那段, 自行脑补)</span></span><br><span class="line">    refreshContext(context);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 留给子类扩展吧</span></span><br><span class="line">    afterRefresh(context, applicationArguments);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 计时器停止计时, 接着打印计时数据</span></span><br><span class="line">    stopWatch.stop();</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">this</span>.logStartupInfo) &#123;</span><br><span class="line">      <span class="keyword">new</span> StartupInfoLogger(<span class="keyword">this</span>.mainApplicationClass).logStarted(getApplicationLog(), stopWatch);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 发布 started 事件</span></span><br><span class="line">    listeners.started(context);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 从容器中取出 ApplicationRunner/CommandLineRunner 两类 bean, 并调用它们的 run 方法.</span></span><br><span class="line">    callRunners(context, applicationArguments);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">catch</span> (Throwable ex) &#123;</span><br><span class="line">    <span class="comment">// 发布 failed 事件</span></span><br><span class="line">    handleRunFailure(context, ex, listeners);</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(ex);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="comment">// 发布 running 事件</span></span><br><span class="line">    listeners.running(context);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">catch</span> (Throwable ex) &#123;</span><br><span class="line">    <span class="comment">// 发布 failed 事件</span></span><br><span class="line">    handleRunFailure(context, ex, <span class="keyword">null</span>);</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(ex);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> context;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>温馨提示: 先在想看的地方打断点, 在打开调试模式, 可以清楚的看到对应的变量变化情况, 以此理解代码!</p>
-</blockquote>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 来看看所有过程涉及方法的注释(大多数)</span></span><br><span class="line">org.springframework.boot.SpringApplication#createBootstrapContext</span><br><span class="line">    <span class="comment">// 1.创建一个引导容器(这个容器作用和 BeanFactory 类似, 但更简单得多, 仅有获取/注册 bean 对象等的功能)</span></span><br><span class="line">		<span class="comment">//   触发存于 this.bootstrappers 的对象的 intitialize 方法来对引导容器进行初始化(即可以在引导容器未使用前往里面注册 bean 对象)</span></span><br><span class="line">		<span class="comment">//   然后 this.bootstrappers 的数据有一部分是从 spring.factories 找 Bootstrapper 的类实例化后得到的, 然后也可以代码手动添加</span></span><br><span class="line">		</span><br><span class="line">  </span><br><span class="line">org.springframework.boot.SpringApplication#getRunListeners</span><br><span class="line">    <span class="comment">// 扫描 spring.factories 中配置的实现了 SpringApplicationRunListener 的类, 并调用形如 types 的参数的构造函数来实例化得到对象集合</span></span><br><span class="line">		<span class="comment">//   再将这些对象集合放到 SpringApplicationRunListeners(其就是个容器管理类)中.</span></span><br><span class="line">		<span class="comment">// 并绑定 applicationStartup (步骤记录器)</span></span><br><span class="line">  </span><br><span class="line"></span><br><span class="line">org.springframework.boot.SpringApplicationRunListeners#doWithListeners(java.lang.String, java.util.function.Consumer&lt;org.springframework.boot.SpringApplicationRunListener&gt;, java.util.function.Consumer&lt;org.springframework.core.metrics.StartupStep&gt;)</span><br><span class="line">    <span class="comment">// 遍历持有的所有 SpringApplicationRunListener, 触发对应事件</span></span><br><span class="line">		<span class="comment">// 在触发监听事件前后加入 StartupStep 监听所耗时间</span></span><br><span class="line">		<span class="comment">// 步骤监听器的 accept 处理</span></span><br><span class="line">  </span><br><span class="line">  </span><br><span class="line">org.springframework.boot.SpringApplication#prepareEnvironment</span><br><span class="line">    <span class="comment">// 1.根据 web 类型创建一个 environment 对象</span></span><br><span class="line">		<span class="comment">// 2.配置 environment</span></span><br><span class="line">		<span class="comment">//     通过 ConversionService 类添加一些类型转换支持(如文件大小1024k=1M等)</span></span><br><span class="line">		<span class="comment">//     将用户设置的 defaultProperties 添加到 environment 的 sources 中, 将 args 解析成一个 PropertySource 后加入到 environment 中</span></span><br><span class="line">		<span class="comment">// 3.为 environment 添加一个名为 configurationProperties 的源, 其作用是将每一个 PropertySource 适配成 ConfigurationPropertySource.</span></span><br><span class="line">		<span class="comment">// 4.触发所有存入的 SpringApplicationRunListener 的 environmentPrepared 事件.</span></span><br><span class="line">		<span class="comment">// 5.将名为 defaultProperties 的 Property 源移最后(降低优先级), 另此 defaultProperties 不是 this.defaultProperties</span></span><br><span class="line">		<span class="comment">// 6.将用户通过代码设置的要附加的 profile 设置到 activeProfiles 中去 (若存在且 environment 中不存在)</span></span><br><span class="line">		<span class="comment">// 7.将 environment 中 spring.main 开头的配置数据, 一一对应绑定到 SpringApplication(即this)的字段上去</span></span><br><span class="line">		<span class="comment">// 8.若不开启自定义 environment, 则将 environment 转换成 StandardEnvironment(默认行为)</span></span><br><span class="line">		<span class="comment">// 9.由于上一步可能做了转换, 所以需要重新 attach 一次.</span></span><br><span class="line"></span><br><span class="line">  </span><br><span class="line">org.springframework.boot.SpringApplication#getOrCreateEnvironment</span><br><span class="line">    <span class="comment">// 1.若存在一个 environment, 则直接返回</span></span><br><span class="line">		<span class="comment">// 2.若不存在, 则根据之前推断得出的 webApplicationType 来创建对应的 Environment 对象.</span></span><br><span class="line">		<span class="comment">// 3.这几个不同的类型区别也不大, 就 StandardServletEnvironment 多了3个 propertySources(其中一个是 JDNI, 比较重要)</span></span><br><span class="line">		</span><br><span class="line">  </span><br><span class="line">org.springframework.boot.SpringApplication#configureEnvironment</span><br><span class="line">    <span class="comment">// 1.通过 ConversionService 类添加一些类型转换支持(如文件大小1024k=1M等)</span></span><br><span class="line">		<span class="comment">// 2.将用户设置的 defaultProperties 添加到 environment 的 sources 中, 将 args 解析成一个 PropertySource 后加入到 environment 中.</span></span><br><span class="line">		<span class="comment">// 3. configureProfiles 是一个空方法, 看来是留给我们实现子类时扩展的.</span></span><br><span class="line">		</span><br><span class="line">  </span><br><span class="line">org.springframework.boot.context.properties.source.ConfigurationPropertySources#attach</span><br><span class="line">    <span class="comment">// 为 environment 添加一个名为 configurationProperties 的源, 其作用是将每一个 PropertySource 适配成 ConfigurationPropertySource.</span></span><br><span class="line">		</span><br><span class="line">  </span><br><span class="line">org.springframework.boot.SpringApplication#configureAdditionalProfiles</span><br><span class="line">    <span class="comment">// 将用户通过代码设置的要附加的 profile 设置到 activeProfiles 中去 (若存在且 environment 中不存在)</span></span><br><span class="line">		</span><br><span class="line">  </span><br><span class="line">org.springframework.boot.SpringApplication#bindToSpringApplication</span><br><span class="line">    <span class="comment">// 将 environment 中的配置数据, 绑定到 SpringApplication(即this)的一些字段上去</span></span><br><span class="line">		<span class="comment">// 绑定规则是 spring.main 开头的配置数据与 SpringApplication 一一对应, 如若存在 spring.main.banner-mode=OFF, 则 this.bannerMode=OFF</span></span><br><span class="line">		</span><br><span class="line">  </span><br><span class="line"></span><br><span class="line">  </span><br><span class="line">org.springframework.boot.SpringApplication#printBanner</span><br><span class="line">    <span class="comment">// 根据 this.bannerMode 判断是否打印 Banner, 以及打印在哪里</span></span><br><span class="line">		<span class="comment">//   this.banner 为文件路径, 若为空, 则打印 Spring Boot 默认准备的文本(这不换个佛祖保佑?)</span></span><br><span class="line">		</span><br><span class="line">  </span><br><span class="line">org.springframework.boot.SpringApplication#createApplicationContext</span><br><span class="line">  </span><br><span class="line">    <span class="comment">// 根据 web 类型创建不同的 ApplicationContext, 但其实差别不大, 就几个细节不同罢了</span></span><br><span class="line">		<span class="comment">// 以 AnnotationConfigServletWebServerApplicationContext 为例, 与 AnnotationConfigApplicationContext 的区别大致为</span></span><br><span class="line">		<span class="comment">//   多加了一个 BeanPostProcessor 用于给 ServletContextAware/ServletConfigAware 接口注入 servletContext/servletConfig 对象</span></span><br><span class="line">		<span class="comment">//   onRefresh() 时, 调用 createWebServer() 启动 tomcat/jetty/undertow</span></span><br><span class="line">		</span><br><span class="line">  </span><br><span class="line">org.springframework.boot.SpringApplication#prepareContext</span><br><span class="line">    <span class="comment">// 1.设置 environment 对象</span></span><br><span class="line">		<span class="comment">// 2.将 beanNameGenerator 注册到容器中 (若存在), 配置容器的 resourceLoader 和 conversionService (从 SpringApplication 获取)</span></span><br><span class="line">		<span class="comment">// 3.将 initializers 根据 @Order 配置排序后, 遍历执行其 initialize 方法.</span></span><br><span class="line">		<span class="comment">// 4.发布 contextPrepared 事件</span></span><br><span class="line">		<span class="comment">// 5.关闭销毁引导容器(毕竟真正的容器已经准备好了, 这玩意就没用了)</span></span><br><span class="line">		<span class="comment">// 6.为容器添加一些特殊的 bean, 对 beanFactory 做点小设置; 然后添加一个懒加载功能的 BeanFactoryPostProcessor, 作用是将所有的 BeanDefinition 的 lazyInit 设置为 true</span></span><br><span class="line">		<span class="comment">// 7.创建一个 BeanDefinitionLoader, 解析 sources 得到 BeanDefinition 再注册到容器中. 和 Spring 的 new 容器时的 load 过程类似.</span></span><br><span class="line">		<span class="comment">// 8.发布 contextLoaded 事件</span></span><br><span class="line"></span><br><span class="line">  </span><br><span class="line">org.springframework.boot.SpringApplication#postProcessApplicationContext</span><br><span class="line">    <span class="comment">// 1.将 beanNameGenerator 注册到容器中 (若存在)</span></span><br><span class="line">		<span class="comment">// 2.将 SpringApplication 的 resourceLoader 赋值给容器 (若存在)</span></span><br><span class="line">		<span class="comment">// 3.为容器设置 ConversionService(类型转换工具)对象 (若配置了允许)</span></span><br><span class="line">		</span><br><span class="line">  </span><br><span class="line">org.springframework.boot.SpringApplication#load</span><br><span class="line">    <span class="comment">// 创建一个 BeanDefinitionLoader, 解析 sources 得到 BeanDefinition 再注册到容器中. 和 Spring 的 new 容器时的 load 过程类似.</span></span><br><span class="line">		</span><br><span class="line"></span><br><span class="line">org.springframework.boot.SpringApplication#refreshContext</span><br><span class="line">    <span class="comment">// 1.注册一个钩子, 当 JVM 关闭时, 相应的关闭 context</span></span><br><span class="line">		<span class="comment">// 2.调用容器的 refresh 方法</span></span><br><span class="line">		</span><br><span class="line">  </span><br><span class="line">org.springframework.boot.SpringApplication#callRunners</span><br><span class="line">    <span class="comment">// 从容器中取出 ApplicationRunner/CommandLineRunner 两类 bean, 并调用它们的 run 方法.</span></span><br><span class="line">		<span class="comment">// 这里有两个不同点</span></span><br><span class="line">		<span class="comment">//    1. XxxRunner 和 ApplicationListener 有何不同?</span></span><br><span class="line">		<span class="comment">//       答案是 XxxRunner 的 run 方法可以直接取到程序启动的 args 参数, 而监听器要取则还需借助 environment</span></span><br><span class="line">		<span class="comment">//    2.ApplicationRunner 和 CommandLineRunner 有何不同?</span></span><br><span class="line">		<span class="comment">//       答案是 run 方法接受的参数形式不同, 一个是 字符串数组(原始的), 一个是解析好的 key:value 方便直接取用.</span></span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>规矩我懂得, GitHub在这 <a href="https://github.com/gudqs7/spring-boot/tree/wq-comment" target="_blank" rel="noopener">注意分支哦</a> </p>
-</blockquote>
-<h2 id="各种实现的原理"><a href="#各种实现的原理" class="headerlink" title="各种实现的原理"></a>各种实现的原理</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">1.application.properties 是如何被加载到 Environment 中的?</span><br><span class="line">2.@ConfigurationProperties 如何实现自动注入`application.properties/application.yml`中配置的值?</span><br><span class="line">3.一些只需要改改依赖jar就可以切换(如tomcat-&gt;undertow)是怎么做到的? (@ConditionalXxx 的实现原理)</span><br><span class="line">4.JdbcTemplateAutoConfiguration如何确保能够获取到 DataSource? (@AutoConfigureAfter 的实现原理)</span><br><span class="line">5.为什么 Spring Boot 启动 main 方法就能访问 Tomcat? (SpringApplication.run() 启动 tomcat 实现原理)</span><br></pre></td></tr></table></figure>
-
-
-
-<h3 id="application-properties-是如何被加载到-Environment-中的"><a href="#application-properties-是如何被加载到-Environment-中的" class="headerlink" title="application.properties 是如何被加载到 Environment 中的?"></a>application.properties 是如何被加载到 Environment 中的?</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">1) run方法中创建了 Environment 对象, 当初始化好一些东西后会触发 environmentPrepared 事件</span><br><span class="line">2) 通过 SpringApplicationRunListener 的 EventPublishingRunListener 转发事件给 ApplicationListener 这类监听者, 即 EnvironmentPostProcessorApplicationListener.</span><br><span class="line">3) 这个类接收事件后, 遍历从 spring.factories 获得的 EnvironmentPostProcessor 对象, 执行其 postProcessEnvironment()</span><br><span class="line">4) 其中 ConfigFileApplicationListener<span class="comment">#postProcessEnvironment() 实现了配置文件的加载</span></span><br><span class="line">5) 具体为 postProcessEnvironment 下的 addPropertySources()</span><br><span class="line">6) 此方法将会扫描指定的路径下指定的某些文件</span><br><span class="line">7) 然后使用 spring.factories 下的 PropertySourceLoader 一一尝试解析</span><br><span class="line">8) 文件存在且解析正确则加入到 environment 的 sources 集合中.</span><br><span class="line">	某些路径: getSearchLocations() ,默认: classpath:/,classpath:/config/ ...</span><br><span class="line">	某些文件: getSearchNames() ,默认: application</span><br><span class="line"></span><br><span class="line"><span class="comment"># PS: </span></span><br><span class="line">PropertySourceLoader 有 PropertiesPropertySourceLoader/YamlPropertySourceLoader</span><br><span class="line">一个尝试后缀有 xml/properties, 另一个是 yml/yaml, 因为是遍历后 load, 所以所有可能性有:</span><br><span class="line">    classpath:/application.xml; classpath:/application.properties</span><br><span class="line">	classpath:/application.yml; classpath:/application.yaml</span><br><span class="line">    ......</span><br></pre></td></tr></table></figure>
-
-
-
-<h3 id="ConfigurationProperties-如何实现自动注入application-properties-application-yml中配置的值"><a href="#ConfigurationProperties-如何实现自动注入application-properties-application-yml中配置的值" class="headerlink" title="@ConfigurationProperties 如何实现自动注入application.properties/application.yml中配置的值?"></a>@ConfigurationProperties 如何实现自动注入<code>application.properties/application.yml</code>中配置的值?</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">1) 首先加了 @EnableConfigurationProperties 也会解析里面的 @Import </span><br><span class="line">2) @Import 则引入了 EnableConfigurationPropertiesRegistrar.class</span><br><span class="line">3) 这是一个 ImportBeanDefinitionRegistrar 的实现类, 因此调用指定方法 registerBeanDefinitions</span><br><span class="line">4) 指定方法 registerBeanDefinitions() 会将 @EnableConfigurationProperties 注解的值对应的类注册到容器中, 如 @EnableConfigurationProperties(RabbitProperties.class) 则会加载 RabbitProperties.class</span><br><span class="line">5) 指定方法还注册了一些工具 bean 和一个重要的 BeanPostProcessor 在 registerInfrastructureBeans()中</span><br><span class="line">6) 即 ConfigurationPropertiesBindingPostProcessor, 当我们要使用配置文件 bean(如 RabbitProperties)时,会实例化 bean 并触发 postProcessorBeforeInitialization()</span><br><span class="line">7) 在 postProcessorBeforeInitialization() 中, 通过 org.springframework.boot.context.properties.ConfigurationPropertiesBinder<span class="comment">#bind() 来完成实际的绑定</span></span><br><span class="line">8) 其本质就是 Binder 的 <span class="built_in">bind</span> 方法, 设定配置文件前缀即可将配置文件中的配置对应的绑定到 bean(如 rabbitProperties 对象) 中.</span><br><span class="line"></span><br><span class="line"><span class="comment"># PS</span></span><br><span class="line">这里的 Binder 和 SpringApplication 里绑定 spring.main 开头配置文件那个类是同一个.</span><br><span class="line"></span><br><span class="line"><span class="comment"># 总结</span></span><br><span class="line">就是先将 XxxProperties 类注册到容器中, 这样就可以通过 BeanPostProcessor 再实例化后将配置文件与属性绑定.</span><br></pre></td></tr></table></figure>
-
-
-
-<h3 id="一些只需要改改依赖jar就可以切换-如tomcat–-gt-undertow-是怎么做到的-ConditionalXxx-的实现原理"><a href="#一些只需要改改依赖jar就可以切换-如tomcat–-gt-undertow-是怎么做到的-ConditionalXxx-的实现原理" class="headerlink" title="一些只需要改改依赖jar就可以切换(如tomcat–&gt;undertow)是怎么做到的? (@ConditionalXxx 的实现原理)"></a>一些只需要改改依赖jar就可以切换(如tomcat–&gt;undertow)是怎么做到的? (@ConditionalXxx 的实现原理)</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">1) 在类上加上注解 @Conditional 或带有 @Conditional 的其他注解(即注解的子类亦会扫描)</span><br><span class="line">2) 在所有的扫描类和注解的地方,如解析@Configuration, AnotatedBeanDefinitionReader 等 reader</span><br><span class="line">    会使用 ConditionEvaluator 的 shouldSkip() 判断是否可以加载, 时机点如下</span><br><span class="line">    AnnotatedBeanDefinitionReader<span class="comment">#doRegisterBean() 的第二行代码</span></span><br><span class="line">    ConfigurationClassBeanDefinitionReader<span class="comment">#loadBeanDefinitionsForBeanMethod() 第四行</span></span><br><span class="line">    ConfigurationClassBeanDefinitionReader<span class="comment">#loadBeanDefinitionsForConfigurationClass()</span></span><br><span class="line">    ConfigurationClassParser<span class="comment">#doProcessConfigurationClass() 处理 ComponentScan 那段</span></span><br><span class="line">3) 然后再 shouldSkip 中判断， 判断逻辑大致如下：</span><br><span class="line">    先遍历所有注解取得所有的 @Conditional 的 value, 这个 value 是具体的 Condition 实现, 如 OnClassCondition(实现了 Condition 的 matches 接口, 很多抽象类用以增强代码扩展性), 然后其加入到 conditions 中, 排序后遍历调用 matches(), 一个不匹配则返回 <span class="literal">true</span>, 代表应该跳过.</span><br><span class="line"></span><br><span class="line"><span class="comment"># TIPS:</span></span><br><span class="line">ConditionOutcome 封装了是否匹配和匹配日志信息[为啥成功/为啥失败]</span><br><span class="line">SpringBootCondition 提供了通用的根据 ConditionOutcome 判断是否匹配并记录日志信息的抽象类.</span><br><span class="line">    子类只需实现 getMatchOutcome(): 根据 metadata[注解信息] 返回 ConditionOutcome 对象.</span><br><span class="line">    因此, 如果我们要实现自己的 Condition, 可以继承它.</span><br></pre></td></tr></table></figure>
-
-
-
-<h3 id="JdbcTemplateAutoConfiguration-如何确保能够获取到-DataSource-AutoConfigureAfter-的实现原理"><a href="#JdbcTemplateAutoConfiguration-如何确保能够获取到-DataSource-AutoConfigureAfter-的实现原理" class="headerlink" title="JdbcTemplateAutoConfiguration 如何确保能够获取到 DataSource? (@AutoConfigureAfter 的实现原理)"></a>JdbcTemplateAutoConfiguration 如何确保能够获取到 DataSource? (@AutoConfigureAfter 的实现原理)</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">1) 首先所有的 XxxAutoConfiguration 都是借助 AutoConfigurationImportSelector 加载的, 其继承了 DeferredImportSelector.  </span><br><span class="line">2) 这种 DeferredImportSelector 会延迟加载, 原理是 parse 后再加载, 而非 parse 执行过程中就加载.</span><br><span class="line">3) 延迟加载机制 会先调用 process 方法, 将要加载的 class 保存起来, 然后再调用 selectImports 返回.</span><br><span class="line">4) 此时 AutoConfigurationImportSelector.AutoConfigurationGroup 的 selectImports() 会调用 sortAutoConfigurations(), 也就是调用了 AutoConfigurationSorter.getInPriorityOrder()</span><br><span class="line">5) getInPriorityOrder() 调用了 sortByAnnotation() 这个方法根据2个注解 @AutoConfigureBefore/@AutoConfigureAfter 排序.</span><br><span class="line">6) 最后返回的就是有序的了. 另外, 这两个注解只能作用在 spring.factories 中 EnableAutoConfiguration 的类上才有效.</span><br><span class="line"></span><br><span class="line"><span class="comment"># 总结:</span></span><br><span class="line">利用 DeferredImportSelector 的延迟加载, 将所有的 AutoConfiguration 所引入的 class 先存起来不加载, 然后又加入排序的逻辑, 使得真正加载时会根据排序结果依次加载.</span><br></pre></td></tr></table></figure>
-
-
-
-<h3 id="为什么-Spring-Boot-启动-main-方法就能访问-Tomcat-SpringApplication-run-启动-tomcat-实现原理"><a href="#为什么-Spring-Boot-启动-main-方法就能访问-Tomcat-SpringApplication-run-启动-tomcat-实现原理" class="headerlink" title="为什么 Spring Boot 启动 main 方法就能访问 Tomcat? (SpringApplication.run() 启动 tomcat 实现原理)"></a>为什么 Spring Boot 启动 main 方法就能访问 Tomcat? (SpringApplication.run() 启动 tomcat 实现原理)</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">1) main 方法会调用 SpringApplication 的 run 方法, 里面会创建 applicationContext, 如是 webApplicationType = SERVLET, 则实现类为 AnnotationConfigServletWebServerApplicationContext</span><br><span class="line">    另外一提, webApplicationType 是根据 classpath 下是否有哪些类来推断的.</span><br><span class="line">2) 这个类继承了 ServletWebServerApplicationContext</span><br><span class="line">3) ServletWebServerApplicationContext 实现了 onRefresh()</span><br><span class="line">4) onRefresh() 调用了 createWebServer()</span><br><span class="line">5) createWebServer() 使用 ServletWebServerFactory.getWebServer() 获取 webServer 对象</span><br><span class="line">6) ServletWebServerFactory 的具体实现类由 ServletWebServerFactoryAutoConfiguration 引入</span><br><span class="line">    详细见 ServletWebServerFactoryConfiguration.EmbeddedTomcat.class</span><br><span class="line">7) 引入后调用 getWebServer(), 大概为 new Tomcat(), 绑定配置文件到 Tomcat 的一些属性上, 然后启动它.</span><br><span class="line">8) 至此, run() 启动了 tomcat/jetty/undertow.</span><br><span class="line"> </span><br><span class="line"><span class="comment"># TIPS:</span></span><br><span class="line">Spring 使用工厂模式获取不同的 webServer, 而不同的 webServer 实现类其实是用 XxxAutoConfiguration 来自动注入的(还可以配合 @Conditional 决定何时加载).</span><br><span class="line">这样如果新增一种 webServer, 只需要在写一个 XxxAutoConfiguration 注册一个 webServer 实现类的 bean 即可, 非常灵活(非常 nice).</span><br></pre></td></tr></table></figure>
-
-
-
-
-
-<h2 id="常见的-XxxAutoConfiguration"><a href="#常见的-XxxAutoConfiguration" class="headerlink" title="常见的 XxxAutoConfiguration"></a>常见的 XxxAutoConfiguration</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">1.连接池</span><br><span class="line">   DataSourceAutoConfiguration 会 Import DataSourceConfiguration.Hikari.class</span><br><span class="line">2.Mybatis</span><br><span class="line">   MybatisAutoConfiguration: 注册并配置了 SqlSessionFactory/SqlSessionTemplate</span><br><span class="line">3.Spring MVC</span><br><span class="line">   DispatcherServletAutoConfiguration: 配置前端控制器和文件上传处理器</span><br><span class="line">   ServletWebServerFactoryAutoConfiguration: 注册 WebServerFactory 的实现类 bean</span><br><span class="line">4.RocketMQ</span><br><span class="line">   RabbitAutoConfiguration: 注册并配置 RabbitTemplate</span><br><span class="line">5.Redis</span><br><span class="line">   RedisAutoConfiguration: 注册并配置 RedisTemplate/StringRedisTemplate</span><br><span class="line">6.邮件发送</span><br><span class="line">   MailSenderAutoConfiguration: 注册并配置 JavaMailSenderImpl</span><br><span class="line">7.MyBatis-Plus</span><br><span class="line">   MybatisPlusAutoConfiguration: 注册 SqlSessionFactory, 并配置了其 plugins, 使 Mybatis-Plus 生效</span><br><span class="line">8.定时任务</span><br><span class="line">   TaskSchedulingAutoConfiguration: 注册 ThreadPoolTaskScheduler</span><br><span class="line">9.AOP</span><br><span class="line">   AopAutoConfiguration: 通过静态内部类加载了 @EnableAspectJAutoProxy</span><br></pre></td></tr></table></figure>
-
-
-
-<h2 id="我所见到的设计模式"><a href="#我所见到的设计模式" class="headerlink" title="我所见到的设计模式"></a>我所见到的设计模式</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">1.适配器模式: SpringConfigurationPropertySources</span><br><span class="line">    要将 Iterable&lt;PropertySource&lt;?&gt;&gt;</span><br><span class="line">    适配成 Iterable&lt;ConfigurationPropertySource&gt;</span><br><span class="line">    也即是 PropertySource --&gt; ConfigurationPropertySource</span><br><span class="line">  <span class="comment">#其实主要工作是: ConfigurationPropertySource#getConfigurationProperty() 里面调用了 PropertySource#getProperty(), 以此完成适配... 很适配器模式, 存一个未适配的对象, 在适配的方法中调用存储的对象的要适配的方法. </span></span><br><span class="line">  </span><br><span class="line">2.简单工厂模式: org.springframework.boot.ApplicationContextFactory<span class="comment">#create</span></span><br><span class="line">    根据 webApplicationType 创建不同的 ConfigurableApplicationContext</span><br><span class="line">  </span><br><span class="line">3.观察者模式: </span><br><span class="line">	监听者: SpringApplicationRunListener</span><br><span class="line">  观察对象: SpringApplication 的生命周期(starting/environmentPrepared/contextPrepared/contextLoaded/started/running/failed)</span><br><span class="line">  管理者: SpringApplicationRunListeners, 负责遍历监听者广播对应事件</span><br></pre></td></tr></table></figure>
-
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -1996,20 +2435,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">19</span>
+          <span class="site-state-item-count">22</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">19</span>
+        <span class="site-state-item-count">23</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">26</span>
+        <span class="site-state-item-count">30</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

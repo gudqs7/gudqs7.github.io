@@ -22,16 +22,17 @@
     var CONFIG = {"hostname":"gudqs7.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta name="description" content="心累没钱躺尸中">
+  <meta name="description" content="JDK 源码笔记ArrayList 核心就是 newCapacity 方法，这个方法用于确定扩容后的数组大小，正常是原来的 1.5 倍（老二进制运算了），若扩容后仍不够大，则仅保证能放下新加入的数据即可（当使用 &#96;&#96;addAll方法时可能触发）；若扩容后溢出，则仅保证能放下新加入的数据即可；若扩容后逼近溢出，则返回MAX_ARRAY_SIZE或Integer.MAX_VALUE；另外两次扩容后过大">
 <meta property="og:type" content="article">
 <meta property="og:title" content="source-code-jdk">
 <meta property="og:url" content="https://gudqs7.github.io/2021/01/25/source-code-jdk/index.html">
 <meta property="og:site_name" content="gudqs7&#39;s note">
-<meta property="og:description" content="心累没钱躺尸中">
+<meta property="og:description" content="JDK 源码笔记ArrayList 核心就是 newCapacity 方法，这个方法用于确定扩容后的数组大小，正常是原来的 1.5 倍（老二进制运算了），若扩容后仍不够大，则仅保证能放下新加入的数据即可（当使用 &#96;&#96;addAll方法时可能触发）；若扩容后溢出，则仅保证能放下新加入的数据即可；若扩容后逼近溢出，则返回MAX_ARRAY_SIZE或Integer.MAX_VALUE；另外两次扩容后过大">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2021-01-25T15:12:48.000Z">
-<meta property="article:modified_time" content="2021-01-25T15:12:48.047Z">
+<meta property="article:modified_time" content="2021-02-11T12:44:51.343Z">
 <meta property="article:author" content="gudqs7">
+<meta property="article:tag" content="jdk">
 <meta name="twitter:card" content="summary">
 
 <link rel="canonical" href="https://gudqs7.github.io/2021/01/25/source-code-jdk/">
@@ -195,6 +196,26 @@
 
               <time title="创建时间：2021-01-25 23:12:48" itemprop="dateCreated datePublished" datetime="2021-01-25T23:12:48+08:00">2021-01-25</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-02-11 20:44:51" itemprop="dateModified" datetime="2021-02-11T20:44:51+08:00">2021-02-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/SourceCode/" itemprop="url" rel="index"><span itemprop="name">SourceCode</span></a>
+                </span>
+            </span>
 
           
   
@@ -221,7 +242,93 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        
+        <h1 id="JDK-源码笔记"><a href="#JDK-源码笔记" class="headerlink" title="JDK 源码笔记"></a>JDK 源码笔记</h1><h2 id="ArrayList"><a href="#ArrayList" class="headerlink" title="ArrayList"></a>ArrayList</h2><blockquote>
+<p>核心就是 <code>newCapacity</code> 方法，这个方法用于确定扩容后的数组大小，正常是原来的 1.5 倍（老二进制运算了），若扩容后仍不够大，则仅保证能放下新加入的数据即可（当使用 ``addAll<code>方法时可能触发）；若扩容后溢出，则仅保证能放下新加入的数据即可；若扩容后逼近溢出，则返回</code>MAX_ARRAY_SIZE<code>或</code>Integer.MAX_VALUE<code>；另外两次扩容后过大也会检查</code>minCapacity` 是否溢出，防止数据错误。</p>
+</blockquote>
+<h2 id="HashMap"><a href="#HashMap" class="headerlink" title="HashMap"></a>HashMap</h2><blockquote>
+<p>核心是根据 hash 取数组下标 index，并且 1.8 的扩容后 rehash 利用二进制高低位优化了计算下标的效率；扩容为原来的两倍，即左移 1 位。</p>
+</blockquote>
+<h3 id="为什么-HashMap-的初始容量以及扩容后的容量均为-2-的指数幂"><a href="#为什么-HashMap-的初始容量以及扩容后的容量均为-2-的指数幂" class="headerlink" title="为什么 HashMap 的初始容量以及扩容后的容量均为 2 的指数幂"></a>为什么 <code>HashMap</code> 的初始容量以及扩容后的容量均为 2 的指数幂</h3><blockquote>
+<p>因为计算机做运算时, 取模运算速度远远慢于位运算, 而若容量始终为 2 的指数幂, 则根据 hash 获取数组下标时只需要 使用 <code>(数组长度-1) &amp; hash 值</code> 即可确定数组下标, 与取模得到的下标一样可靠.</p>
+<p>而扩容后后, 因为需要进行 rehash 运算来确定 数据的新下标, 多次进行取数组下标则更能体现位运算的优势.</p>
+</blockquote>
+<h3 id="为什么-HashMap-的加载因子是-0-75-3-4"><a href="#为什么-HashMap-的加载因子是-0-75-3-4" class="headerlink" title="为什么 HashMap 的加载因子是 0.75 (3/4)"></a>为什么 <code>HashMap</code> 的加载因子是 0.75 (3/4)</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">使用排除法:</span><br><span class="line">1.若加载因子为 1. 则每次 HashMap 满了才进行扩容, 必将有更高的几率触发 hash 碰撞导致数组下标一致需要转成链表或红黑树, 导致读取和更新速度降低.</span><br><span class="line">2.若加载因子为 0.5. 则每次 HashMap 都有一半容量剩余, 空间大大浪费, 对内存开销太大. 容易引发 OOM 事故.</span><br><span class="line">3.0.5-1 之间那么多可能, 选哪个都行, 但作为 HashMap 的默认值, 选中间的 0.75, 走中庸之路, 也是解释的通的.</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="为什么-HashMap-1-8-扩容无需-rehash"><a href="#为什么-HashMap-1-8-扩容无需-rehash" class="headerlink" title="为什么 HashMap 1.8 扩容无需 rehash"></a>为什么 <code>HashMap</code> 1.8 扩容无需 rehash</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">1. 因为1.8的获取 hash 值的算法优化了. 无需一个 hashSeed 进行辅助运算 (主因)</span><br><span class="line">2. 由于 hash 值不变, 原链表中的所有节点只有 2 种可能:</span><br><span class="line">	一是 hash 值高于原数组长度, 则属于高位, 这些高位的节点, 新的下标一定是 (当前下标 + 旧数组长度). </span><br><span class="line">	另一种是 hash 值低于原数组长度, 属于低位, 这些节点的下标无需重新计算, 必然与当前下标一致</span><br><span class="line">	(不信自己那几个示例数据用画出完整二进制计算一下)(神奇的位运算)</span><br><span class="line">3. 重新计算下标时, 根据第 2 点可知, 其下标大小一定不高于(当前下标+旧数组长度), 即下一次循环的下标必然比上一次循环的下标要高, 所以 1.8 源码 resize 进行高低位分组然后转移数据时, 无需担心下一次循环会将刚刚放到新数组的值覆盖(下标相同则会覆盖)</span><br><span class="line">4. 1.8 的 resize 优化了算法, 保持了原有的链表顺序(不知道有啥用)</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>总得来说, 1.8 优化了 hash 算法, 使 <code>hashcode</code> 的高 16 位与 低 16 位进行异或运算, 降低了碰撞率</p>
+<p>而 resize 算法也优化链表节点的迁移, 避免了 1.7 的链环产生</p>
+<p>最大的区别就是, 1.7 没有将二进制的神奇发挥到极致, 依然像普通 java 程序一般逻辑. 而 1.8 则充分利用了二进制的优点(也充分的让人头晕), 提高了 <code>HashMap</code> 的效率.</p>
+</blockquote>
+<h3 id="为什么-HashMap-从链表达到-8-个时转成红黑树-达到-6-个时转回链表"><a href="#为什么-HashMap-从链表达到-8-个时转成红黑树-达到-6-个时转回链表" class="headerlink" title="为什么 HashMap 从链表达到 8 个时转成红黑树, 达到 6 个时转回链表?"></a>为什么 <code>HashMap</code> 从链表达到 8 个时转成红黑树, 达到 6 个时转回链表?</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1.根据 Poisson distribution 定律, 凑齐8个节点碰撞到同一个下标, 组成长度为 8 的链表概率极低, 约为 0.00000006, 而超过 8 个的几率则更低, 大约为千万分之一. 所以将阈值设置为 8, 因为这种概率极低. 因此可以减少链表转红黑树的, 提高增删改效率.</span><br><span class="line">2.若达到 7 个时转回链表, 则可能会导致HashMap 不停的在链表和红黑树之间转换, 所以阈值设置为 6, 可起到缓冲效果.</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+
+<h2 id="JUC"><a href="#JUC" class="headerlink" title="JUC"></a>JUC</h2><h3 id="ReentrantLock"><a href="#ReentrantLock" class="headerlink" title="ReentrantLock"></a>ReentrantLock</h3><h4 id="加锁"><a href="#加锁" class="headerlink" title="加锁"></a>加锁</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// AQS 的 acquire： AbstractQueuedSynchronizer#acquire()</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title">acquire</span><span class="params">(<span class="keyword">int</span> arg)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (</span><br><span class="line">    !tryAcquire(arg) </span><br><span class="line">    &amp;&amp; acquireQueued(addWaiter(Node.EXCLUSIVE), arg)</span><br><span class="line">  ) &#123;</span><br><span class="line">    selfInterrupt();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 1.tryAcquire：判断 state 状态，无线程持有则 CAS 加持 state，并返回 true，加锁结束。</span></span><br><span class="line"><span class="comment">// 2.addWaiter：已被持有则先加入队列</span></span><br><span class="line"><span class="comment">// 3.acquireQueued：两件事，第一，循环尝试持有锁，失败则休眠；第二，持有成功则更新队列头为自己（队列向前移动）</span></span><br><span class="line"><span class="comment">//    加入队列后，不能立刻睡，防止没人唤醒自己（比如还没加入等待队列，上个持有锁的线程就结束了然后触发解锁代码，而解锁代码的唤醒依赖于等待队列）</span></span><br><span class="line"><span class="comment">//    确定得不到锁（需要等待）则进入睡眠，醒来后再尝试 tryAcquire 持有锁，失败则睡眠（循环尝试）</span></span><br><span class="line"><span class="comment">//    醒来尝试持有锁成功后，维护队列（即队列头部设为自己，宏观上队列往前移动了）</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>总结：先判断后更新 state  状态（即是否有线程持有此锁），被持有则加入队列并睡眠；醒来后再重复判断 state 过程，若持有成功则更新队列（主要目的是令我的下一个节点被唤醒后可以尝试持有锁，因为一醒来就是判断 node.prev==head）。</p>
+</blockquote>
+<h4 id="释放锁"><a href="#释放锁" class="headerlink" title="释放锁"></a>释放锁</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// AQS 的 release：AbstractQueuedSynchronizer#release()</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">boolean</span> <span class="title">release</span><span class="params">(<span class="keyword">int</span> arg)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (tryRelease(arg)) &#123;</span><br><span class="line">    Node h = head;</span><br><span class="line">    <span class="keyword">if</span> (h != <span class="keyword">null</span> &amp;&amp; h.waitStatus != <span class="number">0</span>)</span><br><span class="line">      unparkSuccessor(h);</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 1.tryRelease：减持 state 数量，减到 0 代表线程彻底释放了这个锁</span></span><br><span class="line"><span class="comment">// 2.unparkSuccessor：唤醒下一个节点的线程（若下一个节点为空，则从队列尾往前查找队列中状态不是 CANCELLED 的且最靠前的节点来唤醒）</span></span><br><span class="line"><span class="comment">// 3.唤醒后处于 acquireQueued 的循环中。</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>总结：先更新后判断 state 状态，若为 0，则代表可唤醒下一个节点，找到下一个节点，唤醒即可！</p>
+</blockquote>
+<p>从上得到可重入锁原理，同一线程第二次加锁，会令 state+1，</p>
+<p>而释放锁时，会先令 state-1，若 state 减到 0，才唤醒下一个节点的线程。</p>
+<h3 id="AQS"><a href="#AQS" class="headerlink" title="AQS"></a>AQS</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">AQS</span><br><span class="line">	acquire：通过 tryAcquire 判断是否需要加入队列以及休眠</span><br><span class="line">	release：通过 tryRelease 判断是否需要唤醒下一个节点的线程</span><br><span class="line">	tryAcquire：正向维护 state，有自己的逻辑决定返回值</span><br><span class="line">	tryRelease：反向维护 state，一般与 tryAcquire 互逆</span><br><span class="line">	</span><br><span class="line">	acquireShared：通过 tryAcquireShared 判断是否需要加入队列以及休眠（此时节点标记为 SHARED）</span><br><span class="line">	releaseShared：通过 tryReleaseShared 判断是否需要唤醒下一个节点，若下一个节点是 SHARED 节点，则还会继续唤醒下一个节点，若都是 SHARED 节点，则都会被唤醒。</span><br><span class="line">	tryAcquireShared：正向维护 state，返回值小于 0 代表需要进入队列</span><br><span class="line">	tryReleaseShared：反向维护 state，一般与 tryAcquireShared 互逆</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>总结：一个具体的 AQS 维护一个队列以及 state 数据，总是通过 tryAcquire、tryRelease 维护 state，并在 acquire 中完成队列的添加与移除。</p>
+<p>AQS 维护的队列总是在尾部增加节点，并且移除节点时，总是移除 head 节点。</p>
+<p>通过实行具体的 tryAcquire、tryRelease 方法，可控制 线程是否等待，何时唤醒线程。</p>
+<p>再总结： AQS 的主要作用就是将线程加入到队列、移除队列、控制休眠和唤醒。</p>
+</blockquote>
+<h3 id="ReentrantReadWriteLock"><a href="#ReentrantReadWriteLock" class="headerlink" title="ReentrantReadWriteLock"></a>ReentrantReadWriteLock</h3><ul>
+<li>读锁加锁：只要 state 中没有写锁，又没有超过最大数量（受 32 位二进制长度限制），则能加锁成功（非公平锁不进队列等待，公平锁只可能会排在队列中写锁节点后面）；</li>
+<li>读锁解锁：先减少 state 中的读锁数量，减到 0 则可触发 releaseShared 来唤醒队列中可能存在的写锁节点；</li>
+<li>写锁加锁：若没有写锁也没有读锁，令 state+1 写锁，记录重入次数；</li>
+<li>写锁解锁：先减少 state （可重入锁），若写锁数量为 0，则可唤醒队列中的下一个节点，若下一个节点为读锁加入的节点，则会唤醒下下个是读锁的节点，重复，则唤醒大量读锁节点。</li>
+</ul>
+<blockquote>
+<p>总结：重写 AQS 的核心方法，使其得以控制读锁、写锁能否加锁成功，利用 AQS 的 SHARED 节点在 releaseShared 时的传播性，使得写锁结束后，可以唤醒一连串的读锁。</p>
+</blockquote>
+<h3 id="CountDownLatch"><a href="#CountDownLatch" class="headerlink" title="CountDownLatch"></a>CountDownLatch</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// new CountDownLatch(n)：设置 state 的初始值为 n，使得需要调用 n 次 countDown 才会唤醒调用 await 的线程</span></span><br><span class="line"><span class="comment">// countDown：state - 1，若 state 减到 0，则唤醒所有队列中的节点</span></span><br><span class="line"><span class="comment">// await：加入到 AQS 队列休眠，节点标记为 SHARED</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>总结：利用 releaseShared 会传播唤醒队列上相连的 SHARED 节点特性和 state 的维护，使 await 的线程进入休眠队列，直到 countDown 调用次数足够多才会唤醒这些线程。</p>
+</blockquote>
+<h3 id="Semaphore"><a href="#Semaphore" class="headerlink" title="Semaphore"></a>Semaphore</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// new Semaphore(n)：设置 state 的初始值为 n，当想唤醒调用 acquire(x) 的线程，则需要调用 release(x-n)</span></span><br><span class="line"><span class="comment">// acquire(x)：加入到 AQS 队列休眠（前提 state &lt; x) </span></span><br><span class="line"><span class="comment">// release(x)：state + x，总是尝试唤醒队列</span></span><br><span class="line"></span><br><span class="line">理解方式：acquire 多少个数，则代表需要等待多少个 release，若有初始值，则需要的 release 再减去初始值；满足则唤醒，为满足则进入队列休眠</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>总结：利用 AQS 可控制线程休眠和唤醒的特性，重写 tryAcquireShared、tryReleaseShared 方法实现逻辑；另外，虽然 acquire、release 的语义与正常 AQS 保持一致，但其对 state 的操作（加减）却是反着来的。</p>
+</blockquote>
+<h3 id="CyclicBarrier"><a href="#CyclicBarrier" class="headerlink" title="CyclicBarrier"></a>CyclicBarrier</h3><blockquote>
+<p>含义: 凑足一定个数线程, 然后批量唤醒.<br>await(): 利用 ReenrantLock 的 lock 和 condition 的 await 进入休眠<br>当凑足后，用condition 的 singleAll 唤醒所有 await 的线程.</p>
+</blockquote>
+<h3 id="ConcurrentHashMap"><a href="#ConcurrentHashMap" class="headerlink" title="ConcurrentHashMap"></a>ConcurrentHashMap</h3><blockquote>
+<p>不同之处有二</p>
+<p>一是 put 一个新的 key 时，会使用 CAS 确保这次 put 没有线程竞争；</p>
+<p>二是 put 覆盖一个 key 时，直接使用 synchronized 同步块进行同步。</p>
+</blockquote>
+<h2 id="ThreadPoolExecutor"><a href="#ThreadPoolExecutor" class="headerlink" title="ThreadPoolExecutor"></a>ThreadPoolExecutor</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// java.util.concurrent.ThreadPoolExecutor#execute</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">execute</span><span class="params">(Runnable command)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (command == <span class="keyword">null</span>)</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> NullPointerException();</span><br><span class="line">  <span class="keyword">int</span> c = ctl.get();</span><br><span class="line">  <span class="keyword">if</span> (workerCountOf(c) &lt; corePoolSize) &#123;</span><br><span class="line">    <span class="keyword">if</span> (addWorker(command, <span class="keyword">true</span>))</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    c = ctl.get();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (isRunning(c) &amp;&amp; workQueue.offer(command)) &#123;</span><br><span class="line">    <span class="keyword">int</span> recheck = ctl.get();</span><br><span class="line">    <span class="keyword">if</span> (! isRunning(recheck) &amp;&amp; remove(command))</span><br><span class="line">      reject(command);</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (workerCountOf(recheck) == <span class="number">0</span>)</span><br><span class="line">      addWorker(<span class="keyword">null</span>, <span class="keyword">false</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">else</span> <span class="keyword">if</span> (!addWorker(command, <span class="keyword">false</span>))</span><br><span class="line">    reject(command);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>若当前线程数少于核心线程数，则添加一个线程来执行任务，直到线程数超过核心数；</li>
+<li>超过之后，会放入到 workQueue 队列中，并重新检查线程池状态及是否有线程可执行队列中的任务</li>
+<li>若放入失败（即队列已满），则尝试添加一个线程来执行这个任务，此时若线程达到最大线程数，则会失败并调用 reject 方法触发用户设置的拒绝策略。</li>
+</ol>
+<blockquote>
+<p>总结：线程池先创建满核心线程数，超出放入队列，队列也放不下则会新建线程来救急，如果救急的线程创建过多，最终总线程数超过最大线程数，则触发拒绝策略，线程池不再接收任务，除非队列空出位置或线程数量降下来。</p>
+</blockquote>
+
     </div>
 
     
@@ -249,6 +356,9 @@
 
 
       <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/jdk/" rel="tag"># jdk</a>
+          </div>
 
         
 
@@ -328,6 +438,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#JDK-源码笔记"><span class="nav-number">1.</span> <span class="nav-text">JDK 源码笔记</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#ArrayList"><span class="nav-number">1.1.</span> <span class="nav-text">ArrayList</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HashMap"><span class="nav-number">1.2.</span> <span class="nav-text">HashMap</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#为什么-HashMap-的初始容量以及扩容后的容量均为-2-的指数幂"><span class="nav-number">1.2.1.</span> <span class="nav-text">为什么 HashMap 的初始容量以及扩容后的容量均为 2 的指数幂</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#为什么-HashMap-的加载因子是-0-75-3-4"><span class="nav-number">1.2.2.</span> <span class="nav-text">为什么 HashMap 的加载因子是 0.75 (3&#x2F;4)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#为什么-HashMap-1-8-扩容无需-rehash"><span class="nav-number">1.2.3.</span> <span class="nav-text">为什么 HashMap 1.8 扩容无需 rehash</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#为什么-HashMap-从链表达到-8-个时转成红黑树-达到-6-个时转回链表"><span class="nav-number">1.2.4.</span> <span class="nav-text">为什么 HashMap 从链表达到 8 个时转成红黑树, 达到 6 个时转回链表?</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#JUC"><span class="nav-number">1.3.</span> <span class="nav-text">JUC</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#ReentrantLock"><span class="nav-number">1.3.1.</span> <span class="nav-text">ReentrantLock</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#加锁"><span class="nav-number">1.3.1.1.</span> <span class="nav-text">加锁</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#释放锁"><span class="nav-number">1.3.1.2.</span> <span class="nav-text">释放锁</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#AQS"><span class="nav-number">1.3.2.</span> <span class="nav-text">AQS</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ReentrantReadWriteLock"><span class="nav-number">1.3.3.</span> <span class="nav-text">ReentrantReadWriteLock</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CountDownLatch"><span class="nav-number">1.3.4.</span> <span class="nav-text">CountDownLatch</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Semaphore"><span class="nav-number">1.3.5.</span> <span class="nav-text">Semaphore</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CyclicBarrier"><span class="nav-number">1.3.6.</span> <span class="nav-text">CyclicBarrier</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ConcurrentHashMap"><span class="nav-number">1.3.7.</span> <span class="nav-text">ConcurrentHashMap</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ThreadPoolExecutor"><span class="nav-number">1.4.</span> <span class="nav-text">ThreadPoolExecutor</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -343,20 +454,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">19</span>
+          <span class="site-state-item-count">22</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">19</span>
+        <span class="site-state-item-count">23</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">26</span>
+        <span class="site-state-item-count">30</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

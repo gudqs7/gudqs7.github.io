@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"gudqs7.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="JVM 底层探秘笔记JVM 速记什么是 JVM?  JVM 就是由编译器, 类加载器, 执行引擎, 运行时数据区组成. 其中数据区包含 堆,栈,本地方法栈, 方法区和程序计数器(PC 寄存器), 其中栈是由局部变量表, 操作数栈, 动态链接, 返回地址组成的.  你是怎么对 jvm 垃圾回收进行优化的? 根据服务器的配置, 调整青年代和老年代的内存大小及比例, 在回收频率和回收速度上做取舍, 使用">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JVM 底层探秘笔记">
+<meta property="og:url" content="https://gudqs7.github.io/2021/02/04/principle-jvm-memo/index.html">
+<meta property="og:site_name" content="gudqs7&#39;s note">
+<meta property="og:description" content="JVM 底层探秘笔记JVM 速记什么是 JVM?  JVM 就是由编译器, 类加载器, 执行引擎, 运行时数据区组成. 其中数据区包含 堆,栈,本地方法栈, 方法区和程序计数器(PC 寄存器), 其中栈是由局部变量表, 操作数栈, 动态链接, 返回地址组成的.  你是怎么对 jvm 垃圾回收进行优化的? 根据服务器的配置, 调整青年代和老年代的内存大小及比例, 在回收频率和回收速度上做取舍, 使用">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-02-04T03:07:44.000Z">
+<meta property="article:modified_time" content="2021-02-11T07:18:21.431Z">
+<meta property="article:author" content="gudqs7">
+<meta property="article:tag" content="jvm">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://gudqs7.github.io/2021/02/04/principle-jvm-memo/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>JVM 底层探秘笔记 | gudqs7's note</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">gudqs7's note</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">心累没钱躺尸中</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://gudqs7.github.io/2021/02/04/principle-jvm-memo/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="gudqs7">
+      <meta itemprop="description" content="心累没钱躺尸中">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="gudqs7's note">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          JVM 底层探秘笔记
+        </h1>
+
+        <div class="post-meta">
+			
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-02-04 11:07:44" itemprop="dateCreated datePublished" datetime="2021-02-04T11:07:44+08:00">2021-02-04</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-02-11 15:18:21" itemprop="dateModified" datetime="2021-02-11T15:18:21+08:00">2021-02-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/JVM/" itemprop="url" rel="index"><span itemprop="name">JVM</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2021/02/04/principle-jvm-memo/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2021/02/04/principle-jvm-memo/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="JVM-底层探秘笔记"><a href="#JVM-底层探秘笔记" class="headerlink" title="JVM 底层探秘笔记"></a>JVM 底层探秘笔记</h1><h2 id="JVM-速记"><a href="#JVM-速记" class="headerlink" title="JVM 速记"></a>JVM 速记</h2><h3 id="什么是-JVM"><a href="#什么是-JVM" class="headerlink" title="什么是 JVM?"></a>什么是 JVM?</h3><blockquote>
+<p> JVM 就是由编译器, 类加载器, 执行引擎, 运行时数据区组成. 其中数据区包含 堆,栈,本地方法栈, 方法区和程序计数器(PC 寄存器), 其中栈是由局部变量表, 操作数栈, 动态链接, 返回地址组成的.</p>
+</blockquote>
+<h3 id="你是怎么对-jvm-垃圾回收进行优化的"><a href="#你是怎么对-jvm-垃圾回收进行优化的" class="headerlink" title="你是怎么对 jvm 垃圾回收进行优化的?"></a>你是怎么对 jvm 垃圾回收进行优化的?</h3><blockquote>
+<p>根据服务器的配置, 调整青年代和老年代的内存大小及比例, 在回收频率和回收速度上做取舍, 使用 G1 垃圾回收期控制 STW 停顿时间, 提高吞吐量.</p>
+</blockquote>
+<h3 id="JVM-内存模型"><a href="#JVM-内存模型" class="headerlink" title="JVM 内存模型"></a>JVM 内存模型</h3><blockquote>
+<p>每个线程有自己的内存区域, 多线程之间通信主要通过共享内存来实现.</p>
+</blockquote>
+<ul>
+<li>有序性: 在 CPU 执行指令时, 可能会对非 happens-before 指令进行重排, 优化执行效率. 在单线程情况, 往往不会产生问题, 但涉及多线程时, 可能导致 bug.</li>
+<li>可见性: 一个线程修改了一个共享变量, 另一个线程不会知道这个改变, 这就是不可见, 要确保可见性, 一般使用 volatile 关键词, 当然, 加锁也可以.</li>
+<li>原子性: 即对于某代码, 实际执行时会分为好几个原子指令, 确保原子性必须加锁 (如synchronized) 处理</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">happens-before:</span><br><span class="line">读后写</span><br><span class="line">写后写</span><br><span class="line">锁后解锁</span><br><span class="line">可传递性</span><br></pre></td></tr></table></figure>
+
+<h3 id="多线程"><a href="#多线程" class="headerlink" title="多线程"></a>多线程</h3><blockquote>
+<p>线程是一个进程中的不同执行路径, 一个进程至少有一个主线程.</p>
+<p>进程是一个程序的抽象, 一个程序运行后一般为一个进程.</p>
+</blockquote>
+<p>线程状态:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">1.New (新建)</span><br><span class="line">2.Runnable (就绪)</span><br><span class="line">3.Running (运行中)</span><br><span class="line">4.Blocked (阻塞)</span><br><span class="line">5.WAITING (等待)</span><br><span class="line">6.TIMED_WAITING (超时等待)</span><br><span class="line">7.Dead (死亡)</span><br><span class="line"></span><br><span class="line">[t:thread对象, obj: 同步块中的对象]</span><br><span class="line">New: new Thread()</span><br><span class="line">Runnable: t.start(), t.yield()</span><br><span class="line">Running: after t.start() and cpu run it</span><br><span class="line">Blocked: when enter synchronized block</span><br><span class="line">WAITING: obj.wait(), t.join(), LockSupport.park()</span><br><span class="line">TIMED_WAITING: Thread.sleep(x), obj.wait(x), t.join(x)</span><br><span class="line">Dead: when t.run() is over</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="JVM-对象结构"><a href="#JVM-对象结构" class="headerlink" title="JVM 对象结构"></a>JVM 对象结构</h3><ul>
+<li><strong>对象头</strong>: 存储对象运行时数据和类型指针<ul>
+<li><strong>Mark Word</strong>: 运行时数据<ul>
+<li>标志位为01-未锁定: 对象 hash 码, 对象分代年龄</li>
+<li>标志位为00-轻量级锁定: 指向锁记录的指针</li>
+<li>标志位为10-重量级锁定: 执行重量级锁的指针</li>
+<li>标志位为11-GC标记: 空, 不需要记录信息</li>
+<li>标志位为01-可偏向: 偏向线程ID、偏向时间戳、对象分代年龄</li>
+</ul>
+</li>
+<li><strong>类型指针</strong>： 指向对象的类的元数据的指针</li>
+<li><strong>[数组长度]</strong>： 若对象时数组，则会保存数组长度</li>
+</ul>
+</li>
+<li><strong>实例数据</strong>： 保存字段内容，包括父级</li>
+<li><strong>对齐</strong>： 确保 8 字节，凑整</li>
+</ul>
+<h3 id="垃圾回收"><a href="#垃圾回收" class="headerlink" title="垃圾回收"></a>垃圾回收</h3><h4 id="标记算法"><a href="#标记算法" class="headerlink" title="标记算法"></a>标记算法</h4><ol>
+<li><strong>引用计数法</strong>: 通过计算对象的引用数来判断对象是否可回收. 缺点是无法处理循环引用的问题.</li>
+<li><strong>可达性分析算法</strong>: 从根对象(两个栈引用的对象、静态属性引用的对象、常量引用的对象)出发, 寻找所有引用的对象, 形成根对象的引用链, 判断对象是否与根对象的引用链相关联来决定对象是否可回收.</li>
+</ol>
+<h4 id="回收算法"><a href="#回收算法" class="headerlink" title="回收算法"></a>回收算法</h4><ol>
+<li><strong>标记-清除算法</strong>：标记后直接清除, 效率低, 产生内存碎片</li>
+<li><strong>标记-复制算法</strong>：需要两个大小相同的内存区域, 其中一块保持空闲, 先标记可用对象, 然后将可用对象复制到空闲区域, 再清空整块内存, 使其满足一块保持空闲, 如此循环即可.</li>
+<li><strong>标记-整理算法</strong>：标记后移动内存, 令内存使用的区域与未使用的区域均无碎片, 缺点是效率低, 有的是空间占用少.</li>
+<li><strong>分代算法</strong>：将堆分为新生代与老年代，根据自个区域的特定采用不同的回收算法. 新生代又分为 Eden 区(复制算法)、 Survivor 区(因使用复制算法, 分为 From、To 两块内存区域).</li>
+</ol>
+<h4 id="回收器"><a href="#回收器" class="headerlink" title="回收器"></a>回收器</h4><blockquote>
+<p>(前 3 个 Young GC 使用, 后面的 Full GC 使用)</p>
+</blockquote>
+<ol>
+<li><strong>Serial</strong> ：单线程，使用复制算法，整个过程一直 STW</li>
+<li><strong>ParNew</strong> ：多线程，使用复制算法，还是一直 STW</li>
+<li><strong>Parallel Scavenge</strong> ：多线程，使用复制算法，与 ParNew 不同之处在于其关注吞吐量，并可通过调节参数对吞吐量进行控制</li>
+<li><strong>Serial Old</strong>：单线程，使用标记-整理算法，老年代使用</li>
+<li><strong>Parallel Old</strong> ：多线程，使用标记-整理算法，与<strong>Parallel Scavenge</strong>一样，关注吞吐量。</li>
+<li><strong>CMS</strong> ：多线程，使用标记-清除算法，其步骤为：初始标记(STW)-并发标记-重新标记(STW)-清除，具有低停顿的性质，缺点是占用CPU资源严重，且产生内存碎片，整理内存碎片依旧会STW</li>
+<li><strong>G1</strong> ：多线程，与CMS类似，使用标记-整理算法，步骤为：初始标记(STW)-并发标记-最终标记(STW)-筛选清除(可控制停顿时间)，其优点是引入 Region 概念，优先清理垃圾更多的 Region</li>
+</ol>
+<h4 id="对象分配策略"><a href="#对象分配策略" class="headerlink" title="对象分配策略"></a>对象分配策略</h4><ul>
+<li>对象优先在 Eden 去分配</li>
+<li>大对象直接进入老年代</li>
+<li>长期存活的对象将进入老年代，可配置多少岁进入（默认15岁），熬过一次 Minor GC 涨一岁</li>
+<li>动态对象年龄判定， Survivor 区空间中相同年龄所有对象大小的总和大于空间的一半，则年龄大于或等于该年龄的对象直接进入老年代；</li>
+<li>空间分配担保，即防止新生代的对象大量存活时，Survivor 区装不下，则需要判定老年代是否还有足够大的连续空间（大于新生代Eden区或开启参数则取历代存活平均值），若有则可无需 FullGC，反之需要FullGC</li>
+</ul>
+<h2 id="JVM-详记"><a href="#JVM-详记" class="headerlink" title="JVM 详记"></a>JVM 详记</h2><h3 id="组成图"><a href="#组成图" class="headerlink" title="组成图"></a>组成图</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">graph LR</span><br><span class="line"></span><br><span class="line">R(JVM)</span><br><span class="line"></span><br><span class="line">A(编译器)</span><br><span class="line">B(类加载器)</span><br><span class="line">C(执行引擎)</span><br><span class="line">D(运行时数据区)</span><br><span class="line"></span><br><span class="line">D1(堆)</span><br><span class="line">D2(栈)</span><br><span class="line">D3(本地方法栈)</span><br><span class="line">D4(方法区)</span><br><span class="line">D5(程序计数器 Program Count Register)</span><br><span class="line"></span><br><span class="line">D2A(局部变量表)</span><br><span class="line">D2B(操作数栈)</span><br><span class="line">D2C(动态链接)</span><br><span class="line">D2D(返回地址)</span><br><span class="line"></span><br><span class="line">R--&gt;A</span><br><span class="line">R--&gt;B</span><br><span class="line">R--&gt;C</span><br><span class="line">R--&gt;D</span><br><span class="line"></span><br><span class="line">D--&gt;D1</span><br><span class="line">D--&gt;D2</span><br><span class="line">D--&gt;D3</span><br><span class="line">D--&gt;D4</span><br><span class="line">D--&gt;D5</span><br><span class="line"></span><br><span class="line">D2--&gt;D2A</span><br><span class="line">D2--&gt;D2B</span><br><span class="line">D2--&gt;D2C</span><br><span class="line">D2--&gt;D2D</span><br></pre></td></tr></table></figure>
+
+<h3 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h3><p><strong>JVM</strong>: </p>
+<ul>
+<li><strong>编译器</strong>：对 Java 代码做优化，并将代码中结构、数据、实际代码编译成字节码。</li>
+<li><strong>类加载器</strong>：<ul>
+<li><strong>类加载过程</strong>: 加载（把字节码二进制流加载到方法区，如文件到内存）、验证（文件格式、元数据合法性、字节码指令等的校验）、准备（静态变量分配内存、初始化零值）、解析（字符符号引用解析成直接引用）、初始化（执行生成的 cinit 方法，里面是对静态变量的赋值指令和 static 块代码）</li>
+<li><strong>new 对象过程</strong>: 先进行类加载(若未加载), 接着为对象分配内存(内存大小是固定的), 接着讲内存空间的字段值初始化为零值(即内存中的值都是根据字段类型所对应的默认值), 对对象进行必要的设置(如与类信息绑定, 对象头的数据初始化等), 到此, 一个对象产生了, 然后再执行它的 init 方法(构造方法)就 ok 了.</li>
+</ul>
+</li>
+<li><strong>执行引擎</strong>：主要负责方法的分派，执行指令控制操作数栈。</li>
+<li><strong>运行时数据区</strong>：<ul>
+<li><strong>堆</strong>: 最大的内存区域, <strong>线程共享</strong>, 主要用于存放对象实例数据, 由于垃圾回收的原因, 也可分为新年代与老年代, 新年代具体可分为 Eden 区, From Survivor 区, To Surviovr 区.</li>
+<li><strong>本地方法栈</strong>: 与栈功能类似, 但服务于 Native 方法, 而Native 方法使用何种语言实现由具体虚拟机实现.</li>
+<li><strong>方法区</strong>: 用于存储加载的类信息、常量、静态变量等，<strong>线程共享</strong>.</li>
+<li><strong>程序计数器 Program Count Register</strong>: 一块较小的内存空间, <strong>线程私有</strong>. 存储线程所执行的字节码指令的行号, 分支、循环、跳转、异常处理、线程恢复等功能都需要依赖此内存. 当运行本地方法时, 值为空.</li>
+<li><strong>栈</strong>: 是Java方法执行的内存模型, <strong>线程私有</strong>, 生命周期与线程相同, 每个方法执行时会创建一个栈桢, 方法的调用和结束对应着栈桢的入栈和出栈. (总结: 栈像个集合, 存储着每个方法的栈桢)<ul>
+<li>(以下属于栈桢)</li>
+<li>局部变量表: 一组变量值存储空间，用于存放方法参数和方法内部定义的局部变量</li>
+<li>操作数栈: 是一个后入先出的栈，数据的写入与写出都由字节码指令控制，一开始是空的；这很像CPU的操作</li>
+<li>动态链接: 指向运行时常量池中该栈桢所属方法的引用，为了支持方法调用过程中的动态链接。</li>
+<li>方法出口(返回地址): 提供用于回到方法被调用的位置的地址，一般为进入前PC计数器中的值。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>总结: 编译Java源代码, 创建内存并划分区域, 加载类字节码, 从入口开始执行指令, 本质上, 所有的执行都是方法直接的组合或嵌套而成, 因此最终所有的指令, 都在方法栈执行, 也就是操作数栈. 所以需要了解常用的指令, 如内存相关, 锁相关, 方法跳转, 指令间跳转(if/for).</p>
+</blockquote>
+<h3 id="指令（操作数栈）"><a href="#指令（操作数栈）" class="headerlink" title="指令（操作数栈）"></a>指令（操作数栈）</h3><ul>
+<li><strong>字节码与数据类型</strong><ul>
+<li>i 开头代表对 int 类型的数据操作</li>
+<li>l 开头代表对 long 类型的数据操作</li>
+<li>s 开头代表对 short 类型的数据操作</li>
+<li>b 开头代表对 byte 类型的数据操作</li>
+<li>c 开头代表对 char 类型的数据操作</li>
+<li>f 开头代表对 float 类型的数据操作</li>
+<li>d 开头代表对 double 类型的数据操作</li>
+<li>a 开头代表对 reference 类型的数据操作</li>
+</ul>
+</li>
+<li><strong>加载和存储指令</strong><ul>
+<li>讲一个局部变量加载到操作栈: iload、iload_<n>  即 <strong>load</strong></li>
+<li>将一个数值从操作数栈存储到局部变量表: istore、istore_<n> 即 store</li>
+<li>将一个常量加载到操作数栈: bipush、sipush、ldc</li>
+<li>扩充局部变量表的访问所以的指令： wide</li>
+</ul>
+</li>
+<li><strong>运算指令</strong><ul>
+<li>加法（iadd、ladd）、减法（isub、lsub）、乘法（imul、lmul）、除法（idiv、ldiv）、求余（irem、lrem）</li>
+<li>取反（ineg、lneg）、位移（ishl、ishr、iushr）、按位或（ior、lor）、按位与（iand、land）、按位异或（ixor、lxor）</li>
+<li>局部变量自增指令（iinc）</li>
+<li>比较指令（dcmpg、dcmpl、fcmpg、fcmpl）</li>
+</ul>
+</li>
+<li><strong>类型转换指令</strong><ul>
+<li>宽化不需要转换（隐式）</li>
+<li>宅化有 i2b、i2c、i2s、l2i、f2i、f2l、d2i、d2l、d2f</li>
+</ul>
+</li>
+<li><strong>对象创建于访问指令</strong><ul>
+<li>创建实例的指令：new</li>
+<li>创建数组的指令：newarray、anewarray、multianewarray</li>
+<li>访问类字段（static 字段）和实例字段的指令：getfield、putfield、getstatic、putstatic</li>
+<li>把一个数组元素度加载到操作数栈：baload、caload、saload；即 aload</li>
+<li>将一个操作数栈的值存储到数组元素中的指令：bastore、castore、sastore、即 astore</li>
+<li>取数组长度的指令:arraylength</li>
+<li>检查类实例类型的指令：instanceof、checkcast</li>
+</ul>
+</li>
+<li><strong>操作数栈管理指令</strong><ul>
+<li>将操作数栈的站定一个或两个元素出栈：pop、pop2</li>
+<li>复制栈顶一个或两个数值并将复制值或双份复制值重新压入栈顶：dup、dup2、dup_x1、dup2_x1</li>
+<li>将栈顶最顶端的两个值互换： swap</li>
+</ul>
+</li>
+<li><strong>控制转移指令</strong><ul>
+<li>条件分支：ifeq、iflt、ifle、ifne、ifgt、ifge、ifnull、ifnonnull、if_icmpeq…</li>
+<li>复合条件分支：tableswitch、lookupswitch</li>
+<li>无条件分支：goto、goto_w、jsr、jsr_w、ret</li>
+</ul>
+</li>
+<li><strong>方法调用和返回指令</strong><ul>
+<li>invokevirtual 调用对象的实例方法，根据对象的实际类型进行分派</li>
+<li>invokeinterface 调用接口方法，搜索实现了接口方法的对象，找出适合的方法调用</li>
+<li>invokespecial 调用一些需要特殊处理的方法，包括实例初始化方法、私有方法、父类方法</li>
+<li>invokestatic 调用静态方法 （static 方法）</li>
+<li>invokedynamic 指令用于在运行时动态解析出调用点限定符所引用的方法</li>
+<li>返回指令 ireturn、lreturn、freturn、dreturn、areturn、return（ void 返回值时）</li>
+</ul>
+</li>
+<li><strong>异常处理指令</strong> athrow；其他异常由涉及的指令抛出；另外 catch 不是由字节码指令实现，而是采用异常表</li>
+<li><strong>同步指令</strong><ul>
+<li>monitorenter 以栈顶元素作为锁开始同步</li>
+<li>monitorexit 推出同步</li>
+</ul>
+</li>
+</ul>
+<h3 id="类文件结构"><a href="#类文件结构" class="headerlink" title="类文件结构"></a>类文件结构</h3><ul>
+<li><strong>魔数</strong> 0xCAFEBABE  和<strong>主版本号</strong>(判断兼容性)</li>
+<li><strong>常量池</strong><ul>
+<li>文本字符串</li>
+<li>声明为 final 的常量值</li>
+<li>类和接口的全限定名</li>
+<li>字段的名称和描述符</li>
+<li>方法的名称和描述符</li>
+</ul>
+</li>
+<li><strong>常量池类型</strong>: 字符, 字段, 方法, 类名, 普通类型常量<ul>
+<li>字符串 CONSTANT_Utf8_info: tag u1, length u2, bytes, u1[]</li>
+<li>Integer, Float, Double,String</li>
+<li>类 CONSTANT_Class_info: tag u1, index u2 (指向字符串)</li>
+<li>CONSTANT_Name-AndType_info: tag u1, index u2, index u2</li>
+<li>字段 CONSTANT_Fieldref_info: tag u1, index u2(指向 CONSTANT_Class_info), index u2(指向CONSTANT_Name-AndType_info)</li>
+<li>字段 CONSTANT_Methodref_info: tag u1, index u2(指向 CONSTANT_Class_info), index u2(指向CONSTANT_Name-AndType_info)</li>
+</ul>
+</li>
+<li><strong>访问标识</strong>: 两个字节, 标识类还是接口, 是否 public, 是否 final, 是否 abstract, 是否注解, 枚举…</li>
+<li><strong>类索引、父类索引、接口索引集合</strong> ：都是 CONSTANT_Class_info，其实就是全限定名</li>
+<li><strong>字段表集合</strong>： 由多个字段表组成，下面为字段表的构成<ul>
+<li>access_flags 字段修饰符： 描述字段是否 public ，是否 private，是否 protected 等等</li>
+<li>name_index 字段的简单名称</li>
+<li>descriptor_index 字段的数据类型, 如 B（byte）、C（char）、D（double）、F（float）、L（对象类型）、[L（对象数组类型）</li>
+<li>attribute_info 字段的额外信息, 如字段为常量时会含有额外信息</li>
+</ul>
+</li>
+<li><strong>方法表集合</strong>：有多个方法表组成， 下面为方法表的构成<ul>
+<li>access_flags 方法修饰符：修饰方法是否为 public、是否为 private、是否为 static、是否 synchronized 等等</li>
+<li>name_index 方法的简单名称</li>
+<li>descriptor_index 方法的参数类型和返回值类型, 先参数，后返回值，且参数被括号包围，如 ()V、(LLDF)L</li>
+<li>attribute_info 方法的额外信息, 里面有名为 Code 的属性, 存放方法代码编译成的字节码指令</li>
+</ul>
+</li>
+<li><strong>属性表集合</strong>：类、字段和方法的额外信息存放处，类型有<ul>
+<li>方法表的 Code：</li>
+<li>字段表的 ConstantValue</li>
+<li>方法表的异常信息 Exceptions</li>
+<li>类中的内部类 InnerClasses</li>
+<li>源码行号与字节码行号的对应关系 LineNumberTable</li>
+<li>栈桢中局部变量表中变量与Java源码定义变量直接的关系 LocalVariableTable</li>
+<li>泛型的签名信息 Signature</li>
+</ul>
+</li>
+</ul>
+<h3 id="类加载过程"><a href="#类加载过程" class="headerlink" title="类加载过程"></a>类加载过程</h3><ul>
+<li><strong>加载</strong><ul>
+<li>通过一个类的全限定名来获取定义此类的二进制字节流</li>
+<li>将这个字节流所代表的惊天存储结构转化为方法区的运行时数据结构</li>
+<li>在内存中生成一个代表这个类的 java.lang.Class 对象,作为方法区这个类的各种数据的访问入口</li>
+</ul>
+</li>
+<li><strong>验证</strong><ul>
+<li>文件格式验证（如魔数，版本号、常量的类型等等）会简单校验字节流，将字节流转为内存里的数据结构</li>
+<li>元数据验证（这个类是否有父类、继承的类是否合法、非抽象类是否实现了所有抽象方法等等）</li>
+<li>字节码验证（校验方法代码中的字节码指令语义是否正确、保证方法的类型转换时有效的）</li>
+<li>符号引用验证（校验常量区的符号引用是否正确，确保解析阶段能正常执行）</li>
+</ul>
+</li>
+<li><strong>准备</strong><ul>
+<li>为静态变量分配内存，并初始化为零值</li>
+</ul>
+</li>
+<li><strong>解析</strong><ul>
+<li>类或接口的解析：解析的符号引用的类不是数组则需要先加载这个类，再校验访问权限</li>
+<li>字段解析：先从自身找，自身无且实现了接口，则找继承的接口中的引用，自身无也无实现接口，则找父类，都找不到则报错，找到则校验权限。</li>
+<li>方法解析：与字段类似，从自身到实现的接口、继承的父类中找，找到后校验权限。</li>
+<li>接口方法解析：从自身接口中或父接口中找、找到无需校验权限（都是 public）</li>
+</ul>
+</li>
+<li><strong>初始化</strong><ul>
+<li>执行 cinit 方法，方法中执行对静态变量的赋值指令和 static 快</li>
+<li>父类的初始化方法一定先于子类执行</li>
+<li>执行时会加锁同步执行、因此不要进行耗时操作</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>顺带一提类加载器，作用是加载字节码二进制流到虚拟机中，除了系统顶级的类加载器（用于加载 rt.jar）是由 C++ 实现外，其他的类加载器都是 Java代码，通过组合一个类加载器（即父类加载器），实现双亲委派模型：即总是先通过父类加载类，除非父类加载失败；若自己实现一个类加载器，一般需要组合 ClassLoader.getSystemClassLoader()</p>
+<p>系统的类加载器有:</p>
+<ul>
+<li>启动类加载器 Bootstrap ClassLoader 加载 JAVA_HOME/lib 下的类，如 rt.jar</li>
+<li>扩展类加载器 Extension ClassLoader 加载 JAVA_HOME/lib/ext 下的类</li>
+<li>应用程序类加载器 Application ClassLoader 加载 classpath 下的类</li>
+</ul>
+</blockquote>
+<h3 id="Java-内存模型"><a href="#Java-内存模型" class="headerlink" title="Java 内存模型"></a>Java 内存模型</h3><p>主要是为了屏蔽调各种硬件和操作系统的内存访问差异，以实现 Java 程序在各种平台下都能达到一致的内存访问效果。可有效防止不同平台的并发访问因平台差异有所不同引发线程安全问题。</p>
+<ul>
+<li><strong>主内存与工作内存</strong>：这里变量不包括线程私有的内存区域<ul>
+<li>所有变量都存储主内存中</li>
+<li>每条线程有自己的工作内存</li>
+<li>线程的工作内存中保存了该线程使用到的变量的主内存副本拷贝</li>
+<li>线程对变量的所有操作（读取、赋值等）都必须在工作内存中进行，而不能直接读写主内存的变量。</li>
+<li>不同线程之间无法直接访问对方工作内存中的变量</li>
+<li>线程间变量值的传递均需要通过主内存来完成</li>
+<li>主内存类似于物理硬件中的内存，而工作内存优先存储于寄存器和高速缓存中（看 JVM 具体实现）</li>
+</ul>
+</li>
+<li><strong>内存间交互操作</strong><ul>
+<li>lock：作用于主内存的变量，它把一个变量表示为一条线程独占的状态。</li>
+<li>unlock：作用于主内存的变量，它把一个处于锁定状态的变量释放出来，释放后的变量才可以被其他线程锁定。</li>
+<li>read：作用于主内存的变量，它把一个变量的值从主内存传输到线程的工作内存中，以便随后的 load 动作使用</li>
+<li>load：作用于工作内存的变量，它把 read 操作从主内存中得到的变量值放入工作内存的变量副本中。</li>
+<li>use：作用于工作内存的变量，它把工作内存中一个变量的值传递给执行引擎，每当虚拟机遇到一个需要使用变量的值的字节码指令都会执行这个操作。</li>
+<li>assign：作用于工作内存的变量，它把一个从执行引擎接收到的值赋给工作内存的变量，每当虚拟机遇到一个需要给变量赋值的字节码指令时执行这个操作。</li>
+<li>store：存储作用于工作内存的变量，它把工作内存中一个变量的值传递给主内存中，以便随后的 write 操作使用</li>
+<li>write：作用于主内存的变量，它把 store 操作从工作内存中得到的变量的值放入主内存中的变量中。</li>
+</ul>
+</li>
+<li><strong>对于 volatile 型变量的特殊规则</strong><ul>
+<li>保证此变量对所有线程的可见性，但不保证原子性，因此部分操作仍是线程不安全的， 如 i++</li>
+<li>禁用指令重排序优化， 即保证变量的赋值操作的顺序与代码中的顺序一致；其他变量可能会因指令重排序优化而不一致。</li>
+</ul>
+</li>
+<li><strong>对于 long 和 double 型变量的特殊规则</strong><ul>
+<li>对于这两类型变量， JVM 规范不严格要求对 8个操作（read、load等）都具有原子性</li>
+<li>但大多数虚拟机实现仍保证了这一点，所有不需要把这类型的变量特别的添加 volatile 修饰</li>
+</ul>
+</li>
+<li><strong>原子性、可见性、有序性</strong><ul>
+<li><strong>原子性</strong>：有 Java 内存模型来直接保证原子性变量操作包括（read、load、assign、use、store、write），基本可以认为基本数据类型的访问读写是具有原子性的，可使用 synchronized 实现原子性</li>
+<li><strong>可见性</strong>：是指当一个线程修改了共享变量的值，其他线程能够立即得知这个修改。volatile、synchronized、final 可实现可见性</li>
+<li><strong>有序性</strong>：如果在本线程内观察，所有的操作都是有序的；如果在一个线程观察另一个线程，所有的操作都是无序的。可使用 volatile、synchronized 实现有序性</li>
+</ul>
+</li>
+<li><strong>先行发生原则</strong><ul>
+<li>程序次序规则：在一个线程中，按照程序代码顺序，书写在前的操作先行发生于书写在后的操作。</li>
+<li>管程锁定规则：一个 unlock 操作先行发生与后面对同一个锁的 lock 操作。</li>
+<li>volatile 变量规则：对一个 volatile 变量的写操作先行发生于后面对这个变量的读操作。</li>
+<li>线程启动规则：Thread 对象的 start 方法先行发生于此线程的每一个动作</li>
+<li>线程终止规则：线程中所有操作都先行发生于对此线程的终止检测。</li>
+<li>线程中断规则：对线程 interrupt 方法的调用先行发生于被中断线程的代码检测到中断事件的发生。</li>
+<li>对象终结规则：一个对象的初始化完成先行发生于他的 finalize 方法的开始</li>
+<li>传递性：如果操作 A 先行发生于操作 B， 操作 B 先行发生于操作 C，那就可以得出操作 A 先行发生于操作 C 的结论。</li>
+</ul>
+</li>
+</ul>
+<h3 id="Java-线程安全"><a href="#Java-线程安全" class="headerlink" title="Java 线程安全"></a>Java 线程安全</h3><blockquote>
+<p>定义: 当多个线程访问一个对象时，如果不用考虑这些线程在运行时环境下的调度和交替执行，也不需要进行额外同步（就是调用者不需要额外同步，代码本身可使用同步），或者在调用方进行任何其他的协调操作，调用这个对象的行为都可以获得正确的结果，那这个对象时线程安全的。 </p>
+<p>作者说：把“调用这个对象的行为” 限定为 “单词调用” ，也可称为线程安全。这是个弱化。</p>
+</blockquote>
+<ul>
+<li><strong>Java 语言中的线程安全</strong><ul>
+<li><strong>不可变</strong>：不可变的对象一定是线程安全的；如 String</li>
+<li><strong>绝对线程安全</strong>：与定义等同，过于严格</li>
+<li><strong>相对线程安全</strong>：仅保证对这个对象单独的操作是线程安全的，如 Vector。</li>
+<li><strong>线程兼容</strong>：对象本身不安全，但通过操作前后加同步手段来保证操作线程安全。则称为线程兼容，如 ArrayList。</li>
+<li><strong>线程对立</strong>：即使使用同步手段，还是无法做到线程安全的代码。比如 System.setIn()</li>
+</ul>
+</li>
+<li><strong>线程安全的实现方法</strong><ul>
+<li><strong>互斥同步</strong>：即只被一个线程使用，如 synchronized </li>
+<li><strong>非阻塞同步</strong>：一般指乐观锁，即先进行操作，若无其他线程争用共享数据，那操作就成功了；如果共享数据有争用，产生了冲突，那就采用其他的补偿措施（通常是重试）；依赖 CAS 原子操作，即系统底层支持</li>
+<li><strong>无同步方案</strong>：一般指 ThreadLocal，将变量控制在线程中，不与其他线程共享，则也是线程安全的。</li>
+</ul>
+</li>
+<li><strong>锁优化</strong><ul>
+<li><strong>自旋锁与自适应锁</strong>：自旋指线程在等待锁时不让出CPU资源，而是循环的重试来获取锁；自然，可以配置重试次数，可以配置是否开启。自适应指的是自旋的时间或者说次数，根据虚拟机统计的自旋获得锁的成功与否，来增长或缩短自旋的时间。</li>
+<li><strong>锁消除</strong>：即 JVM 判断某些代码的变量无需使用同步，因为这些变量不会被其他线程锁读写，如方法里是局部变量的 StringBuffer 对象的 append 方法。其使用 synchronized，但局部变量都是线程私有的，并不会被其他线程读写。</li>
+<li><strong>锁粗化</strong>：避免锁粒度太小导致频繁的互斥，带来额外的开销，虚拟机会对这种情况将锁的范围粗化。</li>
+<li><strong>轻量级锁</strong>：即当一个锁没有两条以上的线程争用的时候，通过 CAS 操作加锁和解锁，比重量级锁开销更少。若超过两个线程争用，则通过修改对象头标志位将锁升级为重量级锁，因为此时再使用 CAS 反而是一种消耗（这是因为 CAS 总是会失败）</li>
+<li><strong>偏向锁</strong>：即一个线程第一次通过 CAS 获得这个锁后，之后再获取将不再需要加锁（即使释放了锁也没关系），这是因为在第一次获取时会将对象头的标志改为偏向锁，并记录线程 ID（这个动作也是通过 CAS 进行的），这样以后只需要对比线程 ID，刷脸入场。</li>
+</ul>
+</li>
+</ul>
+<h3 id="大致流程"><a href="#大致流程" class="headerlink" title="大致流程"></a>大致流程</h3><ol>
+<li>编译器编译 .java 后缀文件得到字节码文件 .class；</li>
+<li>类加载器加载字节码文件到运行时区域；</li>
+<li>执行器为类的方法创建栈桢，并结合操作数栈执行字节码指令，遇到方法调用的指令，则可能需要根据对象类型判断执行哪个具体的方法，然后执行对应的字节码指令。</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>下次一定</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="gudqs7 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/bitcoin.png" alt="gudqs7 比特币">
+        <p>比特币</p>
+      </div>
+
+  </div>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/jvm/" rel="tag"># jvm</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/02/03/principle-redis-memo/" rel="prev" title="principle-redis-memo">
+      <i class="fa fa-chevron-left"></i> principle-redis-memo
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+    </div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#JVM-底层探秘笔记"><span class="nav-number">1.</span> <span class="nav-text">JVM 底层探秘笔记</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#JVM-速记"><span class="nav-number">1.1.</span> <span class="nav-text">JVM 速记</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#什么是-JVM"><span class="nav-number">1.1.1.</span> <span class="nav-text">什么是 JVM?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#你是怎么对-jvm-垃圾回收进行优化的"><span class="nav-number">1.1.2.</span> <span class="nav-text">你是怎么对 jvm 垃圾回收进行优化的?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#JVM-内存模型"><span class="nav-number">1.1.3.</span> <span class="nav-text">JVM 内存模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#多线程"><span class="nav-number">1.1.4.</span> <span class="nav-text">多线程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#JVM-对象结构"><span class="nav-number">1.1.5.</span> <span class="nav-text">JVM 对象结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#垃圾回收"><span class="nav-number">1.1.6.</span> <span class="nav-text">垃圾回收</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#标记算法"><span class="nav-number">1.1.6.1.</span> <span class="nav-text">标记算法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#回收算法"><span class="nav-number">1.1.6.2.</span> <span class="nav-text">回收算法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#回收器"><span class="nav-number">1.1.6.3.</span> <span class="nav-text">回收器</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#对象分配策略"><span class="nav-number">1.1.6.4.</span> <span class="nav-text">对象分配策略</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#JVM-详记"><span class="nav-number">1.2.</span> <span class="nav-text">JVM 详记</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#组成图"><span class="nav-number">1.2.1.</span> <span class="nav-text">组成图</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#概念"><span class="nav-number">1.2.2.</span> <span class="nav-text">概念</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#指令（操作数栈）"><span class="nav-number">1.2.3.</span> <span class="nav-text">指令（操作数栈）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#类文件结构"><span class="nav-number">1.2.4.</span> <span class="nav-text">类文件结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#类加载过程"><span class="nav-number">1.2.5.</span> <span class="nav-text">类加载过程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Java-内存模型"><span class="nav-number">1.2.6.</span> <span class="nav-text">Java 内存模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Java-线程安全"><span class="nav-number">1.2.7.</span> <span class="nav-text">Java 线程安全</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#大致流程"><span class="nav-number">1.2.8.</span> <span class="nav-text">大致流程</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="gudqs7"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">gudqs7</p>
+  <div class="site-description" itemprop="description">心累没钱躺尸中</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">22</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">23</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">30</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/gudqs7" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;gudqs7" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:gudqs7@gmail.com" title="E-Mail → mailto:gudqs7@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">gudqs7</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+  function loadCount() {
+    var d = document, s = d.createElement('script');
+    s.src = 'https://gudqs7s-note.disqus.com/count.js';
+    s.id = 'dsq-count-scr';
+    (d.head || d.body).appendChild(s);
+  }
+  // defer loading until the whole page loading is completed
+  window.addEventListener('load', loadCount, false);
+</script>
+<script>
+  var disqus_config = function() {
+    this.page.url = "https://gudqs7.github.io/2021/02/04/principle-jvm-memo/";
+    this.page.identifier = "2021/02/04/principle-jvm-memo/";
+    this.page.title = "JVM 底层探秘笔记";
+    };
+  NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {
+    if (window.DISQUS) {
+      DISQUS.reset({
+        reload: true,
+        config: disqus_config
+      });
+    } else {
+      var d = document, s = d.createElement('script');
+      s.src = 'https://gudqs7s-note.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', '' + +new Date());
+      (d.head || d.body).appendChild(s);
+    }
+  });
+</script>
+
+</body>
+</html>

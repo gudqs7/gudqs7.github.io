@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"gudqs7.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Redis 底层探秘Redis 数据结构实现原理 copy from https:&#x2F;&#x2F;juejin.cn&#x2F;post&#x2F;6844903856313368589#heading-3  1.string12345678910111213&#x2F;&#x2F; sdshdr64 变成 sdshdr32, 则相应的 len 和 alloc 变成 uint32_tstruct __attribute__ ((__packed__">
+<meta property="og:type" content="article">
+<meta property="og:title" content="principle-redis-memo">
+<meta property="og:url" content="https://gudqs7.github.io/2021/02/03/principle-redis-memo/index.html">
+<meta property="og:site_name" content="gudqs7&#39;s note">
+<meta property="og:description" content="Redis 底层探秘Redis 数据结构实现原理 copy from https:&#x2F;&#x2F;juejin.cn&#x2F;post&#x2F;6844903856313368589#heading-3  1.string12345678910111213&#x2F;&#x2F; sdshdr64 变成 sdshdr32, 则相应的 len 和 alloc 变成 uint32_tstruct __attribute__ ((__packed__">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://user-gold-cdn.xitu.io/2019/5/29/16b042094c9cec82?imageView2/0/w/1280/h/960/ignore-error/1">
+<meta property="og:image" content="https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210203195703.png">
+<meta property="og:image" content="https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210203195723.png">
+<meta property="og:image" content="https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210203194805.png">
+<meta property="article:published_time" content="2021-02-03T11:06:58.000Z">
+<meta property="article:modified_time" content="2021-02-03T14:54:42.934Z">
+<meta property="article:author" content="gudqs7">
+<meta property="article:tag" content="redis">
+<meta property="article:tag" content="nosql">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://user-gold-cdn.xitu.io/2019/5/29/16b042094c9cec82?imageView2/0/w/1280/h/960/ignore-error/1">
+
+<link rel="canonical" href="https://gudqs7.github.io/2021/02/03/principle-redis-memo/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>principle-redis-memo | gudqs7's note</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">gudqs7's note</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">心累没钱躺尸中</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://gudqs7.github.io/2021/02/03/principle-redis-memo/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="gudqs7">
+      <meta itemprop="description" content="心累没钱躺尸中">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="gudqs7's note">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          principle-redis-memo
+        </h1>
+
+        <div class="post-meta">
+			
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-02-03 19:06:58 / 修改时间：22:54:42" itemprop="dateCreated datePublished" datetime="2021-02-03T19:06:58+08:00">2021-02-03</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Redis/" itemprop="url" rel="index"><span itemprop="name">Redis</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/NoSql/" itemprop="url" rel="index"><span itemprop="name">NoSql</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2021/02/03/principle-redis-memo/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2021/02/03/principle-redis-memo/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="Redis-底层探秘"><a href="#Redis-底层探秘" class="headerlink" title="Redis 底层探秘"></a>Redis 底层探秘</h1><h2 id="Redis-数据结构实现原理"><a href="#Redis-数据结构实现原理" class="headerlink" title="Redis 数据结构实现原理"></a>Redis 数据结构实现原理</h2><blockquote>
+<p>copy from <a href="https://juejin.cn/post/6844903856313368589#heading-3" target="_blank" rel="noopener">https://juejin.cn/post/6844903856313368589#heading-3</a></p>
+</blockquote>
+<h3 id="1-string"><a href="#1-string" class="headerlink" title="1.string"></a>1.string</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// sdshdr64 变成 sdshdr32, 则相应的 len 和 alloc 变成 uint32_t</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> __<span class="title">attribute__</span> ((__<span class="title">packed__</span>)) <span class="title">sdshdr64</span> &#123;</span></span><br><span class="line">    <span class="keyword">uint64_t</span> len; </span><br><span class="line">    <span class="keyword">uint64_t</span> alloc;</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">char</span> flags; </span><br><span class="line">    <span class="keyword">char</span> buf[];</span><br><span class="line">&#125;;</span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">  len：已使用的长度，即字符串的真实长度</span></span><br><span class="line"><span class="comment">  alloc：除去标头和终止符('\0')后的长度</span></span><br><span class="line"><span class="comment">  flags：低3位表示字符串类型，其余5位未使用（我暂时没发现redis在哪里使用过这个属性）</span></span><br><span class="line"><span class="comment">  buf[]：存储字符数据</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>redis 写的字符串库有以下4个优点：</p>
+</blockquote>
+<ul>
+<li>降低获取字符串长度的时间复杂度到O(1)</li>
+<li>减少了修改字符串时的内存重分配次数</li>
+<li>兼容c字符串的同时，提高了一些字符串工具方法的效率</li>
+<li>二进制安全（数据写入的格式和读取的格式一致）</li>
+</ul>
+<blockquote>
+<p>总结: string 就是字符串, 但 Redis 其实有实现自己的类库提高各方面的速度, 只能说, 专业!!!</p>
+</blockquote>
+<h3 id="2-list"><a href="#2-list" class="headerlink" title="2.list"></a>2.list</h3><h4 id="ziplist"><a href="#ziplist" class="headerlink" title="ziplist"></a>ziplist</h4><p>ziplist并不是一个类名，其结构是下面这样的： <code>&lt;zlbytes&gt;&lt;zltail&gt;&lt;entries&gt;&lt;entry&gt;...&lt;entry&gt;&lt;zlend&gt;</code></p>
+<p>其中各部分代表的含义如下：</p>
+<ul>
+<li>zlbytes：4个字节（32bits），表示ziplist占用的总字节数</li>
+<li>zltail：4个字节（32bits），表示ziplist中最后一个节点在ziplist中的偏移字节数</li>
+<li>entries：2个字节（16bits），表示ziplist中的元素数</li>
+<li>entry：长度不定，表示ziplist中的数据</li>
+<li>zlend：1个字节（8bits），表示结束标记，这个值固定为ff（255）</li>
+</ul>
+<p>这些数据均为小端存储，所以可能有些人查看数据的二进制流与其含义对应不上，其实是因为读数据的方式错了</p>
+<p>ziplist内部采取数据压缩的方式进行存储，压缩方式就不是重点了，我们仅从宏观来看，ziplist类似一个封装的数组，通过zltail可以方便地进行追加和删除尾部数据、使用entries可以方便地计算长度</p>
+<h4 id="quicklist"><a href="#quicklist" class="headerlink" title="quicklist"></a>quicklist</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">quicklist</span> &#123;</span></span><br><span class="line">    quicklistNode *head;</span><br><span class="line">    quicklistNode *tail;</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> count;        <span class="comment">/* ziplist所有节点的个数 */</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> len;          <span class="comment">/* quicklistNode节点的个数 */</span></span><br><span class="line">    <span class="keyword">int</span> <span class="built_in">fill</span> : <span class="number">16</span>;              <span class="comment">/* 单个节点的填充因子 */</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> compress : <span class="number">16</span>; <span class="comment">/* 压缩端结点的深度 */</span></span><br><span class="line">&#125; quicklist;</span><br></pre></td></tr></table></figure>
+
+<p>我们可以明显地看出，quicklist是一个双向链表的结构，但是内部又涉及了ziplist，我们可以这么说，在宏观上，quicklist是一个双向链表，在微观上，每一个quicklist的节点都是一个ziplist</p>
+<p>在redis.conf中，可以使用下面两个参数来进行优化：</p>
+<ul>
+<li>list-max-ziplist-size：表示每个quicklistNode的字节大小。默认为2，表示8KB</li>
+<li>list-compress-depth：表示quicklistNode节点是否要压缩。默认为0，表示不压缩</li>
+</ul>
+<p>这种存储方式的优点和链表的优点一致，就是插入和删除的效率很高，而链表查询的效率又由ziplist来进行弥补，所以quicklist就成为了list数据结构的首选</p>
+<blockquote>
+<p>总结: 是一个双向链表 + ziplist, 同时具有两者的优点(指插入速度和查询速度, 具体咋回事, 怎么做到的.. 完全不知道啊).</p>
+</blockquote>
+<h3 id="3-hash"><a href="#3-hash" class="headerlink" title="3.hash"></a>3.hash</h3><h4 id="ziphash"><a href="#ziphash" class="headerlink" title="ziphash"></a>ziphash</h4><p>zipmap其格式形如下面这样： <code>&lt;zmlen&gt;&lt;len&gt;&quot;foo&quot;&lt;len&gt;&lt;free&gt;&quot;bar&quot;&lt;len&gt;&quot;hello&quot;&lt;len&gt;&lt;free&gt;&quot;world&quot;</code></p>
+<p>各部分的含义如下：</p>
+<ul>
+<li>zmlen：1个字节，表示zipmap的总字节数</li>
+<li>len：1~5个字节，表示接下来存储的字符串长度</li>
+<li>free：1个字节，是一个无符号的8位数，表示字符串后面的空闲未使用字节数，由于修改与键对应的值而产生</li>
+</ul>
+<p>这其中相邻的两个字符串就分别是键和值，比如在上面的例子中，就表示<code>&quot;foo&quot; =&gt; &quot;bar&quot;, &quot;hello&quot; =&gt; &quot;world&quot;</code>这样的对应关系</p>
+<p>这种方式的缺点也很明显，就是查找的时间复杂度为O(n)，所以只能当作一个轻量级的hashmap来使用</p>
+<h4 id="dict"><a href="#dict" class="headerlink" title="dict"></a>dict</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">dict</span> &#123;</span></span><br><span class="line">    dictType *type;	<span class="comment">/* 指向自定义类型的指针，可以存储各类型数据 */</span></span><br><span class="line">    <span class="keyword">void</span> *privdata; <span class="comment">/* 私有数据的指针 */</span></span><br><span class="line">    dictht ht[<span class="number">2</span>];	<span class="comment">/* 两个hash表，一般只有h[0]有效，h1[1]只在rehash的时候才有值 */</span></span><br><span class="line">    <span class="keyword">long</span> rehashidx; <span class="comment">/* -1：没有在rehash的过程中，大于等于0：表示执行rehash到第几步 */</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> iterators; 	<span class="comment">/* 正在遍历的迭代器个数 */</span></span><br><span class="line">&#125; dict;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 真正的</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">dictEntry</span> &#123;</span></span><br><span class="line">    <span class="keyword">void</span> *key;</span><br><span class="line">    <span class="keyword">union</span> &#123;</span><br><span class="line">        <span class="keyword">void</span> *val;</span><br><span class="line">        <span class="keyword">uint64_t</span> u64;</span><br><span class="line">        <span class="keyword">int64_t</span> s64;</span><br><span class="line">        <span class="keyword">double</span> d;</span><br><span class="line">    &#125; v;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">dictEntry</span> *<span class="title">next</span>;</span></span><br><span class="line">&#125; dictEntry;</span><br></pre></td></tr></table></figure>
+
+<p>很明显是一个链表，我们知道这是采用链式结构存储就足够了</p>
+<p>这种方式会消耗较多的内存，所以一般数据较少时会采用轻量级的zipmap</p>
+<blockquote>
+<p>总结: 是个链表, 缺点是消耗内存高, 因此数据较少会采用 zipmap 这种…. 按字节精打细算的方式存储.</p>
+</blockquote>
+<h3 id="4-set"><a href="#4-set" class="headerlink" title="4.set"></a>4.set</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">intset</span> &#123;</span></span><br><span class="line">    <span class="keyword">uint32_t</span> encoding;</span><br><span class="line">    <span class="keyword">uint32_t</span> length;</span><br><span class="line">    <span class="keyword">int8_t</span> contents[];</span><br><span class="line">&#125; intset;</span><br></pre></td></tr></table></figure>
+
+<p>其中各字段含义如下：</p>
+<ul>
+<li>encoding：数据编码格式，表示每个数据元素用几个字节存储（可取的值有2、4，和8）</li>
+<li>length：元素个数</li>
+<li>contents：柔性数组，这部分内存单独分配，不包含在intset中</li>
+</ul>
+<p>intset有一个数据升级的概念，比方说我们有一个16位整数的set，这时候插入了一个32位整数，所以就导致整个集合都升级为32位整数，但是反过来却不行，这也就是柔性数组的由来</p>
+<p>如果集合过大，会采用dict的方式来进行存储</p>
+<blockquote>
+<p>总结: 底层是个数组的 inset 结构体, 另外集合过大会采用 dict 来存储.</p>
+</blockquote>
+<h3 id="5-zset"><a href="#5-zset" class="headerlink" title="5.zset"></a>5.zset</h3><p>zset，有很多地方也叫做sorted set，是一个键值对的结构，其键被称为member，也就是集合元素（zset依然是set，所以member不能相同），其对应的值被称为score，是一个浮点数，可以理解为优先级，用于排列zset的顺序</p>
+<p>其也有两种存储方式，一种是ziplist/zipmap的格式，这种方式我们就不过多介绍了，只需要了解这种格式将数据按照score的顺序排列即可</p>
+<p>另一种存储格式是采用了skiplist，意为跳跃表，可以看成平衡树映射的数组，其查找的时间复杂度和平衡树基本没有差别，但是实现更为简单，形如下面这样的结构（图来源<a href="https://www.cnblogs.com/thrillerz/p/4505550.html" target="_blank" rel="noopener">跳跃表的原理）</a>：</p>
+<p><img src="https://user-gold-cdn.xitu.io/2019/5/29/16b042094c9cec82?imageView2/0/w/1280/h/960/ignore-error/1" alt="例图"></p>
+<blockquote>
+<p>总结: 看不懂….</p>
+<p>再看看这个吧… 更细致一点! <a href="https://juejin.cn/post/6844904192042074126" target="_blank" rel="noopener">https://juejin.cn/post/6844904192042074126</a></p>
+</blockquote>
+<h2 id="Redis-的持久化"><a href="#Redis-的持久化" class="headerlink" title="Redis 的持久化"></a>Redis 的持久化</h2><blockquote>
+<p> 摘记一下: copy from <a href="https://mp.weixin.qq.com/s/zfkhQFEBkKSRsfKF63R94A" target="_blank" rel="noopener">https://mp.weixin.qq.com/s/zfkhQFEBkKSRsfKF63R94A</a></p>
+</blockquote>
+<h3 id="RDB"><a href="#RDB" class="headerlink" title="RDB"></a>RDB</h3><p>写RDB文件是Redis的一种持久化方式。在指定的时间间隔内将内存中的数据写入到磁盘，RDB文件是一个紧凑的二进制文件，每一个文件都代表了<strong>某一个时刻</strong>（执行fork的时刻）Redis完整的数据快照，恢复数据时，将快照文件读入内存即可。</p>
+<p><strong>触发保存RDB文件4种情况</strong></p>
+<ol>
+<li>手动执行save命令、bgsave</li>
+<li>满足配置文件中配置的save相关配置项时，自动触发</li>
+<li>手动执行flushall</li>
+<li>关闭redis , 执行 shutdown 命令</li>
+</ol>
+<p><strong>如何让redis加载rdb文件？</strong></p>
+<p>只需要将rdb文件放在redis的启动目录下，redis其中时会自动加载它。</p>
+<p><strong>RDB模式的优缺点：</strong></p>
+<p>优点：RDB过程中，由子进程代替主进程进行备份的IO操作。保证了主进程仍然提供高性能的服务。适合大规模的数据备份恢复过程。</p>
+<p>缺点：</p>
+<ol>
+<li>默认情况下，它是每隔一段时间进行一次数据备份，所以一旦出现最后一次持久化的数据丢失，将丢失大规模的数据。</li>
+<li>fork()子进程时会占用一定的内存空间，如果在fork()子进程的过程中，父进程夯住了，那也就是redis卡住了，不能对外提供服务。所以不要让生成RDB文件的时间间隔太长，不然每次生成的RDB文件过大对Redis本身也是有影响的。</li>
+</ol>
+<img src="https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210203195703.png" alt="image-20210203195701943" style="zoom:50%;" />
+
+<blockquote>
+<p>总结: 每隔一段时间(一般比较久)触发的全量备份, 备份速度取决于使用情况, 备份时 Redis 仍然可读可写, 但写还是有些问题. 缺点是宕机容易丢失较久的数据.</p>
+</blockquote>
+<h3 id="AOF"><a href="#AOF" class="headerlink" title="AOF"></a>AOF</h3><p>Append Only File，他也是Redis的持久化策略。即将所有的写命令都以日志的方式追加记录下来（只追加，不修改），恢复的时候将这个文件中的命令读出来回放。</p>
+<p><strong>aof模式的优缺点</strong><br><strong>优点</strong>：</p>
+<ol>
+<li>aof是用追加的形式写，没有随机磁盘IO那样的寻址开销，性能还是比较高的。</li>
+<li>aof可以更好的保护数据不丢失或者尽可能的少丢失：设置让redis每秒同步一次数据，即使redis宕机了，最多也就丢失1秒的数据。</li>
+<li>即使aof真的体积很大，也可以设置后台重写，不影响客户端的重写。</li>
+<li>aof适合做灾难性的误删除紧急恢复：比如不小心执行了flushall，然后可以在发生rewrite之前 快速备份下aof文件，去掉末尾的 flushall，通过恢复机制恢复数据。</li>
+</ol>
+<p><strong>缺点</strong>：使用aof一直追加写，导致aof的体积远大于RDB文件的体积，恢复数据、修复的速度要比rdb慢很多。</p>
+<p>aof的重写</p>
+<blockquote>
+<p>AOF采取的是文件追加的方式,文件的体积越来越大,为了优化这种现象,增加了重写机制,当aof文件的体积到达我们在上面的配置文件上的阕值时,就会触发重写策略,只保留和数据恢复相关的命令。</p>
+</blockquote>
+<p>手动触发重写</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># redis会fork出一条新的进程</span></span><br><span class="line"><span class="comment"># 同样是先复制到一份新的临时文件,最后再rename,遍历每一条语句,记录下有set的语句</span></span><br><span class="line">bgrewriteaof</span><br></pre></td></tr></table></figure>
+
+<h3 id="RDB和AOF的选择"><a href="#RDB和AOF的选择" class="headerlink" title="RDB和AOF的选择"></a>RDB和AOF的选择</h3><ul>
+<li>如果我们的redis只是简单的作为缓存，那两者都不要也没事。</li>
+<li>如果数据需要持久化，那不要仅仅使用RDB，因为一旦发生故障，你会丢失很多数据。</li>
+<li>同时开启两者: 在这种情况下,redis优先加载的是aof,因为它的数据很可能比rdb更全,但是并不建议只是用aof,因为aof不是那么的安全,很可能存在潜在的bug。</li>
+</ul>
+<p><strong>推荐：</strong></p>
+<ul>
+<li>建议在从机slave上只备份rdb文件，而且只要15分钟备份一次就够了。</li>
+<li>如果启动了aof,我们尽量减少rewrite的频率,基础大小设置为5G完全可以,起步也要3G。</li>
+<li>如果我们不选择aof, 而是选择了主从复制的架构实现高可用同样可以,能省掉一大笔IO操作,但是意外发生的话,会丢失十几分钟的数据。</li>
+</ul>
+<img src="https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210203195723.png" alt="image-20210203195722608" style="zoom:50%;" />
+
+
+
+<blockquote>
+<p>总结: AOF 记录的是对Redis数据库做更改的命令列表, 类似 MySQL 的 binlog.</p>
+</blockquote>
+<h2 id="一致性-Hash-算法"><a href="#一致性-Hash-算法" class="headerlink" title="一致性 Hash 算法"></a>一致性 Hash 算法</h2><blockquote>
+<p>copy from <a href="https://juejin.cn/post/6844903670430040078#heading-1" target="_blank" rel="noopener">https://juejin.cn/post/6844903670430040078#heading-1</a></p>
+</blockquote>
+<blockquote>
+<p>总计: 一个选取集群内服务器的算法, 使其在大量的请求下可做到流量均匀的落到每台服务器上.</p>
+<p>首先引入一个概念, 就是 hash 环, 其是 hash 的取值范围大小, 展开就是 范围下限-范围上限, 围起来则是一个环.</p>
+<p>实现原理是, 对每个服务器取 hash, 记录下 hash 位置, 再对每个请求的特定信息(如ip, Redis Key)也取 hash, 在根据这两个 hash 大小关系, 顺时针(找比其更大的)寻找离得最近的服务器;</p>
+<p>因为大量的请求会均匀的散落在 hash 环上, 这个是 hash 算法决定的性质, 同理大量的服务器节点也会均衡的散落在 hash 值范围内, 因此总体来看, 请求总是均匀的打落到每台服务器.</p>
+<p>但这也引出一个问题, 就是 hash 值范围过大, 而服务器数量过少, 无法保证服务器均衡的散落在整个 hash 上, 因此引入虚拟节点, 使得每个虚拟节点的 hash 与原节点不一致, 然后每个节点创建大量的(比如1000)虚拟节点, 计算的 hash 则会均匀的散落在 hash 环上了.</p>
+</blockquote>
+<blockquote>
+<p>再总结: 充分利用 hash 算法的特性, 以及加入取 hash 找距离近的服务器这个理念, 使得即使对服务器进行伸缩, 也可以降低被影响的key.</p>
+</blockquote>
+<h3 id="对比-HashSlot"><a href="#对比-HashSlot" class="headerlink" title="对比 HashSlot"></a>对比 HashSlot</h3><p>了解了一致性Hash算法的特点后，我们也不难发现一些不尽人意的地方：</p>
+<ul>
+<li>整个分布式缓存需要一个路由服务来做负载均衡，存在单点问题（如果路由服务挂了，整个缓存也就凉了）</li>
+<li>Hash环上的节点非常多或者更新频繁时，查找性能会比较低下</li>
+</ul>
+<p>针对这些问题，Redis在实现自己的分布式集群方案时，设计了全新的思路：基于P2P结构的HashSlot算法，下面简单介绍一下：</p>
+<ol>
+<li><p>使用HashSlot</p>
+<p>类似于Hash环，Redis Cluster采用HashSlot来实现Key值的均匀分布和实例的增删管理。</p>
+<p>首先默认分配了16384个Slot（这个大小正好可以使用2kb的空间保存），每个Slot相当于一致性Hash环上的一个节点。接入集群的所有实例将均匀地占有这些Slot，而最终当我们Set一个Key时，使用<code>CRC16(Key) % 16384</code>来计算出这个Key属于哪个Slot，并最终映射到对应的实例上去。</p>
+<p>那么当增删实例时，Slot和实例间的对应要如何进行对应的改动呢？</p>
+<p>举个例子，原本有3个节点A,B,C，那么一开始创建集群时Slot的覆盖情况是：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">节点A	0－5460</span><br><span class="line">节点B	5461－10922</span><br><span class="line">节点C	10923－16383</span><br><span class="line">复制代码</span><br></pre></td></tr></table></figure>
+
+<p>现在假设要增加一个节点D，RedisCluster的做法是将之前每台机器上的一部分Slot移动到D上（注意这个过程也意味着要对节点D写入的KV储存），成功接入后Slot的覆盖情况将变为如下情况：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">节点A	1365-5460</span><br><span class="line">节点B	6827-10922</span><br><span class="line">节点C	12288-16383</span><br><span class="line">节点D	0-1364,5461-6826,10923-12287</span><br><span class="line">复制代码</span><br></pre></td></tr></table></figure>
+
+<p>同理删除一个节点，就是将其原来占有的Slot以及对应的KV储存均匀地归还给其他节点。</p>
+</li>
+<li><p>P2P节点寻找</p>
+<p>现在我们考虑如何实现去中心化的访问，也就是说无论访问集群中的哪个节点，你都能够拿到想要的数据。其实这有点类似于路由器的路由表，具体说来就是：</p>
+<ul>
+<li>每个节点都保存有完整的<code>HashSlot - 节点</code>映射表，也就是说，每个节点都知道自己拥有哪些Slot，以及某个确定的Slot究竟对应着哪个节点。</li>
+<li>无论向哪个节点发出寻找Key的请求，该节点都会通过<code>CRC(Key) % 16384</code>计算该Key究竟存在于哪个Slot，并将请求转发至该Slot所在的节点。</li>
+</ul>
+<p>总结一下就是两个要点：<strong>映射表</strong>和<strong>内部转发</strong>，这是通过著名的<strong><a href="https://blog.csdn.net/chen77716/article/details/6275762" target="_blank" rel="noopener">Gossip协议</a></strong>来实现的。</p>
+</li>
+</ol>
+<blockquote>
+<p>总结: 映射表记录了我这个 key 计算 hash 位于的槽属于哪个节点, 若是节点自身, 则处理请求, 若不是则转发到那个节点. </p>
+</blockquote>
+<h2 id="CAP理论"><a href="#CAP理论" class="headerlink" title="CAP理论"></a>CAP理论</h2><blockquote>
+<p>摘记一下: copy from <a href="https://mp.weixin.qq.com/s/zfkhQFEBkKSRsfKF63R94A" target="_blank" rel="noopener">https://mp.weixin.qq.com/s/zfkhQFEBkKSRsfKF63R94A</a></p>
+</blockquote>
+<ul>
+<li><strong>C(Consistency 强一致性)</strong></li>
+<li><strong>A(Availability可用性)</strong></li>
+<li><strong>P(Partition tolerance分区容错性)</strong></li>
+</ul>
+<p>CAP 的理论核心是: 一个分布式的系统,不可能很好的满足一致性,可用性,分区容错性这三个需求,最多同时只能满足两个.因此CAP原理将nosql分成了三大原则:</p>
+<ul>
+<li>CA- 单点集群,满足强一致性和可用性,比如说oracle,扩展性收到了限制。</li>
+<li>CP- 满足一致性,和分区容错性<strong>Redis和MongoDB都属于这种类型。</strong></li>
+<li>AP- 选择了可用性和分区容错性,他也是大多数网站的选择,容忍数据可以暂时不一致,但是不容忍系统挂掉。</li>
+</ul>
+<h2 id="Redis-配置文件"><a href="#Redis-配置文件" class="headerlink" title="Redis 配置文件"></a>Redis 配置文件</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## 启动redis的方式</span></span><br><span class="line"> 2./redis-server /path/to/redis.conf</span><br><span class="line"> 3</span><br><span class="line"> 4<span class="comment"># 可以像下面这样让在当前配置文件包含引用其他配置文件</span></span><br><span class="line"> 5include /path/to/local.conf</span><br><span class="line"> 6include /path/to/other.conf</span><br><span class="line"> 7</span><br><span class="line"> 8<span class="comment"># 指定哪些客户端可以连接使用redis</span></span><br><span class="line"> 9Examples:</span><br><span class="line">10bind 192.168.1.100 10.0.0.1  <span class="comment"># 指定ip</span></span><br><span class="line">11bind 127.0.0.1 ::1 <span class="comment"># 仅限于本机可访问</span></span><br><span class="line">12</span><br><span class="line">13<span class="comment"># 是否处于受保护的模式，默认开启</span></span><br><span class="line">14protected-mode yes</span><br><span class="line">15</span><br><span class="line">16<span class="comment"># 对外暴露的端口</span></span><br><span class="line">17port 16379</span><br><span class="line">18</span><br><span class="line">19<span class="comment"># TCP的通用配置</span></span><br><span class="line">20tcp-backlog 511</span><br><span class="line">21timeout 0</span><br><span class="line">22tcp-keepalive 300</span><br><span class="line">23</span><br><span class="line">24<span class="comment"># 是否以守护进程的方式运行，默认为no</span></span><br><span class="line">25daemonize yes</span><br><span class="line">26</span><br><span class="line">27<span class="comment"># 如果进程在后台运行，需要指定这个pid文件</span></span><br><span class="line">28pidfile /var/run/redis_6379.pid</span><br><span class="line">29</span><br><span class="line">30<span class="comment"># 日志级别</span></span><br><span class="line">31<span class="comment"># debug 测试开发节点</span></span><br><span class="line">32<span class="comment"># verbose (和dubug很像，会产生大量日志)</span></span><br><span class="line">33<span class="comment"># notice (生产环境使用)</span></span><br><span class="line">34<span class="comment"># warning (only very important / critical messages are logged)</span></span><br><span class="line">35loglevel notice</span><br><span class="line">36</span><br><span class="line">37<span class="comment"># 日志文件名</span></span><br><span class="line">38logfile <span class="string">""</span></span><br><span class="line">39</span><br><span class="line">40<span class="comment"># 数据库的数量，默认16个</span></span><br><span class="line">41databases 16</span><br><span class="line">42</span><br><span class="line">43<span class="comment"># 是否总是显示logo</span></span><br><span class="line">44always-show-logo yes</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47<span class="comment"># 设置redis的登陆密码（默认没有密码）</span></span><br><span class="line">48<span class="comment"># 设置完密码后，使用redis-cli登陆时，使用auth password 认证登陆</span></span><br><span class="line">49requirepass foobared</span><br><span class="line">50</span><br><span class="line">51<span class="comment"># 设置能连接上redis的客户端的最大数量</span></span><br><span class="line">52maxclients 10000</span><br><span class="line">53</span><br><span class="line">54<span class="comment"># 给redis设置最大的内存容量</span></span><br><span class="line">55maxmemory &lt;bytes&gt;</span><br><span class="line">56</span><br><span class="line">57<span class="comment"># 内存达到上限后的处理策略</span></span><br><span class="line">58<span class="comment"># volatile-lru -&gt; 只针对设置了过期时间的key进行LRU移除</span></span><br><span class="line">59<span class="comment"># allkeys-lru -&gt; 删除LRU算法的Key</span></span><br><span class="line">60<span class="comment"># volatile-lfu -&gt; 使用具有过期集的密钥在近似的LFU中进行驱逐。</span></span><br><span class="line">61<span class="comment"># allkeys-lfu -&gt; 使用近似的LFU退出任何密钥。</span></span><br><span class="line">62<span class="comment"># volatile-random -&gt; 随机删除即将过期的key</span></span><br><span class="line">63<span class="comment"># allkeys-random -&gt; 随机删除</span></span><br><span class="line">64<span class="comment"># volatile-ttl -&gt; 删除即将过期的</span></span><br><span class="line">65<span class="comment"># noeviction -&gt; 永不过期，返回错误</span></span><br><span class="line">66maxmemory-policy noeviction</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210203194805.png" alt="image-20210203194803411"></p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>下次一定</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="gudqs7 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/bitcoin.png" alt="gudqs7 比特币">
+        <p>比特币</p>
+      </div>
+
+  </div>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/redis/" rel="tag"># redis</a>
+              <a href="/tags/nosql/" rel="tag"># nosql</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/02/01/principle-mysql-memo/" rel="prev" title="MySQL 探秘笔记">
+      <i class="fa fa-chevron-left"></i> MySQL 探秘笔记
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/02/04/principle-jvm-memo/" rel="next" title="JVM 底层探秘笔记">
+      JVM 底层探秘笔记 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+    </div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Redis-底层探秘"><span class="nav-number">1.</span> <span class="nav-text">Redis 底层探秘</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Redis-数据结构实现原理"><span class="nav-number">1.1.</span> <span class="nav-text">Redis 数据结构实现原理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-string"><span class="nav-number">1.1.1.</span> <span class="nav-text">1.string</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-list"><span class="nav-number">1.1.2.</span> <span class="nav-text">2.list</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#ziplist"><span class="nav-number">1.1.2.1.</span> <span class="nav-text">ziplist</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#quicklist"><span class="nav-number">1.1.2.2.</span> <span class="nav-text">quicklist</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-hash"><span class="nav-number">1.1.3.</span> <span class="nav-text">3.hash</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#ziphash"><span class="nav-number">1.1.3.1.</span> <span class="nav-text">ziphash</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#dict"><span class="nav-number">1.1.3.2.</span> <span class="nav-text">dict</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-set"><span class="nav-number">1.1.4.</span> <span class="nav-text">4.set</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-zset"><span class="nav-number">1.1.5.</span> <span class="nav-text">5.zset</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Redis-的持久化"><span class="nav-number">1.2.</span> <span class="nav-text">Redis 的持久化</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#RDB"><span class="nav-number">1.2.1.</span> <span class="nav-text">RDB</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#AOF"><span class="nav-number">1.2.2.</span> <span class="nav-text">AOF</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#RDB和AOF的选择"><span class="nav-number">1.2.3.</span> <span class="nav-text">RDB和AOF的选择</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#一致性-Hash-算法"><span class="nav-number">1.3.</span> <span class="nav-text">一致性 Hash 算法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#对比-HashSlot"><span class="nav-number">1.3.1.</span> <span class="nav-text">对比 HashSlot</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CAP理论"><span class="nav-number">1.4.</span> <span class="nav-text">CAP理论</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Redis-配置文件"><span class="nav-number">1.5.</span> <span class="nav-text">Redis 配置文件</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="gudqs7"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">gudqs7</p>
+  <div class="site-description" itemprop="description">心累没钱躺尸中</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">22</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">23</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">30</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/gudqs7" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;gudqs7" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:gudqs7@gmail.com" title="E-Mail → mailto:gudqs7@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">gudqs7</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+  function loadCount() {
+    var d = document, s = d.createElement('script');
+    s.src = 'https://gudqs7s-note.disqus.com/count.js';
+    s.id = 'dsq-count-scr';
+    (d.head || d.body).appendChild(s);
+  }
+  // defer loading until the whole page loading is completed
+  window.addEventListener('load', loadCount, false);
+</script>
+<script>
+  var disqus_config = function() {
+    this.page.url = "https://gudqs7.github.io/2021/02/03/principle-redis-memo/";
+    this.page.identifier = "2021/02/03/principle-redis-memo/";
+    this.page.title = "principle-redis-memo";
+    };
+  NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {
+    if (window.DISQUS) {
+      DISQUS.reset({
+        reload: true,
+        config: disqus_config
+      });
+    } else {
+      var d = document, s = d.createElement('script');
+      s.src = 'https://gudqs7s-note.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', '' + +new Date());
+      (d.head || d.body).appendChild(s);
+    }
+  });
+</script>
+
+</body>
+</html>
