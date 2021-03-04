@@ -24,7 +24,7 @@
 
   <meta name="description" content="Redis 底层探秘Redis 数据结构实现原理 copy from https:&#x2F;&#x2F;juejin.cn&#x2F;post&#x2F;6844903856313368589#heading-3  1.string12345678910111213&#x2F;&#x2F; sdshdr64 变成 sdshdr32, 则相应的 len 和 alloc 变成 uint32_tstruct __attribute__ ((__packed__">
 <meta property="og:type" content="article">
-<meta property="og:title" content="principle-redis-memo">
+<meta property="og:title" content="Redis 底层探秘">
 <meta property="og:url" content="https://gudqs7.github.io/2021/02/03/principle-redis-memo/index.html">
 <meta property="og:site_name" content="gudqs7&#39;s note">
 <meta property="og:description" content="Redis 底层探秘Redis 数据结构实现原理 copy from https:&#x2F;&#x2F;juejin.cn&#x2F;post&#x2F;6844903856313368589#heading-3  1.string12345678910111213&#x2F;&#x2F; sdshdr64 变成 sdshdr32, 则相应的 len 和 alloc 变成 uint32_tstruct __attribute__ ((__packed__">
@@ -34,7 +34,7 @@
 <meta property="og:image" content="https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210203195723.png">
 <meta property="og:image" content="https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210203194805.png">
 <meta property="article:published_time" content="2021-02-03T11:06:58.000Z">
-<meta property="article:modified_time" content="2021-02-03T14:54:42.934Z">
+<meta property="article:modified_time" content="2021-03-04T12:11:37.266Z">
 <meta property="article:author" content="gudqs7">
 <meta property="article:tag" content="redis">
 <meta property="article:tag" content="nosql">
@@ -54,7 +54,7 @@
   };
 </script>
 
-  <title>principle-redis-memo | gudqs7's note</title>
+  <title>Redis 底层探秘 | gudqs7's note</title>
   
 
 
@@ -189,7 +189,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          principle-redis-memo
+          Redis 底层探秘
         </h1>
 
         <div class="post-meta">
@@ -199,10 +199,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2021-02-03 19:06:58 / 修改时间：22:54:42" itemprop="dateCreated datePublished" datetime="2021-02-03T19:06:58+08:00">2021-02-03</time>
+              <time title="创建时间：2021-02-03 19:06:58" itemprop="dateCreated datePublished" datetime="2021-02-03T19:06:58+08:00">2021-02-03</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-04 20:11:37" itemprop="dateModified" datetime="2021-03-04T20:11:37+08:00">2021-03-04</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -214,6 +220,10 @@
                   ，
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
                   <a href="/categories/NoSql/" itemprop="url" rel="index"><span itemprop="name">NoSql</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Interview/" itemprop="url" rel="index"><span itemprop="name">Interview</span></a>
                 </span>
             </span>
 
@@ -688,7 +698,7 @@
   var disqus_config = function() {
     this.page.url = "https://gudqs7.github.io/2021/02/03/principle-redis-memo/";
     this.page.identifier = "2021/02/03/principle-redis-memo/";
-    this.page.title = "principle-redis-memo";
+    this.page.title = "Redis 底层探秘";
     };
   NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {
     if (window.DISQUS) {
