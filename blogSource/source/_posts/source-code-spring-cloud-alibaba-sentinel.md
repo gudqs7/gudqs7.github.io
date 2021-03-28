@@ -2,14 +2,11 @@
 title: Spring Cloud Alibaba Sentinel 源码笔记
 date: 2021-01-30 15:19:26
 tags: 
-  - spring cloud alibaba
   - sentinel
-  - Circuit Breaking
 categories:
-  - [Java]
-  - [Spring]
-  - [Spring Cloud]
-  - [SourceCode]
+  - [java]
+  - [spring-cloud-alibaba]
+  - [source-code]
 ---
 
 

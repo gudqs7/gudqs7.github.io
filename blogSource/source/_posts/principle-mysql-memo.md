@@ -2,11 +2,10 @@
 title: MySQL 探秘笔记
 date: 2021-02-01 15:21:08
 tags: 
-  - interview
-  - msyql-principle
+  - mysql
 categories:
-  - [MySQL]
-  - [Interview]
+  - [mysql]
+  - [interview]
 ---
 
 

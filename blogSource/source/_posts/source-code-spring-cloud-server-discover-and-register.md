@@ -1,16 +1,12 @@
 ---
 title: Spring Cloud 服务注册与发现源码笔记 (Nacos/Consul/Eureka)
 date: 2021-01-29 13:21:23
-tags: 
-  - interview
-  - spring-cloud-source
-  - spring-cloud-server-discover-register
-  - source-code
+tags:   
+  - service-discover
 categories:
-  - [Java]
-  - [Spring]
-  - [Spring Cloud]
-  - [SourceCode]
+  - [java]
+  - [spring-cloud]
+  - [source-code]
 ---
 
 

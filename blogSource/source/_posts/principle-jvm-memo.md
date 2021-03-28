@@ -4,9 +4,8 @@ date: 2021-02-04 11:07:44
 tags: 
   - jvm
 categories:
-  - [Java]
-  - [JVM]
-  - [Interview]
+  - [jvm]
+  - [interview]
 ---
 
 

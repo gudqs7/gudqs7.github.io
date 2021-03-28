@@ -1,18 +1,12 @@
 ---
-title: Java-Interview
+title: 一顿乱写
 date: 2020-05-20 08:48:14
 top: true
 tags: 
   - interview
-  - mybatis-source
-  - spring-mvc-source
-  - jvm
 categories:
-  - [Java]
-  - [Spring]
-  - [MyBatis]
-  - [Spring-MVC]
-  - [Interview]
+  - [java]
+  - [interview]
 ---
 
 

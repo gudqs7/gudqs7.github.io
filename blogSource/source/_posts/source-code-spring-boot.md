@@ -2,15 +2,11 @@
 title: Spring Boot 源码笔记
 date: 2021-01-24 02:04:22
 tags: 
-  - source-code
-  - spring
   - spring-boot
-  - memo
 categories:
-  - [Java]
-  - [Spring]
-  - [Spring Boot]
-  - [SourceCode]
+  - [java]
+  - [spring-boot]
+  - [source-code]
 
 ---
 

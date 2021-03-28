@@ -2,15 +2,11 @@
 title: Spring Cloud Openfeign 源码笔记
 date: 2021-01-28 13:59:51
 tags: 
-  - interview
-  - java
-  - spring-cloud-openfeign
-  - source-code
+  - openfeign
 categories:
-  - [Java]
-  - [Spring]
-  - [SourceCode]
-  - [Spring Cloud Openfeign]
+  - [java]
+  - [spring-cloud]
+  - [source-code]
 ---
 
 

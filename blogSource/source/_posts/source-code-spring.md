@@ -3,13 +3,11 @@ title: Spring 源码笔记
 date: 2021-01-23 18:28:28
 top: true
 tags: 
-  - source-code
   - spring
-  - memo
 categories:
-  - [Java]
-  - [Spring]
-  - [SourceCode]
+  - [java]
+  - [spring]
+  - [source-code]
 
 ---
 

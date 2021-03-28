@@ -1,11 +1,10 @@
 ---
-title: Design-Patterns
+title: 设计模式笔记
 date: 2020-05-20 08:48:14
 tags: 
   - Design-Patterns
 categories:
-  - [Java]
-  - [Design-Patterns]
+  - [java]
 ---
 
 ## 设计模式

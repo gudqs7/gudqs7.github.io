@@ -1,5 +1,5 @@
 ---
-title: MySQL-Explain-Note
+title: MySQL-Explain 语法备忘
 date: 2020-05-20 08:48:14
 tags: 
   - MySQL Explain

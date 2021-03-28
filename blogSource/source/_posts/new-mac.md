@@ -1,8 +1,8 @@
 ---
-title: Mac-OS-Start-From-Zero
+title: 我的MacOS自我救赎之路（指电脑坏了重新买）
 date: 2020-05-20 08:48:14
 tags: 
-  - macos
+  - MacOS
 categories:
   - memo
 ---

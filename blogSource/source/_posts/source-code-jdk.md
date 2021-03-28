@@ -4,9 +4,9 @@ date: 2021-01-25 23:12:48
 tags: 
   - jdk
 categories:
-  - [Java]
-  - [SourceCode]
-  - [Interview]
+  - [java]
+  - [interview]
+  - [source-code]
 ---
 
 

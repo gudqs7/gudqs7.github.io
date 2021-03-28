@@ -1,16 +1,12 @@
 ---
 title: Spring Cloud Commons 之 loadbalancer 源码笔记
 date: 2021-01-27 13:10:01
-tags: 
-  - interview
-  - mybatis-source
-  - spring-mvc-source
-  - jvm
+tags:
+  - loadbalancer
 categories:
-  - [Java]
-  - [SourceCode]
-  - [Spring]
-  - [Spring-Cloud]
+  - [java]
+  - [spring-cloud]
+  - [source-code]
 ---
 
 

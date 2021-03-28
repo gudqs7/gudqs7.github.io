@@ -1,16 +1,12 @@
 ---
 title: Spring MVC 源码笔记
 date: 2021-01-25 23:12:41
-tags: 
-  - source-code
-  - spring
+tags:   
   - spring-mvc
-  - memo
 categories:
-  - [Java]
-  - [Spring]
-  - [Spring MVC]
-  - [SourceCode]
+  - [java]
+  - [spring]
+  - [source-code]
 ---
 
 # Spring MVC 源码笔记

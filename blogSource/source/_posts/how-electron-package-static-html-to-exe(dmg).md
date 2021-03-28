@@ -1,5 +1,5 @@
 ---
-title: 使用Electron打包HTML成EXE
+title: '使用 Electron 打包 HTML 成 EXE/DMG'
 date: 2020-05-20 09:02:46
 tags: 
   - electron
