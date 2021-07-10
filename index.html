@@ -793,6 +793,456 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://gudqs7.github.io/2021/07/09/introduction-docer-savior/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="gudqs7">
+      <meta itemprop="description" content="心累没钱躺尸中">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="gudqs7's note">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2021/07/09/introduction-docer-savior/" class="post-title-link" itemprop="url">文档生成插件使用指南</a>
+        </h2>
+
+        <div class="post-meta">
+			
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-07-09 11:07:44" itemprop="dateCreated datePublished" datetime="2021-07-09T11:07:44+08:00">2021-07-09</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-07-10 11:23:12" itemprop="dateModified" datetime="2021-07-10T11:23:12+08:00">2021-07-10</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/java/" itemprop="url" rel="index"><span itemprop="name">java</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/idea-plugin/" itemprop="url" rel="index"><span itemprop="name">idea-plugin</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2021/07/09/introduction-docer-savior/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2021/07/09/introduction-docer-savior/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="文档生成插件使用指南"><a href="#文档生成插件使用指南" class="headerlink" title="文档生成插件使用指南"></a>文档生成插件使用指南</h1><h2 id="根据-Spring-MVC-Controller-下方法生成接口文档"><a href="#根据-Spring-MVC-Controller-下方法生成接口文档" class="headerlink" title="根据 Spring MVC Controller 下方法生成接口文档"></a>根据 Spring MVC Controller 下方法生成接口文档</h2><h3 id="先看示例代码"><a href="#先看示例代码" class="headerlink" title="先看示例代码"></a>先看示例代码</h3><h4 id="UserController"><a href="#UserController" class="headerlink" title="UserController"></a>UserController</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> cn.gudqs.business.docer.controller;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> cn.gudqs.business.docer.dto.request.ListUserRequest;</span><br><span class="line"><span class="keyword">import</span> cn.gudqs.business.docer.dto.response.BaseResponse;</span><br><span class="line"><span class="keyword">import</span> cn.gudqs.business.docer.dto.response.ListUserResponse;</span><br><span class="line"><span class="keyword">import</span> cn.gudqs.util.JsonUtils;</span><br><span class="line"><span class="keyword">import</span> lombok.extern.slf4j.Slf4j;</span><br><span class="line"><span class="keyword">import</span> org.springframework.web.bind.annotation.PostMapping;</span><br><span class="line"><span class="keyword">import</span> org.springframework.web.bind.annotation.RequestMapping;</span><br><span class="line"><span class="keyword">import</span> org.springframework.web.bind.annotation.RestController;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.util.ArrayList;</span><br><span class="line"><span class="keyword">import</span> java.util.List;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 用户接口</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> wq</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Slf</span>4j</span><br><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="meta">@RequestMapping</span>(<span class="string">"/api/v1/user"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">UserController</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 查询用户信息(分页)</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> listUserPage 过滤条件</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 用户列表数据-分页</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@PostMapping</span>(<span class="string">"/listUser"</span>)</span><br><span class="line">    <span class="keyword">public</span> BaseResponse&lt;List&lt;ListUserResponse&gt;&gt; listUserPage(ListUserRequest listUserPage) &#123;</span><br><span class="line">        <span class="comment">// todo 查询分页数据</span></span><br><span class="line">        log.info(<span class="string">"listUserPage--&gt; "</span>+ JsonUtils.getJsonString(listUserPage));</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> BaseResponse.success(<span class="keyword">new</span> ArrayList&lt;&gt;(), <span class="number">0L</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="BaseResponse"><a href="#BaseResponse" class="headerlink" title="BaseResponse"></a>BaseResponse</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> cn.gudqs.business.docer.dto.response;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> lombok.Data;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> wq</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BaseResponse</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 状态码</span></span><br><span class="line"><span class="comment">     * 0: 代表成功</span></span><br><span class="line"><span class="comment">     * -1: 代表未知异常</span></span><br><span class="line"><span class="comment">     * &gt;0: 代表已知异常</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> Integer code;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 错误信息</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> String message;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 是否成功</span></span><br><span class="line"><span class="comment">     * true: 代表成功, 此时 code = 0</span></span><br><span class="line"><span class="comment">     * false: 代表失败, 此时 code != 0</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> Boolean success;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 返回数据</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> T data;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 分页-总条数</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> Long totalCount;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> &lt;T&gt; <span class="function">BaseResponse&lt;T&gt; <span class="title">success</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> success(<span class="keyword">null</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> &lt;T&gt; <span class="function">BaseResponse&lt;T&gt; <span class="title">success</span><span class="params">(T data)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> success(data, <span class="number">0L</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 返回一个成功的 BaseResponse</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> data 携带的数据</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> totalCount 分页-总条数</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> BaseResponse</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> &lt;T&gt; <span class="function">BaseResponse&lt;T&gt; <span class="title">success</span><span class="params">(T data, Long totalCount)</span> </span>&#123;</span><br><span class="line">        BaseResponse&lt;T&gt; baseResponse = <span class="keyword">new</span> BaseResponse&lt;&gt;();</span><br><span class="line">        baseResponse.setSuccess(<span class="keyword">true</span>);</span><br><span class="line">        baseResponse.setCode(<span class="number">0</span>);</span><br><span class="line">        baseResponse.setMessage(<span class="string">"success"</span>);</span><br><span class="line">        baseResponse.setData(data);</span><br><span class="line">        baseResponse.setTotalCount(totalCount);</span><br><span class="line">        <span class="keyword">return</span> baseResponse;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="ListUserResponse"><a href="#ListUserResponse" class="headerlink" title="ListUserResponse"></a>ListUserResponse</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> cn.gudqs.business.docer.dto.response;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> lombok.Data;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.util.Date;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 用户信息</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> wq</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ListUserResponse</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 用户昵称</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> String nickName;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 用户姓名</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> String realName;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 用户手机号</span></span><br><span class="line"><span class="comment">     * #example 110</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> String phoneNumber;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 用户性别</span></span><br><span class="line"><span class="comment">     * 0: 保密</span></span><br><span class="line"><span class="comment">     * 1: 男</span></span><br><span class="line"><span class="comment">     * 2: 女</span></span><br><span class="line"><span class="comment">     * #example 2</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> Integer userGender;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 用户年龄</span></span><br><span class="line"><span class="comment">     * #example 1024</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> Integer userAge;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 用户头像地址</span></span><br><span class="line"><span class="comment">     * #example https://mp.weixin.com/p/jewagheiajifejgihewjg.ifew</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> String userAvatar;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 最近一次登录时间</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> Date lastLoginTime;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="ListUserRequest"><a href="#ListUserRequest" class="headerlink" title="ListUserRequest"></a>ListUserRequest</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> cn.gudqs.business.docer.dto.request;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> lombok.Data;</span><br><span class="line"><span class="keyword">import</span> lombok.EqualsAndHashCode;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.util.Date;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 查询用户-过滤条件</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> wq</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="meta">@EqualsAndHashCode</span>(callSuper = <span class="keyword">true</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ListUserRequest</span> <span class="keyword">extends</span> <span class="title">BasePageRequest</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 模糊搜索词</span></span><br><span class="line"><span class="comment">     * 支持用户昵称, 用户姓名, 用户手机号</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> String searchKeyword;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 用户性别</span></span><br><span class="line"><span class="comment">     * 0: 保密</span></span><br><span class="line"><span class="comment">     * 1: 男</span></span><br><span class="line"><span class="comment">     * 2: 女</span></span><br><span class="line"><span class="comment">     * #example 2</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> Integer gender;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 过滤年龄范围-起始</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> Integer ageStart;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 过滤年龄范围-结束</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> Integer ageEnd;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 过滤登录时间范围-开始</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> Date loginTimeStart;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 过滤登录时间范围-结束</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> Date loginTimeEnd;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="BasePageRequest"><a href="#BasePageRequest" class="headerlink" title="BasePageRequest"></a>BasePageRequest</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> cn.gudqs.business.docer.dto.request;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> lombok.Data;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> wq</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BasePageRequest</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 分页-当前页码</span></span><br><span class="line"><span class="comment">     * #example 1</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> Integer pageNumber;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 分页-分页大小</span></span><br><span class="line"><span class="comment">     * #example 20</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> Integer pageSize;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h3><blockquote>
+<p>以上都是大家常写的分页代码，此时我在 <code>listUserPage</code> 这个方法上右键，弹出菜单中选择：生成Api接口文档（restful），如图</p>
+</blockquote>
+<p><img src="https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210710095319.png" alt="image-20210710095313814"></p>
+<p>然后就会得到一个弹框，当然如果你根据提示点了 <code>OK</code>，则直到下次重启，都不会再出现</p>
+<p>![image-20210710100138879](/Users/wq/Library/Application Support/typora-user-images/image-20210710100138879.png)</p>
+<p>弹框中内容如下，此内容区域可滚动预览，全选复制粘贴</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="section"># 查询用户信息(分页)</span></span><br><span class="line"><span class="section">## 请求信息</span></span><br><span class="line"></span><br><span class="line"><span class="section">### 请求地址</span></span><br><span class="line">​</span><br></pre></td></tr></table></figure>
+<p><a href="http://192.168.0.104:8080/api/v1/user/listUser" target="_blank" rel="noopener">http://192.168.0.104:8080/api/v1/user/listUser</a><br>​```</p>
+<h3 id="请求方法"><a href="#请求方法" class="headerlink" title="请求方法"></a>请求方法</h3><p>​<code>POST
+​</code></p>
+<h3 id="请求体类型"><a href="#请求体类型" class="headerlink" title="请求体类型"></a>请求体类型</h3><p>​<code>application/x-www-form-urlencoded
+​</code></p>
+<h2 id="入参"><a href="#入参" class="headerlink" title="入参"></a>入参</h2><h3 id="入参示例-Postman-gt-Bulk-Edit"><a href="#入参示例-Postman-gt-Bulk-Edit" class="headerlink" title="入参示例(Postman==&gt; Bulk Edit)"></a>入参示例(Postman==&gt; Bulk Edit)</h3><p>​<code>json
+pageNumber:1
+pageSize:20
+searchKeyword:模糊搜索词&lt;br&gt;支持用户昵称, 用户姓名, 用户手机号
+gender:2
+ageStart:0
+ageEnd:0
+loginTimeStart:过滤登录时间范围-开始
+loginTimeEnd:过滤登录时间范围-结束
+​</code></p>
+<h3 id="入参字段说明"><a href="#入参字段说明" class="headerlink" title="入参字段说明"></a>入参字段说明</h3><table>
+<thead>
+<tr>
+<th><strong>字段</strong></th>
+<th><strong>类型</strong></th>
+<th><strong>必填性</strong></th>
+<th><strong>含义</strong></th>
+<th><strong>其他信息参考</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>pageNumber</td>
+<td><strong>Integer</strong></td>
+<td>否</td>
+<td>分页-当前页码</td>
+<td></td>
+</tr>
+<tr>
+<td>pageSize</td>
+<td><strong>Integer</strong></td>
+<td>否</td>
+<td>分页-分页大小</td>
+<td></td>
+</tr>
+<tr>
+<td>searchKeyword</td>
+<td><strong>String</strong></td>
+<td>否</td>
+<td>模糊搜索词<br>支持用户昵称, 用户姓名, 用户手机号</td>
+<td></td>
+</tr>
+<tr>
+<td>gender</td>
+<td><strong>Integer</strong></td>
+<td>否</td>
+<td>用户性别<br>0: 保密<br>1: 男<br>2: 女</td>
+<td></td>
+</tr>
+<tr>
+<td>ageStart</td>
+<td><strong>Integer</strong></td>
+<td>否</td>
+<td>过滤年龄范围-起始</td>
+<td></td>
+</tr>
+<tr>
+<td>ageEnd</td>
+<td><strong>Integer</strong></td>
+<td>否</td>
+<td>过滤年龄范围-结束</td>
+<td></td>
+</tr>
+<tr>
+<td>loginTimeStart</td>
+<td><strong>Date</strong></td>
+<td>否</td>
+<td>过滤登录时间范围-开始</td>
+<td></td>
+</tr>
+<tr>
+<td>loginTimeEnd</td>
+<td><strong>Date</strong></td>
+<td>否</td>
+<td>过滤登录时间范围-结束</td>
+<td></td>
+</tr>
+</tbody></table>
+<h2 id="出参"><a href="#出参" class="headerlink" title="出参"></a>出参</h2><h3 id="出参示例"><a href="#出参示例" class="headerlink" title="出参示例"></a>出参示例</h3><p>​<code>json
+{
+  &quot;code&quot;: 0,
+  &quot;message&quot;: &quot;错误信息&quot;,
+  &quot;success&quot;: false,
+  &quot;data&quot;: [
+    {
+      &quot;nickName&quot;: &quot;用户昵称&quot;,
+      &quot;realName&quot;: &quot;用户姓名&quot;,
+      &quot;phoneNumber&quot;: &quot;110&quot;,
+      &quot;userGender&quot;: 2,
+      &quot;userAge&quot;: 1024,
+      &quot;userAvatar&quot;: &quot;https://mp.weixin.com/p/jewagheiajifejgihewjg.ifew&quot;,
+      &quot;lastLoginTime&quot;: &quot;最近一次登录时间&quot;
+    }
+  ],
+  &quot;totalCount&quot;: 0
+}
+​</code></p>
+<h3 id="返回字段说明"><a href="#返回字段说明" class="headerlink" title="返回字段说明"></a>返回字段说明</h3><table>
+<thead>
+<tr>
+<th><strong>字段</strong></th>
+<th><strong>类型</strong></th>
+<th><strong>含义</strong></th>
+<th><strong>其他信息参考</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>code</td>
+<td><strong>Integer</strong></td>
+<td>否</td>
+<td>状态码<br>0: 代表成功<br>-1: 代表未知异常<br>&gt;0: 代表已知异常</td>
+</tr>
+<tr>
+<td>message</td>
+<td><strong>String</strong></td>
+<td>否</td>
+<td>错误信息</td>
+</tr>
+<tr>
+<td>success</td>
+<td><strong>Boolean</strong></td>
+<td>否</td>
+<td>是否成功<br>true: 代表成功, 此时 code = 0<br>false: 代表失败, 此时 code != 0</td>
+</tr>
+<tr>
+<td>data</td>
+<td><strong>List&lt;ListUserResponse&gt;</strong></td>
+<td>否</td>
+<td>返回数据</td>
+</tr>
+<tr>
+<td>└─ nickName</td>
+<td><strong>String</strong></td>
+<td>否</td>
+<td>用户昵称</td>
+</tr>
+<tr>
+<td>└─ realName</td>
+<td><strong>String</strong></td>
+<td>否</td>
+<td>用户姓名</td>
+</tr>
+<tr>
+<td>└─ phoneNumber</td>
+<td><strong>String</strong></td>
+<td>否</td>
+<td>用户手机号</td>
+</tr>
+<tr>
+<td>└─ userGender</td>
+<td><strong>Integer</strong></td>
+<td>否</td>
+<td>用户性别<br>0: 保密<br>1: 男<br>2: 女</td>
+</tr>
+<tr>
+<td>└─ userAge</td>
+<td><strong>Integer</strong></td>
+<td>否</td>
+<td>用户年龄</td>
+</tr>
+<tr>
+<td>└─ userAvatar</td>
+<td><strong>String</strong></td>
+<td>否</td>
+<td>用户头像地址</td>
+</tr>
+<tr>
+<td>└─ lastLoginTime</td>
+<td><strong>Date</strong></td>
+<td>否</td>
+<td>最近一次登录时间</td>
+</tr>
+<tr>
+<td>totalCount</td>
+<td><strong>Long</strong></td>
+<td>否</td>
+<td>分页-总条数</td>
+</tr>
+</tbody></table>
+<p>```</p>
+<blockquote>
+<p>由于文章本身就是Markdown格式，所以我用截图来展示下效果：截图使用 Chrome 插件打开 PDF 滚动截屏得到，PDF 是由 typora 生成的</p>
+</blockquote>
+<p><img src="https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210710101322.png" alt="screencapture-file-Users-wq-File-TempFile-html-2021-07-10-10_09_50"></p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><blockquote>
+<p>如果有多个方法，想一次性生成，则可在 UserController 上右键，点击生成Api文档（restful） ，如图：</p>
+</blockquote>
+<p><img src="https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210710101619.png" alt="image-20210710101618777"></p>
+<blockquote>
+<p>此时生成的文档，就是多个方法单独生成的文档的简单的拼接。</p>
+</blockquote>
+<h2 id="根据-Spring-MVC-Controller-的接口信息导出到-Postman"><a href="#根据-Spring-MVC-Controller-的接口信息导出到-Postman" class="headerlink" title="根据 Spring MVC Controller 的接口信息导出到 Postman"></a>根据 Spring MVC Controller 的接口信息导出到 Postman</h2><h3 id="项目视图选择类、包，点右键"><a href="#项目视图选择类、包，点右键" class="headerlink" title="项目视图选择类、包，点右键"></a>项目视图选择类、包，点右键</h3><blockquote>
+<p>还是沿用上面的代码，但是考虑到单个方法单独导出到 Postman 非常费时费力，可用性不高，因此方法级别的右键导出，并没有实现！但是单个文件级别，还是OK的，只需在文件导航视图找到 UserController 类，右键，点击 导出Api到Postman即可！如图</p>
+</blockquote>
+<p><img src="https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210710102304.png" alt="image-20210710102303483"></p>
+<blockquote>
+<p>另外这个右键，其实不管是类，包，还是文件夹，乃至根目录，都可以点击导出到 Postman，只是导出的范围不同！</p>
+<p>由于范围比较大，因此过滤了非 @Controller、@RestController 注解的类，可放心使用。</p>
+</blockquote>
+<p>点击导出后，会将 Postman 的json 生成到项目下的 api-doc/postman 文件夹，如图</p>
+<p><img src="https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210710102848.png" alt="image-20210710102846460"></p>
+<h3 id="打开Postman点击-File-–-gt-Import"><a href="#打开Postman点击-File-–-gt-Import" class="headerlink" title="打开Postman点击 File –&gt; Import"></a>打开Postman点击 File –&gt; Import</h3><p>此时我们打开 Postman，使用快捷键 <code>Ctrl + O</code> 或 <code>Command + O</code> , 接着拖拽文件过去，或点击 UploadFiles，弹框选择文件打开，如图</p>
+<p><img src="https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210710103245.png" alt="image-20210710103242732"></p>
+<p><img src="https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210710103323.png" alt="image-20210710103321866"></p>
+<h3 id="最终得到一个-Collection"><a href="#最终得到一个-Collection" class="headerlink" title="最终得到一个 Collection"></a>最终得到一个 Collection</h3><p>如图：不管是请求，返回示例，文档，或者说 url 变量，body和参数处理，都帮你搞定了，你只需要修改下参数的实际值（如果使用 #example，则这步也可以省略），然后点蓝色的 Send 按钮就 ok 了（千万别忘记启动项目）！</p>
+<blockquote>
+<p>这里简单说下，url 的组成</p>
+<p>1.http:// 这个本地开发一般不用 https 对吧，嘿嘿</p>
+<p>2.ip: 这个使用代码遍历网卡，过滤掉 ipv6，127.0.0.1 后得出的局域网 ip，如果没搞虚拟机啥的，一般获取比较准确，要还是错了，点击 Collection 名称，在 Variables 下修改 NaN 的 Current Value 就好了</p>
+<p>3.port: 这个默认8080，然后支持 Spring Boot 项目，即读取 application.yml/application.properties 文件获取 server.port 的值，嗯~~ 若存在 application-xxx 这种情况，还真不好取，只能读取 spring.profiles.active 但是也未必准确，毕竟有很多地方支持设置。理论性idea的东西都可以获取，但idea的插件开发文档找不到这方面的信息，大概是不会花精力搞了，毕竟错了直接改变量就好了，改一处，所有请求生效。</p>
+<p>4.剩下的部分就是 Controller 的 @RequestMapping 注解 + 方法的 @RequestMapping（或@GetMapping之类）注解的值拼凑起来。若方法为 GET，则参数会以?xxx=xxx&amp;xx=xx 形式拼接上去，也可在 Params 下查看</p>
+</blockquote>
+<p><img src="https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210710104429.png" alt="image-20210710104427563"></p>
+<h2 id="总结-1"><a href="#总结-1" class="headerlink" title="总结"></a>总结</h2><blockquote>
+<p>总得来说，这个插件还是太简单了，其实不用使用指南，知道在哪右键起什么作用，就OK了，因为处了右键点击，其他一概不用你管（包括复制）！可谓是偷懒极了。。。。。 </p>
+</blockquote>
+<p>说下这个插件的发展史。</p>
+<blockquote>
+<p>一开始是用于微服务的接口方法，根据参数和返回值来生成文档给其他开发看，当时还是自己写了个 Util，然后传 Class 作为参数来解析得到参数、返回值等信息，最终生成文档，当时的所有中文备注，都是通过 Swagger 的注解来实现的，没办法，运行时注释早干掉了，得不到。</p>
+<p>后来觉得这东西可以抽出来，不要被项目束缚，先是想到了idea插件，但是发现 Api 及其不同，idea中也无法获取 Class，也就是当时写的代码无法复用，于是又考虑 maven 插件，发现这个是可以取到 Class，进行复用的。</p>
+<p>写完后，又发现使用这个插件，必须设置参数，也就是你要生成那个类的文档，很麻烦啊这，于是想到之前看idea插件的一些api可以获取到这些信息，干脆来了个结合，idea右键获取Class 的全限定名，传给maven插件，maven插件来生成，最后idea弹框展示。其实这样也不错，但是又有个巨大的问题，就是maven插件其实依赖于 target 文件中的信息，这部分必须 compile 后才有，使得每次运行插件都要先跑compile 再生成，本来maven运行速度就慢，这样就更慢了。加上进度条后还是感觉体验极差！！！</p>
+<p>最终，在某个夜黑风高的晚上，我死活睡不着觉，干脆打开电脑，点击备忘录，记下明天摸鱼时间要写个纯idea插件，然后躺下数羊！啊那是不可能的。</p>
+<p>不过这插件最终确实都是在闲的没活干的摸鱼时间写的，最终把原来代码拷贝一份到idea插件项目中，一边参照一边使用idea提供的Api修改代码，最终得到了纯idea插件版本！</p>
+<p>之后遇到了比较坑的点就是泛型的解析和参数的解析，目前都解决了，可以说是随便怎么写，都能识别了。比如最上面的示例代码的 <code>T data</code>，这还是小 case，如果改成 <code>List&lt;T&gt;</code> 呢? 如果再来一个带泛型的类 <code>PageInfo&lt;T&gt;</code> ,而我加个字段 <code>PageInfo&lt;T&gt; pageData;</code>来把 T 传给 PageInfo 呢，解析会有问题吗？刚开始会，后来解决了！！！只能说我自己都快绕晕了，但最终还是解决了。这其实值得复盘的，不过我这人比较懒，就不搞了。其实这种情况繁多的时候，要写代码不能只考虑部分情况，或是来一种情况加一种情况，必须找到通用的方法，当然未必什么时候都有通用的方法，不过还是要去追求的！！</p>
+</blockquote>
+<p>后续还会和大家分享一些我插件中的核心代码，包括idea插件提供的api，自己百度找的工具类等等。</p>
+<p>另外我上面说的微服务那个接口文档，其实就是不带（restful）后缀的菜单选项，其生产的文档不含有HTTP协议相关的信息，而是纯粹的入参、出参、code含义等。另外文件视图右键有三个选项，另外另个就是批量生成 Markdown文件，毕竟一个一个复制粘贴很累的，而很多笔记软件都支持批量导入Markdown文件，这样就不就简单了。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://gudqs7.github.io/2021/04/01/simple-principle-spring-md/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="gudqs7">
+      <meta itemprop="description" content="心累没钱躺尸中">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="gudqs7's note">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2021/04/01/simple-principle-spring-md/" class="post-title-link" itemprop="url">简单说 Spring 原理</a>
+        </h2>
+
+        <div class="post-meta">
+			
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-04-01 21:49:19 / 修改时间：23:45:54" itemprop="dateCreated datePublished" datetime="2021-04-01T21:49:19+08:00">2021-04-01</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/simple-principle/" itemprop="url" rel="index"><span itemprop="name">simple-principle</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2021/04/01/simple-principle-spring-md/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2021/04/01/simple-principle-spring-md/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="简单说-Spring-原理"><a href="#简单说-Spring-原理" class="headerlink" title="简单说 Spring 原理"></a>简单说 Spring 原理</h2><blockquote>
+<p>我先来，千万别较真，千万别较真，千万别较真！</p>
+</blockquote>
+<p>先看官网介绍哈</p>
+<blockquote>
+<p>The Spring Framework provides a comprehensive programming and configuration model for modern Java-based enterprise applications - on any kind of deployment platform.</p>
+<p>A key element of Spring is infrastructural support at the application level: Spring focuses on the “plumbing” of enterprise applications so that teams can focus on application-level business logic, without unnecessary ties to specific deployment environments.</p>
+</blockquote>
+<p>我来翻译一下，就是说（等等，我软件呢？谁动了啊！）</p>
+<p>额，就是说：</p>
+<blockquote>
+<p>Spring框架为任何类型的部署平台上的基于Java的现代企业应用程序提供了全面的编程和配置模型。</p>
+<p>Spring的一个关键元素是在应用程序级别的基础架构支持：Spring专注于企业应用程序的“管道”，以便团队可以专注于应用程序级别的业务逻辑，而不必与特定的部署环境建立不必要的联系。</p>
+</blockquote>
+<p>简单理解呢就是让你关注业务而非琐碎的、无关紧要的其他东西。好的，那么 Spring 是怎么做到的呢？其实也不难，先这样，再这样，然后再那样，最后再这样（啊，放错了）</p>
+<p>其实也不难，主要是它有两大法宝，唉，知道的同学肯定要说了啊；我知道，IOC、AOP嘛！没错就是这两玩意，哪怕是还没内卷那会，我也听腻了，今天我们就来唠叨唠叨这两玩意它的一些原理或者说特点。</p>
+<h3 id="IOC"><a href="#IOC" class="headerlink" title="IOC"></a>IOC</h3><p>咱先说这 IOC，英文那就是 Inversion of Control，什么意思呢？控制反转，不让你控制我了，我要自己控制自己，这就是控制反转，我说那还得了，这程序它不听话了都！唉，不是这样理解的，其实啊，这代表这程序，它成熟了，它呀，可以自己干自己该干的事情了，不需要你管它了；这样子有什么好处呢？有啊，就像你家的熊孩子，还小的时候，特别黏人，不能没人带，你呢，总是需要找人帮忙看看，自己才有空闲出去玩，后来呢，它长大了，它就会自己出去玩了，熊是熊了点，但你也空闲不少啊，有时间可以看看书，喝喝茶，多好啊！咱说回来啊，这控制反转呢，就是让你少花费心思在这些地方，这样不就可以像官网说的 “可以专注于应用程序级别的业务逻辑”了吗。</p>
+<p>那前面呢，其实只是IOC的一个思想，它不是一个实现，毕竟啊，你不能指望它真的能自己控制自己。所以呢，我们偷偷引入一个东西，也就是容器，由这个容器来管理它。这个啊，就像你把你家小孩送幼儿园，你交钱，剩下交给幼儿园。那么说到这里啊，大家应该也明白了，它呢，并不能自己控制自己，还是得靠容器；那么这个容器，又是何方神圣呢？</p>
+<p>其实这个容器呢，也不难，名副其实，就是一个装东西的东西，有人说你套娃呢？我没有，不过这容器确实不禁止你往容器放容器，比如父子容器，就像子容器塞进了父容器里面，有时候呢，就会穿过子容器，从父容器取东西。好了咱说回来，容器就是一存东西的，这东西很常见啊，Java 集合框架啊，大学学过，还学了好几个，我现在还记得，什么 List，Map，Set 啥的。对！没错，真让你蒙对了！原理确实是这个，这个东西呢，选来选取，我们就选 Map 吧。众所周知，Map 是数组+链表为底层实现的键值对容器啊，因为有这个键值对的存在呢，我们就可以非常准确无误的存放和读取，就像银行账户吧，你往你账户存钱，再从你账户就能取到之前存的钱，非常有效的避免了“乱拿乱放”问题。好的，那我们就说完了容器的第一个特点，就是能存能取，这时候你就会说，这不废话吗？啊确实！行，我们整点正常的特点，那其实接下来要说的特点呢，都是围绕着取这个动作的。</p>
+<p>其实上面的特点呢，说的不是特别清晰，这存的是什么？取的又是什么？总不可能和银行一样，都是钱吧！当然不是，这存的呢，一般是 Class。什么是 Class？ Class 就是一设计图，照着这个设计图呢，容器 Duang 的一下，就给了一个对象！你说还有这好事？写个代码还有对象领？不是的，这个对象呢，不是那个对象哈，这个呢，是 Java 实例化出来的对象，用来调用方法，获取字段的。那么也就是说，这个容器，它还是个工厂？它还能生产对象呢！没错，但严格说对象其实也不是它生产的，对象呢，其实是 JVM 生产的对不对？它呢，就负责加工，所以说，其实也就是个加工工厂。所以咱这第二个特点呢，就是工厂，能照着设计图加工一个对象出来。你肯定要说啦，这有啥用，这不产生中间商差价了，我直接找 JVM 爸爸行不行？别急，可以是可以，但咱用这个东西，就一点有它的用处，对不对？这不，第三个特点就来了！</p>
+<p>那么聪明的小伙伴呢，肯定已经知道我要讲什么了？对，没错！就是依赖注入，前面说了 Class 是一个设计图，但没说清楚，这个设计图呢，它只是一个小零件的设计图，但和真正的零件设计图还是有一些不一样的，比方说啊，它会告诉你它与另一个零件的关系，有了这个关系呢，工厂的作用就有了，工厂生产到一半，发现这个零件要加工好啊，还需要另一个零件，那它又转头去生产另一个零件（是不是非常不科学，不应该先批量生产出来，之后再一起组装吗？），生产好了呢，又回过来按设计图把另一个零件加到这个零件上去。如果生产另一个零件的时候发现，也依赖另外某个零件，那也照旧，先生产依赖的。这时候你肯定会说了，套娃就算了，万一你依赖我，我依赖你，那不无限套娃了吗？这个问题呢？有办法解决，但是这文章太短了，我写不下！（请叫我费马 · 心累）</p>
+<p>最后说下容器的另一个特点，其实都是层层递进的，你甚至可以认为，只有一个特点，都行，看你怎么看！</p>
+<p>这个特点呢就是插件 DIY！之前咱也说了，工厂呢，不搞生产，光做加工了，那这个加工过程啊，除了依赖注入啊，一些属性配置注入这样的通过配置的方式去影响对象，能不能开放一个接口，我想怎么 DIY，自己写代码来实现呢？当时是可以的啊！这样的接口呢，Spring 早就准备好了，您呢，只需要实现这个接口，写点代码，再把它放到容器里面去，工厂呢，就会在合适的时机执行你的代码。而且他这个接口呢，一共有好几个，每个接口呢，也好好几个方法，每个方法啊，都是代表了相应的时机。这时候你就要问了，这有什么用呢？别急，咋看看 Spring 怎么用的！（再多嘴一句啊，干预加工过程算什么，干预工厂本身才牛逼呢！我说的啥，懂得都懂！）</p>
+<h3 id="AOP"><a href="#AOP" class="headerlink" title="AOP"></a>AOP</h3><p>Spring 的 AOP 啊，终于说到了，其实呢，就是干预加工过程的一个产物！著名历史事件狸猫换太子大家都听过吧，AOP 呢，那是一模一样。著名的曹操挟天子以令诸侯都听过吧，AOP 呢，还是一模一样！</p>
+<p>这两个呢，一个是说的 AOP 的实现原理，另一个说的，就是它的特点：把真正的对象当傀儡使！</p>
+<p>咱先说说实现原理啊，其实也不难（请问这是第几遍？），工厂都被咱劫持了，加工的时候，得到成品了的时候，做一个壳子：代理对象，把真正的对象装进去，这样呢，有什么方法被调用，都是先到代理对象这里，代理对象呢，操纵着真正的对象，心情好了，就执行一下真正的对象对应的方法，得到劳动果实后呢，再返回出去，谁也不知道真正的对象。就好像光听着收音机，不知道的还以为声音都是收音机生产的，其实那就是个代理，真正创造声音的人，远在天涯呢！所以说啊，AOP 的特点是不是如我所言呢！</p>
+<p>OK各位，这就是这期文章的全部内容啦，非常感谢你能看到这里，如果你觉得写的还不错的话，求赞，求收藏，求硬币（这啥玩意），求转发，最重要的是点个大大的关注！你的支持就是我做文章的最大动力！OK各位，我们下期再见！（动作指导：何同学）</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://gudqs7.github.io/2021/02/04/principle-jvm-memo/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -2086,278 +2536,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://gudqs7.github.io/2021/01/28/source-code-spring-cloud-openfeign/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="gudqs7">
-      <meta itemprop="description" content="心累没钱躺尸中">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="gudqs7's note">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2021/01/28/source-code-spring-cloud-openfeign/" class="post-title-link" itemprop="url">Spring Cloud Openfeign 源码笔记</a>
-        </h2>
-
-        <div class="post-meta">
-			
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2021-01-28 13:59:51" itemprop="dateCreated datePublished" datetime="2021-01-28T13:59:51+08:00">2021-01-28</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-28 19:51:05" itemprop="dateModified" datetime="2021-03-28T19:51:05+08:00">2021-03-28</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/java/" itemprop="url" rel="index"><span itemprop="name">java</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/source-code/" itemprop="url" rel="index"><span itemprop="name">source-code</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/spring-cloud/" itemprop="url" rel="index"><span itemprop="name">spring-cloud</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/2021/01/28/source-code-spring-cloud-openfeign/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2021/01/28/source-code-spring-cloud-openfeign/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="Spring-Cloud-Openfeign-源码笔记"><a href="#Spring-Cloud-Openfeign-源码笔记" class="headerlink" title="Spring Cloud Openfeign 源码笔记"></a>Spring Cloud Openfeign 源码笔记</h1><h2 id="关键类分析"><a href="#关键类分析" class="headerlink" title="关键类分析"></a>关键类分析</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 1.FeignAutoConfiguration</span></span><br><span class="line">  配置了一个管理 feign 子容器的工厂(FeignContext). </span><br><span class="line">  配置一个 Targeter, 直接中专 fegin 的 target 方法(DefaultTargeter, 这里扩展可以实现降级哦)</span><br><span class="line">  配置了一个 feign client (ApacheHttpClient), 用于执行 HTTP 请求</span><br><span class="line">  还配备了 ok http client 方式的 feign client, 但默认不启用</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2.FeignClientsRegistrar</span></span><br><span class="line">  被 @EnableFeignClients 引入</span><br><span class="line">  扫描带 @FeignClient 注解的接口, 生成代理对象(FeignClientFactoryBean)注册到容器中</span><br><span class="line"></span><br><span class="line"><span class="comment"># 3.FeignClientFactoryBean</span></span><br><span class="line">  继承自 FactoryBean, Spring 的东西, getBean() 时调用跳转到 getObject()</span><br><span class="line">  getObject() 会调用通过 feign 对象生成代理对象</span><br><span class="line"></span><br><span class="line"><span class="comment"># 4.FeignInvocationHandler</span></span><br><span class="line">	JDK 动态代理生成对象的的方法拦截器</span><br><span class="line">	通过调用 SynchronousMethodHandler 的 invoke() 实现发送请求的功能</span><br><span class="line"></span><br><span class="line"><span class="comment"># 5.SynchronousMethodHandler</span></span><br><span class="line">	invoke() 会调用 FeignBlockingLoadBalancerClient 的 execute() 通过负载均衡获取 url 再调用 ApacheHttpClient 的 execute() 发送带实际 url 的 HTTP 请求.</span><br><span class="line"></span><br><span class="line"><span class="comment"># 6.ParseHandlersByName</span></span><br><span class="line">	具有核心方法 apply, 解析 @FeignClient 接口的所有方法的注解和参数信息, 转化为 RequestTemplate, 可用于构造 HTTP 请求对象. 转化后的信息存于 SynchronousMethodHandler 字段中.</span><br><span class="line"></span><br><span class="line"><span class="comment"># 7.FeignBlockingLoadBalancerClient</span></span><br><span class="line">	execute() 会调用 LoadBalancerClient 的 choose() 根据 serviceId(即 HTTP 的 host) 获取 url.</span><br><span class="line">	还负责调用 ApacheHttpClient 的 execute() 真正的发送 HTTP 请求.</span><br><span class="line"></span><br><span class="line"><span class="comment"># 8.LoadBalancerClient</span></span><br><span class="line">  commons 下 loadbalancer 项目的老伙计了... 干啥的来着? 忘了</span><br><span class="line"></span><br><span class="line"><span class="comment"># 9.ApacheHttpClient</span></span><br><span class="line">	负责发送 HTTP 请求.</span><br></pre></td></tr></table></figure>
-
-
-
-<h2 id="openfeign-原理-EnableFeignClients-生效步骤"><a href="#openfeign-原理-EnableFeignClients-生效步骤" class="headerlink" title="openfeign 原理(@EnableFeignClients 生效步骤)"></a>openfeign 原理(@EnableFeignClients 生效步骤)</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">1.先解析 @EnableFeignClients 导入 FeignClientsRegistrar.class</span><br><span class="line">2.FeignClientsRegistrar 将扫描带 @FeignClient 注解的接口, 注册到容器中</span><br><span class="line">3.注册进容器的是一个 FeignClientFactoryBean</span><br><span class="line">4.FeignClientFactoryBean 其本质是一个 FactoryBean, 会在被 getBean() 时调用 getObject()</span><br><span class="line">5.getObject() 会从容器中取 Feign.Builder builder 对象再根据配置文件进行配置 </span><br><span class="line">6.接着会走 Targeter 对象(默认为 DefaultTargeter)的 target(), 其默认为 builder.target(target); 其中 builder 为 Feign.Builder 对象, target 为 <span class="built_in">type</span>(class), name(serviceId), url(http://name/path)</span><br><span class="line">7.target() 会先调用 build()生成一个 feign 对象, 再调用 feign.newInstance(target) 生成一个代理对象</span><br><span class="line">8.先看 build() 方法, 初始化了重要属性 targetToHandlersByName, 值为 new ParseHandlersByName(), 这个类的 apply() 会在过一会用到. apply() 逻辑是遍历挨个解析方法上的注解(如@RequestMapping, @RequestParam, @PathVariable等等)和参数, 转化后包装成 HTTP 请求相关的实体类, 存到 SynchronousMethodHandler 的字段中, 再返回 SynchronousMethodHandler 对象存到 map 里.</span><br><span class="line">9.再看 feign.newInstance(), 先调用刚说的重要属性 targetToHandlersByName.apply(), 获得一个 map, 里面键大致为类名+方法名+形参组成, 值是 SynchronousMethodHandler 对象(见 SynchronousMethodHandler.Factory.create()), 然后遍历代理类的所有方法, 将方法所对应的 SynchronousMethodHandler 从 map 中取出再存到另一个 map, 这个 map 的键则为 method; 接着使用 JDK 动态代理生成一个代理对象, 其用于拦截方法的类 InvocationHandler 具体为 FeignInvocationHandler, 这个类里面的 invoke 逻辑很简单, 先排除 Object 通用的方法的影响, 对于正常方法会调用 SynchronousMethodHandler 的 invoke()... 闹了半天就是个中转呗, 有类的 Handler 到了方法的 MethodHandler.</span><br><span class="line">10.SynchronousMethodHandler 的 invoke() 的核心代码是 this.client.execute(), 这里会走到 feign.Client 的具体实现类. 可能是 ApacheHttpClient(当 url 有地址时), 那就直接执行请求了, 也可能是 FeignBlockingLoadBalancerClient, 那么会调用 loadBalancerClient 的 choose 方法获取 url, 再执行 feignClient.execute(), 这次这个 feignClient 则肯定是 ApacheHttpClient 了, 于是最终就这样发送了请求.</span><br><span class="line"></span><br><span class="line"><span class="comment">#PS: </span></span><br><span class="line">有人问我(无中生友)发送的 HTTP 请求怎么构建? </span><br><span class="line">其实我上面说的很清楚了, 关键就在于 apply(), 好吧, 我说的具体一点... 关键在于 SpringMvcContract<span class="comment">#parseAndValidateMetadata()</span></span><br><span class="line">这个的入口在 apply() 的第一行, this.contract.parseAndValidateMetadata() 一直往里跳转, 就会进入 SpringMvcContract...  具体代码挺多的... 真的没必要细读... 因为其本身只相当于一个工具类, 而读源码应该放眼大局, 否则每段代码都认真读, 那太难了!!!</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>总结: 扫描 @FeignClient, 生成代理对象, 扔进容器. 拦截代理对象的方法, 调用方法对应的 SynchronousMethodHandler, 此类调用之前解析好的 RequestTemplate 生成请求对象, 再通过 Client 执行请求, 若配置了负载均衡, 则会调用 LoadBalancerClient 将 serviceId 先解析成具体的地址再转交给 ApacheHttpClient 执行请求.</p>
-</blockquote>
-<h2 id="代理对象的生成步骤"><a href="#代理对象的生成步骤" class="headerlink" title="代理对象的生成步骤"></a>代理对象的生成步骤</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">graph TB</span><br><span class="line"></span><br><span class="line">A1(FeignClientFactoryBean)</span><br><span class="line">A2(Feign.Builder)</span><br><span class="line">A3(Feign)</span><br><span class="line">A4(FeignInvocationHandler)</span><br><span class="line">A5(SynchronousMethodHandler)</span><br><span class="line">A6(FeignBlockingLoadBalancerClient)</span><br><span class="line">A7(ApacheHttpClient)</span><br><span class="line">A8(LoadBalancerClient)</span><br><span class="line">A9(ServiceInstance)</span><br><span class="line">A10(Response)</span><br><span class="line">A11(Decoder 链)</span><br><span class="line"></span><br><span class="line">A1--getObject 触发--&gt;A2</span><br><span class="line">A2--build 得到--&gt;A3</span><br><span class="line">A3--Proxy.newProxyInstance 用到--&gt;A4</span><br><span class="line">A4--invoke 里调用--&gt;A5</span><br><span class="line">A5--invoke 里调用--&gt;A6</span><br><span class="line">A6--execute 中先调用 --&gt;A8</span><br><span class="line">A6--execute 中后调用--&gt;A7</span><br><span class="line">A8--获取--&gt;A9</span><br><span class="line">A7--得到--&gt;A10</span><br><span class="line">A10--交给--&gt;A11</span><br><span class="line">A11--编码得到--&gt;A12(json)</span><br></pre></td></tr></table></figure>
-
-<p><img src="https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210128204558.png" alt="iShot2021-01-28 20.45.21"></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://gudqs7.github.io/2021/01/27/source-code-spring-cloud-ribbon/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="gudqs7">
-      <meta itemprop="description" content="心累没钱躺尸中">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="gudqs7's note">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2021/01/27/source-code-spring-cloud-ribbon/" class="post-title-link" itemprop="url">Spring Cloud Commons 之 loadbalancer 源码笔记</a>
-        </h2>
-
-        <div class="post-meta">
-			
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2021-01-27 13:10:01" itemprop="dateCreated datePublished" datetime="2021-01-27T13:10:01+08:00">2021-01-27</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-28 19:50:52" itemprop="dateModified" datetime="2021-03-28T19:50:52+08:00">2021-03-28</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/java/" itemprop="url" rel="index"><span itemprop="name">java</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/source-code/" itemprop="url" rel="index"><span itemprop="name">source-code</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/spring-cloud/" itemprop="url" rel="index"><span itemprop="name">spring-cloud</span></a>
-                </span>
-            </span>
-
-          
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/2021/01/27/source-code-spring-cloud-ribbon/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2021/01/27/source-code-spring-cloud-ribbon/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="Spring-Cloud-Commons-之-loadbalancer-源码笔记"><a href="#Spring-Cloud-Commons-之-loadbalancer-源码笔记" class="headerlink" title="Spring Cloud Commons 之 loadbalancer 源码笔记"></a>Spring Cloud Commons 之 loadbalancer 源码笔记</h1><blockquote>
-<p>Spring Cloud Commons 是什么样的? 有什么作用? 如何与 Spring Cloud 和 Cloud Alibaba 整合?<br>让我们带着这些问题去研究源码吧! </p>
-</blockquote>
-<h2 id="loadbalancer-原理分析"><a href="#loadbalancer-原理分析" class="headerlink" title="loadbalancer 原理分析"></a>loadbalancer 原理分析</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 先来认识一下 Spring Cloud Commons 吧</span></span><br><span class="line">是定义了诸多接口(如ServiceRegistry/DiscoveryClient/LoadBalancerClient)和注解(如!EnableDiscoveryClient/@LoadBalanced)为主, 少量代码实现(如 RandomLoadBalancer). </span><br><span class="line">以及对 Spring 容器(Context) 的扩展(如 NamedContextFactory, bootstrap 配置文件的加载, 容器重启, 容器跟随配置文件刷新等等)</span><br><span class="line">当然还有一些打包好的 starter.</span><br><span class="line">我们要研究的 loadbalancer 就是其中一个子项目.</span><br></pre></td></tr></table></figure>
-
-
-
-<h3 id="loadbalancer-关键类解析"><a href="#loadbalancer-关键类解析" class="headerlink" title="loadbalancer 关键类解析"></a>loadbalancer 关键类解析</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 0.惊! 一堆类仅为添加一个拦截器</span></span><br><span class="line">LoadBalancerRequestFactory: 一个工厂, 包装一个为请求对象 HttpRequest 加料的回调 LoadBalancerRequest</span><br><span class="line"></span><br><span class="line">LoadBalancerClient: 用于根据 serviceId 选取一个 ServiceInstance, 执行从 LoadBalancerRequestFactory 获得的那个回调</span><br><span class="line"></span><br><span class="line">LoadBalancerInterceptor: restTemplate 的拦截器, 拦截后调用 LoadBalancerClient 修改 HttpRequest 对象(主要是 url), 且传入调用 LoadBalancerRequestFactory 生成的回调给 LoadBalancerClient</span><br><span class="line"></span><br><span class="line">RestTemplateCustomizer: 为 restTemplate 加上一个拦截器(也可以干点别的, 默认就这一个用处)</span><br><span class="line"></span><br><span class="line">SmartInitializingSingleton: 调用 RestTemplateCustomizer 为容器中所有加了 @LoadBalanced 的 RestTemplate 加上一个拦截器</span><br><span class="line"></span><br><span class="line"><span class="comment"># 1.获取对象的工厂, 以 Spring 容器作为载体管理对象.</span></span><br><span class="line">NamedContextFactory</span><br><span class="line">	继承 DisposableBean, 用于类销毁是执行点东西(指创建的好多个子容器)</span><br><span class="line">	继承 ApplicationContextAware, 用于将子容器和当前容器关联起来(所以 Spring 树形扩展这个设计真不错)</span><br><span class="line">	泛型 C extends NamedContextFactory.Specification, 无它, 就是个 POJO, 存个 name 和对应的配置 class, 用于初始化容器的(会被注册进去, 然后解析里面的注解啥的...)</span><br><span class="line">	此类作用就是管理一大堆(取决于你微服务拆分的程度)子容器, 获取其他代码需要的类型对象</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">ReactiveLoadBalancer.Factory</span><br><span class="line">  定义了获取 ReactiveLoadBalancer 的接口以及与其相关的扩展</span><br><span class="line">  </span><br><span class="line"></span><br><span class="line">LoadBalancerClientFactory</span><br><span class="line">  继承 NamedContextFactory, 构造参数指定了几个属性值</span><br><span class="line">  实现了 ReactiveLoadBalancer.Factory 的接口, 即提供获取 ReactiveLoadBalancer 的方法.</span><br><span class="line">  泛型具体为 LoadBalancerClientSpecification, 还是个POJO</span><br><span class="line">  </span><br><span class="line"></span><br><span class="line"><span class="comment"># 2.包含算法逻辑的负载均衡策略的类</span></span><br><span class="line">Response</span><br><span class="line">	server 的封装类, 一般持有一个 ServiceInstance 对象, 如 DefaultResponse</span><br><span class="line">	</span><br><span class="line">Publisher</span><br><span class="line">	响应式编程的东西, 可获取 Response&lt;T&gt; 对象, 一般为 Response&lt;ServiceInstance&gt;</span><br><span class="line">	</span><br><span class="line">ReactiveLoadBalancer.Factory</span><br><span class="line">	定义了获取 ReactiveLoadBalancer 的接口以及与其相关的扩展</span><br><span class="line"></span><br><span class="line">ReactiveLoadBalancer</span><br><span class="line">	定义了 choose 方法, 即如何选取一个 ServiceInstance, 如轮播, 随机...</span><br><span class="line"></span><br><span class="line">ReactorLoadBalancer</span><br><span class="line">  定义了 choose 方法的另一形式, 仅返回值不同, 为 Mono&lt;Response&lt;T&gt;&gt; 是 Publisher&lt;Response&lt;T&gt;&gt; 的子类, 返回值为抽象类.</span><br><span class="line"></span><br><span class="line">ReactorServiceInstanceLoadBalancer</span><br><span class="line">  继承 ReactorLoadBalancer</span><br><span class="line">	仅仅作为一个标记类, 无新接口</span><br></pre></td></tr></table></figure>
-
-
-
-<h3 id="类大致调用图"><a href="#类大致调用图" class="headerlink" title="类大致调用图"></a>类大致调用图</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">graph TB</span><br><span class="line"></span><br><span class="line">A(SmartInitializingSingleton)</span><br><span class="line">A1(RestTemplateCustomizer)</span><br><span class="line">A2(LoadBalancerInterceptor)</span><br><span class="line">A3(restTemplate)</span><br><span class="line">A4(LoadBalancerClient)</span><br><span class="line">A5(LoadBalancerRequestFactory)</span><br><span class="line">A6(ReactorServiceInstanceLoadBalancer)</span><br><span class="line">A8(LoadBalancerClientFactory)</span><br><span class="line"></span><br><span class="line">A--调用--&gt;A1</span><br><span class="line">A1--添加一个--&gt;A2</span><br><span class="line">A2--到--&gt;A3</span><br><span class="line">A2--调用--&gt;A4</span><br><span class="line">A2--调用--&gt;A5</span><br><span class="line">A5--生成一个回调给--&gt;A4 </span><br><span class="line">A4--调用--&gt;A8</span><br><span class="line">A8--获取--&gt;A6</span><br><span class="line">A6--获取--&gt;A7(ServiceInstance)</span><br></pre></td></tr></table></figure>
-
-
-
-<p><img src="https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210127212226.png" alt="a copy"></p>
-<blockquote>
-<p>瞅瞅有哪些负载均衡策略吧(看完发现这才是最简单的… 外面那些结构反而不容易理清)</p>
-</blockquote>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 1.RandomLoadBalancer: 就是随机数呗, 0-size, 简单!!</span></span><br><span class="line"><span class="comment">// 在 RandomLoadBalancer#getInstanceResponse() 中</span></span><br><span class="line"><span class="comment">// 觉得这个方法可以做出 protected, 这样有些实现只需要重写这个方法就行了 </span></span><br><span class="line"><span class="function"><span class="keyword">private</span> Response&lt;ServiceInstance&gt; <span class="title">getInstanceResponse</span><span class="params">(List&lt;ServiceInstance&gt; instances)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (instances.isEmpty()) &#123;</span><br><span class="line">    <span class="keyword">if</span> (log.isWarnEnabled()) &#123;</span><br><span class="line">      log.warn(<span class="string">"No servers available for service: "</span> + serviceId);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> EmptyResponse();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">int</span> index = ThreadLocalRandom.current().nextInt(instances.size());</span><br><span class="line"></span><br><span class="line">  ServiceInstance instance = instances.get(index);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> DefaultResponse(instance);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 2.RoundRobinLoadBalancer</span></span><br><span class="line"><span class="comment">// 在 RoundRobinLoadBalancer#getInstanceResponse() 中</span></span><br><span class="line"><span class="comment">// 用一个 position 保存位置, 这个主意高啊, 即保证了数据的正确性, 还.... 编不下去了!!</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> Response&lt;ServiceInstance&gt; <span class="title">getInstanceResponse</span><span class="params">(List&lt;ServiceInstance&gt; instances)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (instances.isEmpty()) &#123;</span><br><span class="line">    <span class="keyword">if</span> (log.isWarnEnabled()) &#123;</span><br><span class="line">      log.warn(<span class="string">"No servers available for service: "</span> + serviceId);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> EmptyResponse();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// <span class="doctag">TODO:</span> enforce order?</span></span><br><span class="line">  <span class="keyword">int</span> pos = Math.abs(<span class="keyword">this</span>.position.incrementAndGet());</span><br><span class="line"></span><br><span class="line">  ServiceInstance instance = instances.get(pos % instances.size());</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> DefaultResponse(instance);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>这代码简单的, 特别不想分析…. 但其实最开始就是冲着这个来的… 总得看看吧, 咳咳!!</p>
-</blockquote>
-<h3 id="loadbalancer-原理分析-1"><a href="#loadbalancer-原理分析-1" class="headerlink" title="loadbalancer 原理分析"></a>loadbalancer 原理分析</h3><ol>
-<li>先拦截 RestTemplate 对象的请求, 使其调用 LoadBalancerClient 的接口获取真实IP</li>
-</ol>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># org.springframework.cloud.client.loadbalancer.LoadBalancerAutoConfiguration 中</span></span><br><span class="line">1.@Bean 加入一个 LoadBalancerRequestFactory, 并且带有用户自定义的 transformers(作用: 对选取真实 url 后的请求对象进行干预)</span><br><span class="line">2.@Bean 加入一个 LoadBalancerClient, 其作用是, 根据 serviceId 获取/选取真实 url, 以及执行请求</span><br><span class="line">3.@Bean 加入一个 LoadBalancerInterceptor, 即核心拦截器. 逻辑是: 获取 host, 调用 LoadBalancerRequestFactory 生成请求, 用 LoadBalancerClient 执行.</span><br><span class="line">4.@Bean 加入一个 RestTemplateCustomizer, 其作用是: 为给定的 RestTemplate 添加一个 LoadBalancerInterceptor.</span><br><span class="line">5.@Bean 加入一个 SmartInitializingSingleton, 作用是单例都加载后触发回调, 回调代码为:</span><br><span class="line">     遍历所有的 RestTemplateCustomizer 和 restTemplates, 用 RestTemplateCustomizer 对 RestTemplate 做设置. 包括(4)刚刚加入的那个.</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>总结: 为用户自定义(如配置类中写了个@Bean + return new RestTemplate() 这种形式)的 RestTemplate 添加一个拦截器, 在请求执行前进行拦截, 然后将请求数据的 host 作为 serviceId, 接着使用某个具体的 LoadBalancerClient 实现类调用其方法获取真实的 url. 若对应存在多个 url, 由其算法策略决定如何选择.</p>
-</blockquote>
-<ol start="2">
-<li>再看 LoadBalancerClient 的默认实现类(在 BlockingLoadBalancerClientAutoConfiguration 中配置的), 其逻辑是, 通过工厂获取 ReactorServiceInstanceLoadBalancer 对象并调用其接口执行负载均衡算法.</li>
-</ol>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// org.springframework.cloud.loadbalancer.blocking.client.BlockingLoadBalancerClient</span></span><br><span class="line"><span class="comment">// 先进入这个方法, 然后会调用第二个方法.</span></span><br><span class="line"><span class="comment">// 这两个方法其实就是从工厂获取对象执行 choose 后再让其完成请求的执行, 大部分代码都是 LoadBalancerLifecycle 的触发.</span></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> &lt;T&gt; <span class="function">T <span class="title">execute</span><span class="params">(String serviceId, LoadBalancerRequest&lt;T&gt; request)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">  <span class="comment">// 遍历 LoadBalancerLifecycle 触发 onStart 钩子</span></span><br><span class="line">  <span class="comment">// 调用 choose 方法选取一个 IP:PORT 得到包装类 ServiceInstance</span></span><br><span class="line">  <span class="comment">// 遍历 LoadBalancerLifecycle 触发 onComplete 钩子</span></span><br><span class="line">  <span class="comment">// 执行请求</span></span><br><span class="line">  String hint = getHint(serviceId);</span><br><span class="line">  LoadBalancerRequestAdapter&lt;T, DefaultRequestContext&gt; lbRequest = <span class="keyword">new</span> LoadBalancerRequestAdapter&lt;&gt;(request,</span><br><span class="line">                                                                                                    <span class="keyword">new</span> DefaultRequestContext(request, hint));</span><br><span class="line">  Set&lt;LoadBalancerLifecycle&gt; supportedLifecycleProcessors = LoadBalancerLifecycleValidator</span><br><span class="line">    .getSupportedLifecycleProcessors(</span><br><span class="line">    loadBalancerClientFactory.getInstances(serviceId, LoadBalancerLifecycle<span class="class">.<span class="keyword">class</span>),</span></span><br><span class="line"><span class="class">    <span class="title">DefaultRequestContext</span>.<span class="title">class</span>, <span class="title">Object</span>.<span class="title">class</span>, <span class="title">ServiceInstance</span>.<span class="title">class</span>)</span>;</span><br><span class="line">  supportedLifecycleProcessors.forEach(lifecycle -&gt; lifecycle.onStart(lbRequest));</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 从 serviceId 对应的容器中获取一个负载均衡算法实现类对象, 即 ReactorServiceInstanceLoadBalancer.</span></span><br><span class="line">  <span class="comment">// 调用其 choose 方法. 从响应中获取 ServiceInstance 并返回.</span></span><br><span class="line">  ServiceInstance serviceInstance = choose(serviceId, lbRequest);</span><br><span class="line">  <span class="keyword">if</span> (serviceInstance == <span class="keyword">null</span>) &#123;</span><br><span class="line">    supportedLifecycleProcessors.forEach(lifecycle -&gt; lifecycle.onComplete(</span><br><span class="line">      <span class="keyword">new</span> CompletionContext&lt;&gt;(CompletionContext.Status.DISCARD, lbRequest, <span class="keyword">new</span> EmptyResponse())));</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">"No instances available for "</span> + serviceId);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 可以执行了</span></span><br><span class="line">  <span class="keyword">return</span> execute(serviceId, serviceInstance, lbRequest);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> &lt;T&gt; <span class="function">T <span class="title">execute</span><span class="params">(String serviceId, ServiceInstance serviceInstance, LoadBalancerRequest&lt;T&gt; request)</span></span></span><br><span class="line"><span class="function">  <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">  <span class="comment">// 遍历 LoadBalancerLifecycle 触发 onStartRequest 钩子</span></span><br><span class="line">  <span class="comment">// 调用 request.apply 方法执行请求(即进入之前 LoadBalancerRequestFactory 中的代码)</span></span><br><span class="line">  <span class="comment">// 遍历 LoadBalancerLifecycle 触发 onComplete 钩子</span></span><br><span class="line"></span><br><span class="line">  DefaultResponse defaultResponse = <span class="keyword">new</span> DefaultResponse(serviceInstance);</span><br><span class="line">  Set&lt;LoadBalancerLifecycle&gt; supportedLifecycleProcessors = LoadBalancerLifecycleValidator</span><br><span class="line">    .getSupportedLifecycleProcessors(</span><br><span class="line">    loadBalancerClientFactory.getInstances(serviceId, LoadBalancerLifecycle<span class="class">.<span class="keyword">class</span>),</span></span><br><span class="line"><span class="class">    <span class="title">DefaultRequestContext</span>.<span class="title">class</span>, <span class="title">Object</span>.<span class="title">class</span>, <span class="title">ServiceInstance</span>.<span class="title">class</span>)</span>;</span><br><span class="line">  Request lbRequest = request <span class="keyword">instanceof</span> Request ? (Request) request : <span class="keyword">new</span> DefaultRequest&lt;&gt;();</span><br><span class="line">  supportedLifecycleProcessors</span><br><span class="line">    .forEach(lifecycle -&gt; lifecycle.onStartRequest(lbRequest, <span class="keyword">new</span> DefaultResponse(serviceInstance)));</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="comment">// 请求调用前先使用 transformers 对原始请求对象进行一些改变处理后再执行请求</span></span><br><span class="line">    T response = request.apply(serviceInstance);</span><br><span class="line">    Object clientResponse = getClientResponse(response);</span><br><span class="line">    supportedLifecycleProcessors</span><br><span class="line">      .forEach(lifecycle -&gt; lifecycle.onComplete(<span class="keyword">new</span> CompletionContext&lt;&gt;(CompletionContext.Status.SUCCESS,</span><br><span class="line">                                                                         lbRequest, defaultResponse, clientResponse)));</span><br><span class="line">    <span class="keyword">return</span> response;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">catch</span> (IOException iOException) &#123;</span><br><span class="line">    supportedLifecycleProcessors.forEach(lifecycle -&gt; lifecycle.onComplete(</span><br><span class="line">      <span class="keyword">new</span> CompletionContext&lt;&gt;(CompletionContext.Status.FAILED, iOException, lbRequest, defaultResponse)));</span><br><span class="line">    <span class="keyword">throw</span> iOException;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">catch</span> (Exception exception) &#123;</span><br><span class="line">    supportedLifecycleProcessors.forEach(lifecycle -&gt; lifecycle.onComplete(</span><br><span class="line">      <span class="keyword">new</span> CompletionContext&lt;&gt;(CompletionContext.Status.FAILED, exception, lbRequest, defaultResponse)));</span><br><span class="line">    ReflectionUtils.rethrowRuntimeException(exception);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<ol start="3">
-<li>所以再看看工厂是怎么获取和存放对象的, 关键类: LoadBalancerClientFactory, 其继承自 NamedContextFactory</li>
-</ol>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 先看其如何获取对象的 LoadBalancerClientFactory#getInstance()</span></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> ReactiveLoadBalancer&lt;ServiceInstance&gt; <span class="title">getInstance</span><span class="params">(String serviceId)</span> </span>&#123;</span><br><span class="line">  <span class="comment">// 从 serviceId 对应的容器中获取一个负载均衡算法实现类对象, 即 ReactorServiceInstanceLoadBalancer.</span></span><br><span class="line">  <span class="keyword">return</span> getInstance(serviceId, ReactorServiceInstanceLoadBalancer<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// getInstance(serviceId, ReactorServiceInstanceLoadBalancer.class):</span></span><br><span class="line"><span class="keyword">public</span> &lt;T&gt; <span class="function">T <span class="title">getInstance</span><span class="params">(String name, Class&lt;T&gt; type)</span> </span>&#123;</span><br><span class="line">  AnnotationConfigApplicationContext context = getContext(name);</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> context.getBean(type);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">catch</span> (NoSuchBeanDefinitionException e) &#123;</span><br><span class="line">    <span class="comment">// ignore</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// getContext(name):</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> AnnotationConfigApplicationContext <span class="title">getContext</span><span class="params">(String name)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (!<span class="keyword">this</span>.contexts.containsKey(name)) &#123;</span><br><span class="line">    <span class="keyword">synchronized</span> (<span class="keyword">this</span>.contexts) &#123;</span><br><span class="line">      <span class="keyword">if</span> (!<span class="keyword">this</span>.contexts.containsKey(name)) &#123;</span><br><span class="line">        <span class="comment">// 结论: 容器里有点东西, 但不多...  主要是于父容器打通... 所以又啥都有了.</span></span><br><span class="line">        <span class="keyword">this</span>.contexts.put(name, createContext(name));</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">this</span>.contexts.get(name);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// createContext(name):</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> AnnotationConfigApplicationContext <span class="title">createContext</span><span class="params">(String name)</span> </span>&#123;</span><br><span class="line">  <span class="comment">// 0.结合实现类 LoadBalancerClientFactory 做出如下注释</span></span><br><span class="line">  <span class="comment">// 1.将 LoadBalancerAutoConfiguration 扫描到 configurations 注册到 name 对应的容器中.</span></span><br><span class="line">  <span class="comment">//     这里的 name 其实就是 serviceId, 也就是说, 若我们想给某个容器加入一些东西, 则实现 LoadBalancerClientSpecification 时, name 需要与 serviceId 对应起来(相同)</span></span><br><span class="line">  <span class="comment">// 2.当我上面那句没说啊... 原来 name 为 default. 开头是可以加入任意 serviceId 对应的容器的.........................(qiao)</span></span><br><span class="line">  <span class="comment">// 3.为容器加入一个占位符解析器, 和一个 defaultConfigType(=LoadBalancerClientConfiguration.class, 作用配置一些 bean)</span></span><br><span class="line">  <span class="comment">//     LoadBalancerClientConfiguration 会加入一个 RoundRobinLoadBalancer, 看来就是默认的负载均衡类了.</span></span><br><span class="line">  <span class="comment">// 4.默认为加了一个名为 loadbalancer 的 PropertySource, 里面有一个 loadbalancer.client.name=serviceId 的配置....</span></span><br><span class="line">  <span class="comment">// 5.设定父容器, 父容器通过 ApplicationContextAware 获得, 这样刚才那么辛苦的注册方式, 就仅适合于特性, 而非通用了.</span></span><br><span class="line">  <span class="comment">// 6.设置名称(啥意义呢?), 然后调用容器的 refresh() 完成容器加载</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">  AnnotationConfigApplicationContext context = <span class="keyword">new</span> AnnotationConfigApplicationContext();</span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">this</span>.configurations.containsKey(name)) &#123;</span><br><span class="line">    <span class="keyword">for</span> (Class&lt;?&gt; configuration : <span class="keyword">this</span>.configurations.get(name).getConfiguration()) &#123;</span><br><span class="line">      context.register(configuration);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">for</span> (Map.Entry&lt;String, C&gt; entry : <span class="keyword">this</span>.configurations.entrySet()) &#123;</span><br><span class="line">    <span class="keyword">if</span> (entry.getKey().startsWith(<span class="string">"default."</span>)) &#123;</span><br><span class="line">      <span class="keyword">for</span> (Class&lt;?&gt; configuration : entry.getValue().getConfiguration()) &#123;</span><br><span class="line">        context.register(configuration);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  context.register(PropertyPlaceholderAutoConfiguration<span class="class">.<span class="keyword">class</span>, <span class="title">this</span>.<span class="title">defaultConfigType</span>)</span>;</span><br><span class="line">  <span class="comment">// 默认为加了一个名为 loadbalancer 的 PropertySource, 里面有一个 loadbalancer.client.name=serviceId 的配置....</span></span><br><span class="line">  context.getEnvironment().getPropertySources().addFirst(<span class="keyword">new</span> MapPropertySource(<span class="keyword">this</span>.propertySourceName,</span><br><span class="line">                                                                               Collections.&lt;String, Object&gt;singletonMap(<span class="keyword">this</span>.propertyName, name)));</span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">this</span>.parent != <span class="keyword">null</span>) &#123;</span><br><span class="line">    <span class="comment">// Uses Environment from parent as well as beans</span></span><br><span class="line">    context.setParent(<span class="keyword">this</span>.parent);</span><br><span class="line">    <span class="comment">// jdk11 issue</span></span><br><span class="line">    <span class="comment">// https://github.com/spring-cloud/spring-cloud-netflix/issues/3101</span></span><br><span class="line">    context.setClassLoader(<span class="keyword">this</span>.parent.getClassLoader());</span><br><span class="line">  &#125;</span><br><span class="line">  context.setDisplayName(generateDisplayName(name));</span><br><span class="line">  context.refresh();</span><br><span class="line">  <span class="keyword">return</span> context;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 根据这句 context.register(PropertyPlaceholderAutoConfiguration.class, this.defaultConfigType);</span></span><br><span class="line"><span class="comment">// 而 defaultConfigType 在 LoadBalancerClientFactory 定义为 LoadBalancerClientConfiguration.class, 其配置了一个 bean, 代码如下</span></span><br><span class="line"><span class="meta">@Bean</span></span><br><span class="line"><span class="meta">@ConditionalOnMissingBean</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> ReactorLoadBalancer&lt;ServiceInstance&gt; <span class="title">reactorServiceInstanceLoadBalancer</span><span class="params">(Environment environment,</span></span></span><br><span class="line"><span class="function"><span class="params">                                                                               LoadBalancerClientFactory loadBalancerClientFactory)</span> </span>&#123;</span><br><span class="line">  String name = environment.getProperty(LoadBalancerClientFactory.PROPERTY_NAME);</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> RoundRobinLoadBalancer(</span><br><span class="line">    loadBalancerClientFactory.getLazyProvider(name, ServiceInstanceListSupplier<span class="class">.<span class="keyword">class</span>), <span class="title">name</span>)</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 这里会与服务发现结合起来, 即 loadBalancerClientFactory.getLazyProvider(name, ServiceInstanceListSupplier.class)</span></span><br><span class="line"><span class="comment">// 此方法从容器中获取能提供 ServiceInstanceListSupplier.class 类型的 BeanProvider, 其实就是能获取这种类型的 bean 呗, 然后用这个类来获取 url 列表...  具体实现要看 Nacos / Consul 了.</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 所以默认获取的负载均衡策略就是它了:  RoundRobinLoadBalancer</span></span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>总结: 用了一个 LoadBalancerAutoConfiguration, 为 RestTemplate 加一个拦截器使得执行请求前先修改一下请求对象(主要修改url呗), 修改的步骤是 LoadBalancerClient.execute(), 里面则会使用 choose 获取微服务真实url, choose 是 ReactorLoadBalancer  的接口, 代表负载均衡策略. 啊对了, 既然是负载均衡算法, 那就是负责选取, 不负责获取才对… 于是我发现 loadBalancerClientFactory.getLazyProvider(name, ServiceInstanceListSupplier.class) 才是得到的对象, 才是获取 url 列表的代码(肯定和consul或nacos有关了)!!</p>
-<p>暗示下集出 Nacos!!</p>
-</blockquote>
-<h2 id="Cloud-Alibaba-和-Spring-Cloud-整合-Spring-Cloud-Commons-步骤-指服务注册与发现"><a href="#Cloud-Alibaba-和-Spring-Cloud-整合-Spring-Cloud-Commons-步骤-指服务注册与发现" class="headerlink" title="Cloud Alibaba 和 Spring Cloud 整合 Spring Cloud Commons 步骤(指服务注册与发现)"></a>Cloud Alibaba 和 Spring Cloud 整合 Spring Cloud Commons 步骤(指服务注册与发现)</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1.希望别太简单</span><br><span class="line">2.就不写这里了(因为还没写啊!)</span><br><span class="line">3.下集见</span><br></pre></td></tr></table></figure>
-
-
-
-<h2 id="Spring-Cloud-整合-spring-cloud-loadbalancer"><a href="#Spring-Cloud-整合-spring-cloud-loadbalancer" class="headerlink" title="Spring Cloud 整合 spring-cloud-loadbalancer"></a>Spring Cloud 整合 spring-cloud-loadbalancer</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">1.pom 添加依赖即可</span><br><span class="line">2.pom 添加依赖即可</span><br><span class="line">3.pom 添加依赖即可</span><br><span class="line"></span><br><span class="line"><span class="comment"># 总结</span></span><br><span class="line">我也没想到, 没多写一个类, 直接就能用...  原理上面分析了 😭😭😭😭😭</span><br></pre></td></tr></table></figure>
-
-
-
-<h2 id="Cloud-Alibaba-整合-spring-cloud-loadbalancer"><a href="#Cloud-Alibaba-整合-spring-cloud-loadbalancer" class="headerlink" title="Cloud Alibaba 整合 spring-cloud-loadbalancer"></a>Cloud Alibaba 整合 spring-cloud-loadbalancer</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">1.pom 添加依赖即可</span><br><span class="line">2.pom 添加依赖即可</span><br><span class="line">3.pom 添加依赖即可</span><br><span class="line"></span><br><span class="line"><span class="comment"># 总结</span></span><br><span class="line">我也没想到, 没多写一个类, 直接就能用...  原理上面分析了 😭😭😭😭😭</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>总结: 你没卡, 你电脑没问题, 我就是写(zhan)了(tie)两遍!!!</p>
-</blockquote>
-<h2 id="Spring-Cloud-Commons-的核心类及其作用"><a href="#Spring-Cloud-Commons-的核心类及其作用" class="headerlink" title="Spring Cloud Commons 的核心类及其作用"></a>Spring Cloud Commons 的核心类及其作用</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">1.LoadBalancerClient: 实现它就实现了负载均衡策略</span><br><span class="line">	但其实实现 ReactorServiceInstanceLoadBalancer 更简单</span><br><span class="line">2.DiscoveryClient: 实现它就实现了服务发现</span><br><span class="line">3.ServiceRegistry: 实现它就实现了服务注册</span><br><span class="line">4.ServiceInstance: 代表一个服务, 前面加个 Micro 就是微服务了 :D</span><br></pre></td></tr></table></figure>
-
-
-
-
-
-<blockquote>
-<p>PS: 就这!</p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -2429,20 +2607,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">22</span>
+          <span class="site-state-item-count">24</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-count">18</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-count">22</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
