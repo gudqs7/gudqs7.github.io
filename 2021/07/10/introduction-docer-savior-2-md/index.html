@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"gudqs7.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="文档生成插件更多细节分享更多细节code 含义先看效果 实现方式在原来的 UserController 的基础上，再加一个方法 12345678910111213141516171819&#x2F;** * 新增一个用户 * * @param userEntity 用户信息 * @return 操作是否成功 * #code 1 用户名已存在 建议换个用户名再试 * #code 2 手机号已存在 同上 * #">
+<meta property="og:type" content="article">
+<meta property="og:title" content="文档生成插件更多细节分享">
+<meta property="og:url" content="https://gudqs7.github.io/2021/07/10/introduction-docer-savior-2-md/index.html">
+<meta property="og:site_name" content="gudqs7&#39;s note">
+<meta property="og:description" content="文档生成插件更多细节分享更多细节code 含义先看效果 实现方式在原来的 UserController 的基础上，再加一个方法 12345678910111213141516171819&#x2F;** * 新增一个用户 * * @param userEntity 用户信息 * @return 操作是否成功 * #code 1 用户名已存在 建议换个用户名再试 * #code 2 手机号已存在 同上 * #">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210710205746.png">
+<meta property="og:image" content="https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210710210659.png">
+<meta property="og:image" content="https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210710210847.png">
+<meta property="og:image" content="https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210710212212.png">
+<meta property="og:image" content="https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210710221548.png">
+<meta property="og:image" content="https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210710222038.png">
+<meta property="og:image" content="https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210710222920.png">
+<meta property="og:image" content="https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210710225906.png">
+<meta property="article:published_time" content="2021-07-10T12:36:14.000Z">
+<meta property="article:modified_time" content="2021-07-10T15:27:48.152Z">
+<meta property="article:author" content="gudqs7">
+<meta property="article:tag" content="idea">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210710205746.png">
+
+<link rel="canonical" href="https://gudqs7.github.io/2021/07/10/introduction-docer-savior-2-md/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>文档生成插件更多细节分享 | gudqs7's note</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">gudqs7's note</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">心累没钱躺尸中</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://gudqs7.github.io/2021/07/10/introduction-docer-savior-2-md/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="gudqs7">
+      <meta itemprop="description" content="心累没钱躺尸中">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="gudqs7's note">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          文档生成插件更多细节分享
+        </h1>
+
+        <div class="post-meta">
+			
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-07-10 20:36:14 / 修改时间：23:27:48" itemprop="dateCreated datePublished" datetime="2021-07-10T20:36:14+08:00">2021-07-10</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/java/" itemprop="url" rel="index"><span itemprop="name">java</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/idea-plugin/" itemprop="url" rel="index"><span itemprop="name">idea-plugin</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2021/07/10/introduction-docer-savior-2-md/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2021/07/10/introduction-docer-savior-2-md/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="文档生成插件更多细节分享"><a href="#文档生成插件更多细节分享" class="headerlink" title="文档生成插件更多细节分享"></a>文档生成插件更多细节分享</h1><h2 id="更多细节"><a href="#更多细节" class="headerlink" title="更多细节"></a>更多细节</h2><h3 id="code-含义"><a href="#code-含义" class="headerlink" title="code 含义"></a>code 含义</h3><h4 id="先看效果"><a href="#先看效果" class="headerlink" title="先看效果"></a>先看效果</h4><p><img src="https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210710205746.png" alt="image-20210710205744491"></p>
+<h4 id="实现方式"><a href="#实现方式" class="headerlink" title="实现方式"></a>实现方式</h4><p>在原来的 UserController 的基础上，再加一个方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 新增一个用户</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> userEntity 用户信息</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span> 操作是否成功</span></span><br><span class="line"><span class="comment"> * #code 1 用户名已存在 建议换个用户名再试</span></span><br><span class="line"><span class="comment"> * #code 2 手机号已存在 同上</span></span><br><span class="line"><span class="comment"> * #hiddenRequest userId,lastLoginTime</span></span><br><span class="line"><span class="comment"> * #hiddenResponse totalCount</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@PostMapping</span>(<span class="string">"/addUser"</span>)</span><br><span class="line"><span class="function"><span class="keyword">public</span> BaseResponse&lt;Boolean&gt; <span class="title">addUser</span><span class="params">(@RequestBody UserEntity userEntity)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// todo 新增用户</span></span><br><span class="line">    log.info(<span class="string">"addUser--&gt; "</span> + JsonUtils.getJsonString(userEntity));</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> BaseResponse.success(<span class="keyword">true</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其中 ``#code<code>开头的注释便是关键，这应该是一目了然了吧，先</code>#code` 开头，再空格分隔 code、含义、出现原因三个信息</p>
+<h3 id="根据不同方法隐藏不同字段（参数、返回值均可）"><a href="#根据不同方法隐藏不同字段（参数、返回值均可）" class="headerlink" title="根据不同方法隐藏不同字段（参数、返回值均可）"></a>根据不同方法隐藏不同字段（参数、返回值均可）</h3><h4 id="先看效果-1"><a href="#先看效果-1" class="headerlink" title="先看效果"></a>先看效果</h4><p>先写两个方法，使用 <code>#hiddenRequest、#hiddenResponse</code> 设置要隐藏的字段，这里注意方法参数变量名可以省略（即 <code>userEntity</code> ）</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 新增一个用户</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> userEntity 用户信息</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span> 操作是否成功</span></span><br><span class="line"><span class="comment"> * #code 1 用户名已存在 建议换个用户名再试</span></span><br><span class="line"><span class="comment"> * #code 2 手机号已存在 同上</span></span><br><span class="line"><span class="comment"> * #hiddenRequest userId,lastLoginTime</span></span><br><span class="line"><span class="comment"> * #hiddenResponse totalCount</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@PostMapping</span>(<span class="string">"/addUser"</span>)</span><br><span class="line"><span class="function"><span class="keyword">public</span> BaseResponse&lt;Boolean&gt; <span class="title">addUser</span><span class="params">(@RequestBody UserEntity userEntity)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// todo 新增用户</span></span><br><span class="line">    log.info(<span class="string">"addUser--&gt; "</span> + JsonUtils.getJsonString(userEntity));</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> BaseResponse.success(<span class="keyword">true</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 修改用户信息</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> userEntity 用户信息</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span> 操作是否成功</span></span><br><span class="line"><span class="comment"> * #hiddenRequest lastLoginTime,userGender,userAge</span></span><br><span class="line"><span class="comment"> * #hiddenResponse totalCount</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@PostMapping</span>(<span class="string">"/updateUser"</span>)</span><br><span class="line"><span class="function"><span class="keyword">public</span> BaseResponse&lt;Boolean&gt; <span class="title">updateUser</span><span class="params">(@RequestBody UserEntity userEntity)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// todo 修改用户信息</span></span><br><span class="line">    log.info(<span class="string">"updateUser--&gt; "</span> + JsonUtils.getJsonString(userEntity));</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> BaseResponse.success(<span class="keyword">true</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<p>生成文档如图：</p>
+<ul>
+<li>新增用户接口</li>
+</ul>
+<img src="https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210710210659.png" alt="image-20210710210651803" style="zoom:50%;" />
+
+<ul>
+<li>修改用户接口</li>
+</ul>
+<p><img src="https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210710210847.png" alt="image-20210710210846356"></p>
+<blockquote>
+<p>这里没展示返回字段，但效果是一样的，也是示例和说明表格都会隐藏</p>
+</blockquote>
+<h4 id="实现方式-1"><a href="#实现方式-1" class="headerlink" title="实现方式"></a>实现方式</h4><blockquote>
+<p>如我刚提的，使用 <code>#hiddenRequest、#hiddenResponse</code> 设置要隐藏的字段接口，这个设置仅对文档生成，导出到Postman起作用，不用担心影响代码运行。</p>
+<p>这里需要注意的点是，多个字段之间使用英文逗号分隔。另外方法参数的变量名不需要带上，比如 <code>userId</code> ，直接写 <code>userId</code> 即可，不需要写 <code>userEntity.userId</code>，因为 Spring MVC 也是这么识别的，相应的我生成Postman时就需要这么处理，最终干脆保持统一，省的混乱！</p>
+<p>还有一点就是，如果是纯方法的参数，是不支持设置隐藏的，原因如下：</p>
+<p>1.首先，如果不需要用到此参数，可直接删除，而不像对象，可能多个地方用到，所以需要根据方法定制的去隐藏部分字段</p>
+<p>2.其次，其实我还提供了另一种方式隐藏，甚至可以说，这个隐藏更早的被支持。那就是：在 @param 注释后面 加上 hidden即可，如图：</p>
+</blockquote>
+<p><img src="https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210710212212.png" alt="image-20210710212211293"></p>
+<h3 id="字段的更多注释"><a href="#字段的更多注释" class="headerlink" title="字段的更多注释"></a>字段的更多注释</h3><blockquote>
+<p>既然刚才说到了 hidden，那么就此引出字段级别的注释、注解，是的，我们还支持Swagger 注解，实际上注释也是根据Swagger注解定义出来的。</p>
+</blockquote>
+<h4 id="字段级别"><a href="#字段级别" class="headerlink" title="字段级别"></a>字段级别</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 测试字段上的注释有哪些 tag</span></span><br><span class="line"><span class="comment"> * 字段注释说明是可以换行的</span></span><br><span class="line"><span class="comment"> * 当然有个前提就是</span></span><br><span class="line"><span class="comment"> * 最终负责渲染Markdown的引擎需要支持 &lt;br&gt; 标签，也就是支持部分 HTML</span></span><br><span class="line"><span class="comment"> * #required</span></span><br><span class="line"><span class="comment"> * #hidden false</span></span><br><span class="line"><span class="comment"> * #important</span></span><br><span class="line"><span class="comment"> * #example 测试示例值 此处可带空格，方法上的 <span class="doctag">@param</span> 后面不行</span></span><br><span class="line"><span class="comment"> * #notes 对应其他参考信息 同理，可带空格，方法上的 <span class="doctag">@param</span> 后面不行</span></span><br><span class="line"><span class="comment"> * #notes 谁说我不能换行的，只是没那么优雅罢了</span></span><br><span class="line"><span class="comment"> * #notes 不过也还凑合，换行</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@ApiModelProperty</span>(value = <span class="string">"这里是Swagger的字段说明\n试试换行"</span>, required = <span class="keyword">true</span>, hidden = <span class="keyword">false</span>,</span><br><span class="line">        example = <span class="string">"测试示例值"</span>, notes = <span class="string">"对应其他参考信息\n试试换行"</span>)</span><br><span class="line"><span class="keyword">private</span> String testField;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>生成的示例如下：</p>
+<figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">userId</span>:<span class="string">0</span></span><br><span class="line"><span class="attr">nickName</span>:<span class="string">用户昵称</span></span><br><span class="line"><span class="attr">realName</span>:<span class="string">用户姓名</span></span><br><span class="line"><span class="attr">phoneNumber</span>:<span class="string">110</span></span><br><span class="line"><span class="attr">userGender</span>:<span class="string">2</span></span><br><span class="line"><span class="attr">userAge</span>:<span class="string">1024</span></span><br><span class="line"><span class="attr">userAvatar</span>:<span class="string">https://mp.weixin.com/p/jewagheiajifejgihewjg.ifew</span></span><br><span class="line"><span class="attr">lastLoginTime</span>:<span class="string">最近一次登录时间</span></span><br><span class="line"><span class="attr">testField</span>:<span class="string">测试示例值 此处可带空格，方法上的 @param 后面不行</span></span><br></pre></td></tr></table></figure>
+
+<p>生成的字段说明表格如下：</p>
+<p><img src="https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210710221548.png" alt="image-20210710221547548"></p>
+<p>使用的 tag 用法说明如下</p>
+<ul>
+<li><p>啥都不加直接写，支持换行，对应字段说明表格的含义</p>
+</li>
+<li><p>required 对应字段说明表格中的必填性，不写默认为 false（否），加上后代表必填</p>
+</li>
+<li><p>hidden 加上即隐藏此字段，后面跟个 false 和不写效果一样（这个道理放到任何Boolean型tag都生效）</p>
+</li>
+<li><p>important 加上代表注释比注解优先级高（默认注解优先级高，即写了注解优先使用注解中的信息）</p>
+</li>
+<li><p>example 示例值，生成示例值和导出到Postman时有大用处，懂得都懂</p>
+</li>
+<li><p>notes 对应字段说明表上的其他信息参考，若需要换行，请反复添加 notes</p>
+</li>
+</ul>
+<blockquote>
+<p>而其注解，则完全与 tag 同名，且默认注解优先级高，即写了注解优先使用注解中的信息！</p>
+<p>还是推荐使用注释，毕竟不依赖于 Swagger！</p>
+<p>这里顺带提下我对Swagger的看法，总得来说就是，对前端不够友好，其次就是依赖于代码的运行，一旦程序起不起来，就完蛋了，而插件就不一样了，哪怕是你有部分语法错误，只要不撞到参数的解析上，就没有关系，基本是确保方法声明不报错就OK了！而且运行一个 web 程序，始终是需要时间的，而我这插件的运行，只能说是比飞快还飞快；这里要感谢IDEA提供的Api，是IDEA提前解析好这些信息，我直接拿来用的，所以很快！</p>
+</blockquote>
+<h4 id="方法级别注释"><a href="#方法级别注释" class="headerlink" title="方法级别注释"></a>方法级别注释</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 查询用户信息(分页)</span></span><br><span class="line"><span class="comment"> * 试试换行</span></span><br><span class="line"><span class="comment"> * #notes 方法的更多信息需要换行展示，毕竟内容很多啊</span></span><br><span class="line"><span class="comment"> * #notes 这样看起来如何！</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> listUserPage 过滤条件</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> userEntities 没用的参数 hidden</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span> 用户列表数据-分页</span></span><br><span class="line"><span class="comment"> * #hiddenRequest userEntities</span></span><br><span class="line"><span class="comment"> * #hiddenResponse data.userAvatar</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@PostMapping</span>(<span class="string">"/listUser"</span>)</span><br><span class="line"><span class="keyword">public</span> BaseResponse&lt;List&lt;ListUserResponse&gt;&gt; listUserPage(ListUserRequest listUserPage, List&lt;UserEntity&gt; userEntities) &#123;</span><br><span class="line">    <span class="comment">// todo 查询分页数据</span></span><br><span class="line">    log.info(<span class="string">"listUserPage--&gt; "</span> + JsonUtils.getJsonString(listUserPage));</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> BaseResponse.success(<span class="keyword">new</span> ArrayList&lt;&gt;(), <span class="number">0L</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>文档效果图：</p>
+<p><img src="https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210710222038.png" alt="image-20210710222036880"></p>
+<ul>
+<li><p>啥都不加直接写，支持换行，对应接口名标题（不建议换行，不太好看！！）</p>
+</li>
+<li><p>code 不再赘述</p>
+</li>
+<li><p>hiddenRequest 不再赘述</p>
+</li>
+<li><p>hiddenResponse 不再赘述</p>
+</li>
+<li><p>hidden 隐藏此方法，则怎么右键都不会生成文档！批量生成时用于隐藏单个，非常好使！</p>
+</li>
+<li><p>important 代表即使使用了 <code>@ApiOperation</code> 注解也优先读取注释</p>
+</li>
+<li><p>notes 写上，再看看文档的第二行，你就明白了！用于给方法添加更多说明，若需要换行，请反复添加 notes！</p>
+</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 另外注释有几个对应上面的</span></span><br><span class="line"><span class="meta">@ApiOperation</span>(value = <span class="string">"类似啥都不写，使用\n换行"</span>, notes = <span class="string">"对应notes"</span>, hidden = <span class="keyword">true</span>)</span><br><span class="line"><span class="comment">// 对应 code，可使用 @ApiResponses 添加多个 code</span></span><br><span class="line"><span class="meta">@ApiResponses</span>(&#123;</span><br><span class="line">  <span class="meta">@ApiResponse</span>(code = <span class="number">1</span>, message = <span class="string">"出错了"</span>),</span><br><span class="line">  <span class="meta">@ApiResponse</span>(code = <span class="number">2</span>, message = <span class="string">"出错了2"</span>),</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 另外 hiddenRequest/hiddenResponse 不支持注解配置，必须使用注释咯，放心可以上面几个信息使用注解，然后搭配注释中的 hiddenRequest/hiddenResponse，这是OK的！</span></span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<p>@param 单独说说</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 删除一个用户</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> userId     用户id example=10000 required notes=更多信息&amp;br;试试换行</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> operator   操作人 example=admin required</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> deleteFlag 是否彻底删除 hidden</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span> 操作是否成功</span></span><br><span class="line"><span class="comment"> * #hiddenResponse totalCount</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@GetMapping</span>(<span class="string">"/deleteUser"</span>)</span><br><span class="line"><span class="meta">@Order</span>(<span class="number">1</span>)</span><br><span class="line"><span class="function"><span class="keyword">public</span> BaseResponse&lt;Boolean&gt; <span class="title">deleteUser</span><span class="params">(Integer userId, String operator, Boolean deleteFlag)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// todo 删除一个用户</span></span><br><span class="line">    <span class="keyword">if</span> (deleteFlag != <span class="keyword">null</span> &amp;&amp; deleteFlag) &#123;</span><br><span class="line">        <span class="comment">//todo 彻底删除数据</span></span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// todo 逻辑删除, 修改 deleted 字段值</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> BaseResponse.success(<span class="keyword">true</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>文档效果图：</p>
+<p><img src="https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210710222920.png" alt="image-20210710222919511"></p>
+<blockquote>
+<p>首先 <code>@param userId     用户id</code> ； <code>@param</code> 后面紧跟的字段名和字段说明，这个是 javadoc 就这么写，后面的内容，则支持几个 tag，如下</p>
+</blockquote>
+<ul>
+<li>hidden 隐藏此参数</li>
+<li>example 设置示例值</li>
+<li>notes 设置更多信息</li>
+</ul>
+<blockquote>
+<p>这里必须提一下，notes说明，example都不能有空格，否则影响插件解析注释。不过有个方式可以换行，即添加 <code>&amp;br;</code>，这里不能直接加 <code>&lt;br&gt;</code>，因为插件的代码会转义所有的 <code>&lt; 和 &gt;</code> 符号。</p>
+</blockquote>
+<p>对应注解： </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 除了 notes，其他都对的上</span></span><br><span class="line"><span class="meta">@ApiParam</span>(value = <span class="string">"1"</span>, required = <span class="keyword">true</span>, hidden = <span class="keyword">true</span>, example = <span class="string">"2"</span>)</span><br></pre></td></tr></table></figure>
+
+
+
+<p>最后提一嘴 @return ，这个 javadoc，idea 敲 <code>/**</code> 回车自动生成的 tag，我也有解析，但一般情况还用不到，只有返回值是普通类型（如 Integer，String，Double，Date）时才会有效，这个大家试试就知道了！另外 @return 不支持 @param 哪些附加 tag（如 hidden，example，notes）！</p>
+<h4 id="类级别注释"><a href="#类级别注释" class="headerlink" title="类级别注释"></a>类级别注释</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 用户接口</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@description</span> 用户接口</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> wq</span></span><br><span class="line"><span class="comment"> * #tags 用户接口</span></span><br><span class="line"><span class="comment"> * #hidden</span></span><br><span class="line"><span class="comment"> * #important</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Api</span>(description = <span class="string">"用户接口"</span>, tags = <span class="string">"用户接口"</span>, hidden = <span class="keyword">true</span>)</span><br><span class="line"><span class="meta">@Slf</span>4j</span><br><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="meta">@RequestMapping</span>(<span class="string">"/api/v1/user"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">UserController</span> </span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>效果：批量生成时的文件名会从注释、注解中取</p>
+<ul>
+<li>什么都不写，类的说明</li>
+<li>description 和什么都不写效果一样</li>
+<li>tags 参考 Swagger 的注解含义，代表对接口的分类，用来对应 @Api 注解的 tags</li>
+<li>hidden 批量生成时过滤此类</li>
+<li>important 提高注释的优先级（默认 @Api 注解优先级高）</li>
+</ul>
+<p>注解作用类似！</p>
+<blockquote>
+<p>上面列的 description，tags，以及啥都不写，本质都用于批量生成接口时作为Markdown文件的文件名或导出到Postman时作为请求的上级文件夹名称，优先级最高的是 tags，这是考虑到使用了 Swagger 的项目，一般这个地方都会填写中文含义。其次是</p>
+<p>description 和 啥都不写，看谁写在前面，则谁优先！这个是考虑到好多人使用 javadoc 写类注释的模板都是带有这个 @description 用于描述改类的。</p>
+<p>啥都不写则是我个人认为比较好的方式！</p>
+</blockquote>
+<p>效果如图：</p>
+<p><img src="https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210710225906.png" alt="image-20210710225904864"></p>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><blockquote>
+<p>以上所有我使用 # 开头的 tag，本质上都可替换成 @（除了 @param、@return），比如</p>
+<p>#hidden 和 @hidden 效果是一样的！</p>
+<p>其实 @ 开头才是比较正宗的注释的 tag 写法，但太正宗了也不行，IDEA识别了，但只识别了一半，只认识部分tag，这就是使得我们写的这些 tag 都要报个黄色警告（如果你打开了Editor =&gt; Inspections）；所以干脆加了个 # 开头，避开idea识别，合适的不得了！</p>
+<p>其实都支持，怎么用就看大家了，我个人偏爱 # 开头！！！</p>
+</blockquote>
+<blockquote>
+<p>本来打算分享部分核心代码的，太晚了，算了，开源吧，但不保证开源的是最新版！！</p>
+<p>项目地址：<a href="https://github.com/gudqs7/open-doc-generator-idea-plugin" target="_blank" rel="noopener">Github：open-doc-generator-idea-plugin</a></p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>下次一定</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="gudqs7 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/bitcoin.png" alt="gudqs7 比特币">
+        <p>比特币</p>
+      </div>
+
+  </div>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/idea/" rel="tag"># idea</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/07/09/introduction-docer-savior/" rel="prev" title="文档生成插件使用指南">
+      <i class="fa fa-chevron-left"></i> 文档生成插件使用指南
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+    </div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#文档生成插件更多细节分享"><span class="nav-number">1.</span> <span class="nav-text">文档生成插件更多细节分享</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#更多细节"><span class="nav-number">1.1.</span> <span class="nav-text">更多细节</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#code-含义"><span class="nav-number">1.1.1.</span> <span class="nav-text">code 含义</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#先看效果"><span class="nav-number">1.1.1.1.</span> <span class="nav-text">先看效果</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#实现方式"><span class="nav-number">1.1.1.2.</span> <span class="nav-text">实现方式</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#根据不同方法隐藏不同字段（参数、返回值均可）"><span class="nav-number">1.1.2.</span> <span class="nav-text">根据不同方法隐藏不同字段（参数、返回值均可）</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#先看效果-1"><span class="nav-number">1.1.2.1.</span> <span class="nav-text">先看效果</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#实现方式-1"><span class="nav-number">1.1.2.2.</span> <span class="nav-text">实现方式</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#字段的更多注释"><span class="nav-number">1.1.3.</span> <span class="nav-text">字段的更多注释</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#字段级别"><span class="nav-number">1.1.3.1.</span> <span class="nav-text">字段级别</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#方法级别注释"><span class="nav-number">1.1.3.2.</span> <span class="nav-text">方法级别注释</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#类级别注释"><span class="nav-number">1.1.3.3.</span> <span class="nav-text">类级别注释</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#总结"><span class="nav-number">1.1.3.4.</span> <span class="nav-text">总结</span></a></li></ol></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="gudqs7"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">gudqs7</p>
+  <div class="site-description" itemprop="description">心累没钱躺尸中</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">25</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">22</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/gudqs7" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;gudqs7" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:gudqs7@gmail.com" title="E-Mail → mailto:gudqs7@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">gudqs7</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+  function loadCount() {
+    var d = document, s = d.createElement('script');
+    s.src = 'https://gudqs7s-note.disqus.com/count.js';
+    s.id = 'dsq-count-scr';
+    (d.head || d.body).appendChild(s);
+  }
+  // defer loading until the whole page loading is completed
+  window.addEventListener('load', loadCount, false);
+</script>
+<script>
+  var disqus_config = function() {
+    this.page.url = "https://gudqs7.github.io/2021/07/10/introduction-docer-savior-2-md/";
+    this.page.identifier = "2021/07/10/introduction-docer-savior-2-md/";
+    this.page.title = "文档生成插件更多细节分享";
+    };
+  NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {
+    if (window.DISQUS) {
+      DISQUS.reset({
+        reload: true,
+        config: disqus_config
+      });
+    } else {
+      var d = document, s = d.createElement('script');
+      s.src = 'https://gudqs7s-note.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', '' + +new Date());
+      (d.head || d.body).appendChild(s);
+    }
+  });
+</script>
+
+</body>
+</html>

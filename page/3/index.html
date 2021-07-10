@@ -166,6 +166,164 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://gudqs7.github.io/2020/05/20/how-electron-package-static-html-to-exe(dmg)/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="gudqs7">
+      <meta itemprop="description" content="心累没钱躺尸中">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="gudqs7's note">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/05/20/how-electron-package-static-html-to-exe(dmg)/" class="post-title-link" itemprop="url">使用 Electron 打包 HTML 成 EXE/DMG</a>
+        </h2>
+
+        <div class="post-meta">
+			
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-05-20 09:02:46" itemprop="dateCreated datePublished" datetime="2020-05-20T09:02:46+08:00">2020-05-20</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-28 19:56:45" itemprop="dateModified" datetime="2021-03-28T19:56:45+08:00">2021-03-28</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/electron/" itemprop="url" rel="index"><span itemprop="name">electron</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2020/05/20/how-electron-package-static-html-to-exe(dmg)/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2020/05/20/how-electron-package-static-html-to-exe(dmg)/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="Windows-下-推荐"><a href="#Windows-下-推荐" class="headerlink" title="Windows 下 (推荐)"></a>Windows 下 (推荐)</h3><h4 id="下载-nodejs-和-git"><a href="#下载-nodejs-和-git" class="headerlink" title="下载 nodejs 和 git"></a>下载 nodejs 和 git</h4><blockquote>
+<p>下载 nodejs 32 位 msi 安装包 (<a href="https://npm.taobao.org/mirrors/node/v12.13.1/node-v12.13.1-x86.msi" target="_blank" rel="noopener">https://npm.taobao.org/mirrors/node/v12.13.1/node-v12.13.1-x86.msi</a>)</p>
+<p>下载 git 的安装包 (<a href="https://git-scm.com/download/win" target="_blank" rel="noopener">https://git-scm.com/download/win</a>) (可能贼慢, 自行解决)</p>
+</blockquote>
+<h4 id="安装-nodejs-及-cnpm"><a href="#安装-nodejs-及-cnpm" class="headerlink" title="安装 nodejs 及 cnpm"></a>安装 nodejs 及 cnpm</h4><blockquote>
+<p>首先将 node-v12.13.1-x86.msi 双击安装, 一路 next 就行了</p>
+<p>然后将 git 也装上, 也是一路 next, 不要犹豫</p>
+</blockquote>
+<p>安装淘宝cnpm</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install -g cnpm --registry=https://registry.npm.taobao.org</span><br></pre></td></tr></table></figure>
+
+<h4 id="下载-hello-world-项目"><a href="#下载-hello-world-项目" class="headerlink" title="下载 hello-world 项目"></a>下载 hello-world 项目</h4><blockquote>
+<p> 找到一个空白文件夹, 准备放置项目, 右键 选择 Git bash here, 然后命令行中输入: </p>
+</blockquote>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/gudqs7/my-electron-hello-world.git</span><br></pre></td></tr></table></figure>
+
+<p>下载好后, 不要关闭窗口, 继续下面操作</p>
+<h4 id="安装依赖"><a href="#安装依赖" class="headerlink" title="安装依赖"></a>安装依赖</h4><p>在命令行中, 进入文件夹, 输入命令安装依赖</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd my-electron-hello-world</span><br><span class="line">cnpm i</span><br></pre></td></tr></table></figure>
+
+<h4 id="试运行下-App"><a href="#试运行下-App" class="headerlink" title="试运行下 App"></a>试运行下 App</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cnpm run dev</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>看到一个宽1200 高 850 的窗口里面写着一句 <code>Hello world</code> 没有! 那就成了.</p>
+</blockquote>
+<h4 id="打包-exe"><a href="#打包-exe" class="headerlink" title="打包 exe"></a>打包 exe</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">一步到位, 生成 xxx setup.exe 安装包. (推荐)</span></span><br><span class="line">cnpm run dist</span><br><span class="line"><span class="meta">#</span><span class="bash">仅生成文件夹, 内含 xxx.exe 可启动, 很多资源文件, 需要自己二次打包</span></span><br><span class="line">cnpm run pack</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>打包成功后, 可在dist 文件夹下找到 exe 名称 Setup 1.0.1.exe, 复制拿走即可</p>
+</blockquote>
+<h3 id="MacOS-下"><a href="#MacOS-下" class="headerlink" title="MacOS 下"></a>MacOS 下</h3><h4 id="安装-brew-及-设置-brew-源镜像为清华源"><a href="#安装-brew-及-设置-brew-源镜像为清华源" class="headerlink" title="安装 brew 及 设置 brew 源镜像为清华源"></a>安装 brew 及 设置 brew 源镜像为清华源</h4><p>自行谷歌, 不建议百度</p>
+<h4 id="安装-nodejs-和-cnpm-淘宝镜像-npm"><a href="#安装-nodejs-和-cnpm-淘宝镜像-npm" class="headerlink" title="安装 nodejs 和 cnpm (淘宝镜像 npm)"></a>安装 nodejs 和 cnpm (淘宝镜像 npm)</h4><p>打开终端(建议使用 iTerm2), 输入命令: </p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">brew install nodejs</span><br><span class="line">npm install -g cnpm --registry=https://registry.npm.taobao.org</span><br></pre></td></tr></table></figure>
+
+<h4 id="下载-hello-world-项目-1"><a href="#下载-hello-world-项目-1" class="headerlink" title="下载 hello-world 项目"></a>下载 hello-world 项目</h4><blockquote>
+<p> 找到一个空白文件夹, 准备放置项目, 然后进命令行并 cd 到这个目录下, 输入命令: </p>
+</blockquote>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/gudqs7/my-electron-hello-world.git</span><br></pre></td></tr></table></figure>
+
+<p>下载好后, 不要关闭窗口, 继续下面操作</p>
+<h4 id="安装依赖-1"><a href="#安装依赖-1" class="headerlink" title="安装依赖"></a>安装依赖</h4><p>在命令行中, 进入文件夹, 输入命令安装依赖</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd my-electron-hello-world</span><br><span class="line">cnpm i</span><br></pre></td></tr></table></figure>
+
+<h4 id="试运行下-App-1"><a href="#试运行下-App-1" class="headerlink" title="试运行下 App"></a>试运行下 App</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cnpm run dev</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>看到一个宽1200 高 850 的窗口里面写着一句 <code>Hello world</code> 没有! 那就成了.</p>
+</blockquote>
+<h4 id="打包成-Mac-App"><a href="#打包成-Mac-App" class="headerlink" title="打包成 Mac App"></a>打包成 Mac App</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">生成 dmg 文件, 方便分享, 下载</span></span><br><span class="line">cnpm run dist</span><br><span class="line"><span class="meta">#</span><span class="bash">生成可直接运行的 App, 但实际上是个文件夹, 不方便给他人下载</span></span><br><span class="line">cnpm run pack</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>打包命令执行完毕, 检查 dist 目录即可</p>
+</blockquote>
+<h4 id="打包成-windows-exe"><a href="#打包成-windows-exe" class="headerlink" title="打包成 windows exe"></a>打包成 windows exe</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cnpm run win32</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>这个命令我自己都下载半天, 实在是久啊. 而且由于要使用 wine 啥的进行打包, 似乎失败率很高啊…… 建议试试 yarn(官方建议)</p>
+<p>个人推荐直接用 windows 操作系统搞一下就行了</p>
+</blockquote>
+<h3 id="注意事项"><a href="#注意事项" class="headerlink" title="注意事项"></a>注意事项</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">platform = win32  # 这个字段的值, 使用 --win 命令可指定, 默认与电脑环境一致</span><br><span class="line">arch=ia32         # 这个字段的值, 使用--ia32 或 --x64 指定, 建议 ia32 省的 32 位系统不兼容 64 位的程序</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>另外多说一句, 若使用 32 位 windows 系统, cnpm i 下载依赖时就会下载 electron 的一个 sdk(用于生成 exe 的核心文件), 这个 sdk 是区分平台和cpu架构的. 由于用命令行指定平台和 cpu 架构不仅麻烦, 而且他使用的下载地址, 网速偏慢(极慢), 而 cnpm i 下载时则相对较快(感谢马云), 所以推荐选择适当的操作系统来打包, 会比较快.</p>
+</blockquote>
+<ul>
+<li><p>另外, 尝试使用 <code>electron .</code> 这个命令在 <code>windows</code> 上是跑不来的, 但将其加入到 package.json 中的 script 然后使用 <code>cnpm run xxx</code> 就没问题了.</p>
+</li>
+<li><p>送大家一个网址, 在线 ico 转换, 支持256x256 (<a href="https://www.aconvert.com/cn/icon/png-to-ico/" target="_blank" rel="noopener">https://www.aconvert.com/cn/icon/png-to-ico/</a>)</p>
+</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://gudqs7.github.io/2020/05/20/design-partten-memo/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -893,7 +1051,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">24</span>
+          <span class="site-state-item-count">25</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
