@@ -301,23 +301,23 @@ public class BasePageRequest {
 ## 请求信息
 
 ### 请求地址
-​```
+'''
 http://192.168.0.104:8080/api/v1/user/listUser
-​```
+'''
 
 ### 请求方法
-​```
+'''
 POST
-​```
+'''
 
 ### 请求体类型
-​```
+'''
 application/x-www-form-urlencoded
-​```
+'''
 
 ## 入参
 ### 入参示例(Postman==> Bulk Edit)
-​```json
+'''json
 pageNumber:1
 pageSize:20
 searchKeyword:模糊搜索词<br>支持用户昵称, 用户姓名, 用户手机号
@@ -326,7 +326,7 @@ ageStart:0
 ageEnd:0
 loginTimeStart:过滤登录时间范围-开始
 loginTimeEnd:过滤登录时间范围-结束
-​```
+'''
 
 ### 入参字段说明
 | **字段** | **类型** | **必填性** | **含义** | **其他信息参考** |
@@ -347,7 +347,7 @@ loginTimeEnd:过滤登录时间范围-结束
 
 ## 出参
 ### 出参示例
-​```json
+'''json
 {
   "code": 0,
   "message": "错误信息",
@@ -365,7 +365,7 @@ loginTimeEnd:过滤登录时间范围-结束
   ],
   "totalCount": 0
 }
-​```
+'''
 
 ### 返回字段说明
 | **字段** | **类型** | **含义** | **其他信息参考** |
@@ -389,7 +389,7 @@ loginTimeEnd:过滤登录时间范围-结束
 
 ```
 
-> 由于文章本身就是Markdown格式，所以我用截图来展示下效果：截图使用 Chrome 插件打开 PDF 滚动截屏得到，PDF 是由 typora 生成的
+> 由于文章本身就是Markdown格式，所以上面中 ` ``` ` 我用 `'''` 代替，我用截图来展示下效果：截图使用 Chrome 插件打开 HTML 滚动截屏得到，HTML 是由 typora 生成的！
 
 ![screencapture-file-Users-wq-File-TempFile-html-2021-07-10-10_09_50](https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210710101322.png)
 
