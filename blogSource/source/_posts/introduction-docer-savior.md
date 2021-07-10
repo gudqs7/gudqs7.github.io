@@ -288,13 +288,15 @@ public class BasePageRequest {
 
 然后就会得到一个弹框，当然如果你根据提示点了 `OK`，则直到下次重启，都不会再出现
 
-![image-20210710100138879](/Users/wq/Library/Application Support/typora-user-images/image-20210710100138879.png)
+![image-20210710100138879](https://gitee.com/gudqs7/many-images/raw/master/Mac-PicGo/20210710113051.png)
 
 
 
 弹框中内容如下，此内容区域可滚动预览，全选复制粘贴
 
-```markdown
+
+
+```
 # 查询用户信息(分页)
 ## 请求信息
 
